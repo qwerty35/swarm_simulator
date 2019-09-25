@@ -1,0 +1,19 @@
+<!-- 
+      
+	Jungwon Park
+	Seoul National Univ. 
+	Lab for Autonomous Robotics Research
+	wjstk335@gmail.com
+-->
+
+<launch>
+  <!-- Arguments -->
+
+
+  <!-- Arguments End -->
+
+  <!-- Nodes -->
+
+  <node pkg="octomap_server" type="octomap_saver" name="octomap_saver" args="$(find swarm_planner)/worlds/replay.bt"/>
+
+</launch>

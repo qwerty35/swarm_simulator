@@ -1,0 +1,35 @@
+<!-- 
+	CREATE_OCTOMAP_WORLD.LAUNCH
+	Gazebo-Octomap Converter
+	
+        USAGE: 1. Create map.world file with Gazebo and save at rotors_gazebo/worlds 
+               2. At your world file put below plugin 
+                  <plugin name="ros_interface_plugin" filename="librotors_gazebo_ros_interface_plugin.so"/>
+                  <plugin name='gazebo_octomap' filename='librotors_gazebo_octomap_plugin.so'/>
+               3. launch this file
+               4. octomap.bt file will be saved at SwarmPlanning/worlds 
+	Jungwon Park
+	wjstk335@gmail.com
+-->
+<launch>
+  <arg name="world_name" default="experiment3_2"/>
+  <arg name="x_ori"      default="0"/>
+  <arg name="y_ori"      default="0"/>
+  <arg name="z_ori"      default="2"/>
+  <arg name="x_size"     default="12"/>
+  <arg name="y_size"     default="12"/>
+  <arg name="z_size"     default="4"/>
+  <arg name="leaf_size"  default="0.1"/>
+  
+  <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find rotors_gazebo)/models"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="${GAZEBO_RESOURCE_PATH}:$(find rotors_gazebo)/models"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find rotors_gazebo)/worlds/$(arg world_name).world"/>
+    <!-- <arg name="debug" value="true"/> -->
+    <arg name="paused" value="false"/>
+    <arg name="gui" value="false"/>
+  </include>
+
+  <node pkg="rosservice" type="rosservice" name="global_loc" args="call --wait /world/get_octomap '{bounding_box_origin: {x: $(arg x_ori), y: $(arg y_ori), z: $(arg z_ori)}, bounding_box_lengths: {x: $(arg x_size), y: $(arg y_size), z: $(arg z_size)}, leaf_size: $(arg leaf_size), filename: $(find swarm_planner)/worlds/$(arg world_name).bt}'"/>
+</launch>

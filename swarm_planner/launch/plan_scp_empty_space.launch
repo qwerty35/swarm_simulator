@@ -1,0 +1,94 @@
+<!-- 
+	PLAN.LAUNCH
+	Multi-agent Trajectory Planning and Simulation 
+
+	USAGE : roslaunch swarm_planner plan_$(map)_$(agents).launch
+                (CAUTION: If you turn on 'runsim, log' argument, planning speed may be slower!
+                          Please turn off the 'runsim, log' argument when you check the computation time.)
+                
+                If you want to try this at new world, See 'create_octomap_world.launch'
+       
+	Jungwon Park
+	Seoul National Univ. 
+	Lab for Autonomous Robotics Research
+	wjstk335@gmail.com
+-->
+
+<launch>
+  <!-- Arguments -->
+  <arg name="mission"          default="mission_8agents.json"/>
+  <arg name="log"              default="false"/>
+  <arg name="runsim"           default="true"/>
+
+  <arg name="world_x_min"      default="-5"/>
+  <arg name="world_y_min"      default="-5"/>
+  <arg name="world_z_min"      default="0"/>
+  <arg name="world_x_max"      default="5"/>
+  <arg name="world_y_max"      default="5"/>
+  <arg name="world_z_max"      default="2.5"/>
+
+  <arg name="plan_time_step"   default="0.5"/>
+  <!-- Arguments End -->
+
+  <!-- Nodes -->
+  <!--node pkg="octomap_server" type="octomap_server_node" name="octomap_server" unless="$(arg replay)">
+    <param name="resolution"   value="0.1" />
+    <param name="frame_id"     value="world" type="string"/>
+    <param name="sensor_model/max_range" value="5.0" />
+    <param name="height_map" value="false"/>
+    <param name="color/r" value="0.2"/>
+    <param name="color/g" value="0.2"/>
+    <param name="color/b" value="0.2"/>
+    <param name="color/a" value="0.2"/>
+    <remap from="cloud_in" to="/random_map_generator/all_map" />
+  </node-->
+
+  <!--node pkg="octomap_server" type="octomap_saver" name="octomap_saver" args="$(find swarm_planner)/worlds/replay.bt" unless="$(arg replay)"
+  Use map_saver.launch/-->
+
+  <!--node pkg="octomap_server" type="octomap_server_node" name="octomap_server" args="$(find swarm_planner)/worlds/replay.bt" if="$(arg replay)">
+    <param name="resolution"   value="0.1" />
+    <param name="frame_id"     value="world" type="string"/>
+    <param name="sensor_model/max_range" value="5.0" />
+    <param name="height_map" value="false"/>
+    <param name="color/r" value="0.2"/>
+    <param name="color/g" value="0.2"/>
+    <param name="color/b" value="0.2"/>
+    <param name="color/a" value="0.2"/>
+  </node-->
+
+  <!--node pkg="swarm_planner" type="random_map_generator" name="random_map_generator" args="$(arg mission)">
+    <param name="world/x_min" value="$(arg world_x_min)" />
+    <param name="world/y_min" value="$(arg world_y_min)" />
+    <param name="world/z_min" value="$(arg world_z_min)" />
+    <param name="world/x_max" value="$(arg world_x_max)" />
+    <param name="world/y_max" value="$(arg world_y_max)" />
+    <param name="world/z_max" value="$(arg world_z_max)" />
+    <param name="world/margin" value="$(arg world_margin)" />
+    <param name="world/resolution" value="$(arg world_resolution)" />
+
+    <param name="world/obs_num" value="$(arg world_obs_num)" />
+    <param name="world/r_min" value="$(arg world_r_min)" />
+    <param name="world/r_max" value="$(arg world_r_max)" />
+    <param name="world/h_min" value="$(arg world_h_min)" />
+    <param name="world/h_max" value="$(arg world_h_max)" />
+  </node-->
+
+  <node pkg="swarm_planner" type="swarm_traj_planner_scp" name="swarm_traj_planner_scp" output="screen">
+    <param name="mission"                    value="$(find swarm_planner)/missions/$(arg mission)" />
+    <param name="log"        value="$(arg log)" />
+
+    <param name="world/x_min" value="$(arg world_x_min)" />
+    <param name="world/y_min" value="$(arg world_y_min)" />
+    <param name="world/z_min" value="$(arg world_z_min)" />
+    <param name="world/x_max" value="$(arg world_x_max)" />
+    <param name="world/y_max" value="$(arg world_y_max)" />
+    <param name="world/z_max" value="$(arg world_z_max)" />
+
+    <param name="plan/time_step" value="$(arg plan_time_step)" />
+    
+  </node>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find swarm_planner)/launch/rviz_config/config_4agents.rviz"/>
+  <!-- Nodes End-->
+</launch>
