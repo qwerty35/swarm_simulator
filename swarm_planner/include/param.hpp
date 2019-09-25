@@ -8,7 +8,7 @@ namespace SwarmPlanning{
     class Param {
     public:
         bool log;
-        std::string path;
+        std::string package_path;
 
         double world_x_min;
         double world_y_min;
@@ -67,7 +67,7 @@ namespace SwarmPlanning{
         nh.param<int>("plan/N_b", N_b, 0);
         nh.param<int>("plan/iteration", iteration, 1);
 
-        path = ros::package::getPath("swarm_planner");
+        package_path = ros::package::getPath("swarm_planner");
 
         return true;
     }

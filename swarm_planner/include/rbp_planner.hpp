@@ -156,7 +156,7 @@ private:
                 cplex.extract(model);
 
                 if (log) {
-                    std::string QPmodel_path = param.path + "/log/QPmodel.lp";
+                    std::string QPmodel_path = param.package_path + "/log/QPmodel.lp";
                     cplex.exportModel(QPmodel_path.c_str());
                 } else {
                     cplex.setOut(env.getNullStream());

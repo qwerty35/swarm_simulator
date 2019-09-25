@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/jungwon/catkin_ws/src/swarm_simulator/swarm_planner/cmake-build-debug/devel/setup.sh

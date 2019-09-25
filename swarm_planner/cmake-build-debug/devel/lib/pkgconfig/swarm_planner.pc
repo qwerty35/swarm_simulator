@@ -1,0 +1,8 @@
+prefix=/home/jungwon/catkin_ws/src/swarm_simulator/swarm_planner/cmake-build-debug/devel
+
+Name: swarm_planner
+Description: Description of swarm_planner
+Version: 0.0.1
+Cflags: -I/home/jungwon/catkin_ws/src/swarm_simulator/swarm_planner/include
+Libs: -L/home/jungwon/catkin_ws/src/swarm_simulator/swarm_planner/cmake-build-debug/devel/lib 
+Requires: roscpp roslib message_runtime

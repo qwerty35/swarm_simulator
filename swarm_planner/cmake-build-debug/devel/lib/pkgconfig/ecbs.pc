@@ -1,0 +1,8 @@
+prefix=/home/jungwon/catkin_ws/src/swarm_simulator/swarm_planner/cmake-build-debug/devel
+
+Name: ecbs
+Description: Description of ecbs
+Version: 0.0.1
+Cflags: -I/home/jungwon/catkin_ws/src/swarm_simulator/swarm_planner/third_party/ecbs/include
+Libs: -L/home/jungwon/catkin_ws/src/swarm_simulator/swarm_planner/cmake-build-debug/devel/lib 
+Requires: rospy std_msgs sensor_msgs

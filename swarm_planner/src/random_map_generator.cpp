@@ -29,9 +29,6 @@
 
 #include <mission.hpp>
 
-//
-// revised code from Btraj, https://github.com/HKUST-Aerial-Robotics/Btraj
-//
 
 using namespace std;
 

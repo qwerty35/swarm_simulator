@@ -1,502 +1,298 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
-    <generated>
-      <config projectName="swarm_planner" targetName="rosgraph_msgs_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="geometry_msgs_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="roscpp_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="run_tests" />
-      <config projectName="swarm_planner" targetName="actionlib_msgs_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="std_msgs_generate_messages_lisp" />
-      <config projectName="swarm_planner" targetName="actionlib_generate_messages_lisp" />
-      <config projectName="swarm_planner" targetName="sensor_msgs_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="geometry_msgs_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="actionlib_msgs_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="download_extra_data" />
-      <config projectName="swarm_planner" targetName="octomap_msgs_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="actionlib_msgs_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="tf2_msgs_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="rosgraph_msgs_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="octomap_msgs_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="tf_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="tf_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="actionlib_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="tf_generate_messages_lisp" />
-      <config projectName="swarm_planner" targetName="roscpp_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="geometry_msgs_generate_messages_lisp" />
-      <config projectName="swarm_planner" targetName="nav_msgs_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="roscpp_generate_messages_lisp" />
-      <config projectName="swarm_planner" targetName="std_msgs_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="doxygen" />
-      <config projectName="swarm_planner" targetName="sensor_msgs_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="tests" />
-      <config projectName="swarm_planner" targetName="actionlib_msgs_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="swarm_traj_planner_rbp" />
-      <config projectName="swarm_planner" targetName="sensor_msgs_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="rosgraph_msgs_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="gmock_main" />
-      <config projectName="swarm_planner" targetName="rosgraph_msgs_generate_messages_lisp" />
-      <config projectName="swarm_planner" targetName="sensor_msgs_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="actionlib_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="octomap_msgs_generate_messages_lisp" />
-      <config projectName="swarm_planner" targetName="geometry_msgs_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="actionlib_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="tf_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="octomap_msgs_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="nav_msgs_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="tf2_msgs_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="std_msgs_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="nav_msgs_generate_messages_lisp" />
-      <config projectName="swarm_planner" targetName="actionlib_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="clang-tidy" />
-      <config projectName="swarm_planner" targetName="std_msgs_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="actionlib_msgs_generate_messages_lisp" />
-      <config projectName="swarm_planner" targetName="roscpp_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="gmock" />
-      <config projectName="swarm_planner" targetName="geometry_msgs_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="nav_msgs_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="rosgraph_msgs_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="tf_generate_messages_cpp" />
-      <config projectName="swarm_planner" targetName="tf2_msgs_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="random_map_generator" />
-      <config projectName="swarm_planner" targetName="gtest" />
-      <config projectName="swarm_planner" targetName="clang-format" />
-      <config projectName="swarm_planner" targetName="tf2_msgs_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="gtest_main" />
-      <config projectName="swarm_planner" targetName="octomap_msgs_generate_messages_eus" />
-      <config projectName="swarm_planner" targetName="std_msgs_generate_messages_nodejs" />
-      <config projectName="swarm_planner" targetName="tf2_msgs_generate_messages_lisp" />
-      <config projectName="swarm_planner" targetName="roscpp_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="nav_msgs_generate_messages_py" />
-      <config projectName="swarm_planner" targetName="clean_test_results" />
-      <config projectName="swarm_planner" targetName="sensor_msgs_generate_messages_lisp" />
-    </generated>
-  </component>
   <component name="CMakeSettings">
     <configurations>
       <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
     </configurations>
   </component>
-  <component name="ChangeListManager">
-    <list default="true" id="b0ce82f3-b4e7-4017-88fe-53b1694301e6" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeError.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeError.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeOutput.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/progress.marks" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_rbp_test_all.dir/DependInfo.cmake" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_rbp_test_all.dir/build.make" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_rbp_test_all.dir/cmake_clean.cmake" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_rbp_test_all.dir/depend.make" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_rbp_test_all.dir/flags.make" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_rbp_test_all.dir/link.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_rbp_test_all.dir/progress.make" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_scp.dir/DependInfo.cmake" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_scp.dir/build.make" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_scp.dir/cmake_clean.cmake" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_scp.dir/depend.make" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_scp.dir/flags.make" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_scp.dir/link.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/swarm_traj_planner_scp.dir/progress.make" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/swarm_planner.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/swarm_planner.cbp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/BoxGeneratorGeometric.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/ECBSPlanner.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/InitTrajPlanner.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/SwarmPlannerGeometric.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/SwarmPlannerSCP.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/TrajPlotter.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/TrajPlotterSCP.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/TrajPublisherGeometric.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/TrajPublisherSCP.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/mission.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/mission.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/param.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/param.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/sp_const.hpp" beforeDir="false" afterPath="$PROJECT_DIR$/include/sp_const.hpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/launch/plan_rbp_random_forest.launch" beforeDir="false" afterPath="$PROJECT_DIR$/launch/plan_rbp_random_forest.launch" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/launch/plan_rbp_test.launch" beforeDir="false" afterPath="$PROJECT_DIR$/launch/plan_rbp_test.launch" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/launch/rviz_config/config_8agents.rviz" beforeDir="false" afterPath="$PROJECT_DIR$/launch/rviz_config/config_8agents.rviz" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/log/QPmodel.lp" beforeDir="false" afterPath="$PROJECT_DIR$/log/QPmodel.lp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/swarm_traj_planner_rbp.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/swarm_traj_planner_rbp.cpp" afterDir="false" />
-    </list>
-    <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
-    <ignored path="$PROJECT_DIR$/third_party/sipp/CMakeFiles/" />
-    <ignored path="$PROJECT_DIR$/third_party/AA-SIPP-m/CMakeFiles/" />
-    <ignored path="$PROJECT_DIR$/third_party/AA-SIPP-m/cmake-build-debug/" />
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
-    <option name="SHOW_DIALOG" value="false" />
-    <option name="HIGHLIGHT_CONFLICTS" value="true" />
-    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
-    <option name="LAST_RESOLUTION" value="IGNORE" />
-  </component>
-  <component name="ClangdSettings">
-    <option name="formatViaClangd" value="false" />
-  </component>
-  <component name="DatabaseView">
-    <option name="SHOW_INTERMEDIATE" value="true" />
-    <option name="GROUP_DATA_SOURCES" value="true" />
-    <option name="GROUP_SCHEMA" value="true" />
-    <option name="GROUP_CONTENTS" value="false" />
-    <option name="SORT_POSITIONED" value="false" />
-    <option name="SHOW_EMPTY_GROUPS" value="false" />
-    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
-    <option name="HIDDEN_KINDS">
-      <set />
-    </option>
-    <expand />
-    <select />
-  </component>
-  <component name="DockManager">
-    <window id="1">
-      <content type="file-editors">
-        <state>
-          <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-            <file pinned="false" current-in-tab="false">
-              <entry file="file://$PROJECT_DIR$/src/swarm_traj_planner_rbp.cpp">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="163">
-                    <caret line="119" selection-start-line="119" selection-end-line="119" />
-                  </state>
-                </provider>
-              </entry>
-            </file>
-            <file pinned="false" current-in-tab="false">
-              <entry file="file://$PROJECT_DIR$/include/rbp_corridor.hpp">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="414">
-                    <caret line="23" column="50" selection-start-line="23" selection-start-column="50" selection-end-line="23" selection-end-column="50" />
-                    <folding>
-                      <element signature="e#14#36#0" expanded="true" />
-                    </folding>
-                  </state>
-                </provider>
-              </entry>
-            </file>
-            <file pinned="false" current-in-tab="true">
-              <entry file="file://$PROJECT_DIR$/include/rbp_plotter.hpp">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="359">
-                    <caret line="118" column="17" selection-start-line="118" selection-start-column="17" selection-end-line="118" selection-end-column="17" />
-                    <folding>
-                      <element signature="e#240#256#0" expanded="true" />
-                    </folding>
-                  </state>
-                </provider>
-              </entry>
-            </file>
-          </leaf>
-        </state>
-      </content>
-    </window>
-  </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
-  <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="198">
-              <caret line="11" selection-start-line="11" selection-end-line="11" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file:///usr/include/c++/7/bits/stl_vector.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="171">
-              <caret line="670" selection-start-line="670" selection-end-line="670" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/include/rbp_planner.hpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="108">
-              <caret line="6" column="8" selection-start-line="6" selection-start-column="8" selection-end-line="6" selection-end-column="8" />
-              <folding>
-                <element signature="e#21#60#0" expanded="true" />
-                <element signature="e#113#135#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/param.hpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="12" selection-start-column="12" selection-end-column="12" />
-              <folding>
-                <element signature="e#13#33#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/rbp_publisher.hpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1593">
-              <caret line="771" column="2" selection-start-line="771" selection-start-column="2" selection-end-line="771" selection-end-column="2" />
-              <folding>
-                <element signature="e#23#45#0" expanded="true" />
-                <element signature="e#80#108#0" expanded="true" />
-                <element signature="e#433#449#0" expanded="true" />
-                <element signature="e#393#419#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/sp_const.hpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="162">
-              <caret line="9" column="30" selection-start-line="9" selection-start-column="30" selection-end-line="9" selection-end-column="30" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-    </leaf>
-  </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Python Script" />
-      </list>
-    </option>
-  </component>
-  <component name="FindInProjectRecents">
-    <findStrings>
-      <find>Zero</find>
-      <find>currentState</find>
-      <find>outdim</find>
-      <find>std::cout</find>
-      <find>relative</find>
-      <find>sequential</find>
-      <find>p_prev</find>
-      <find>colormap_HSV</find>
-      <find>n.</find>
-      <find>double R</find>
-      <find>Find</find>
-      <find>param</find>
-      <find>param.qn</find>
-      <find>ts_prev</find>
-      <find>ts_total</find>
-      <find>Conflict</find>
-      <find>EdgeConstraint</find>
-      <find>conflict</find>
-      <find>found</find>
-      <find>isEdgeConflict</find>
-      <find>num_err</find>
-      <find>N</find>
-      <find>n_des</find>
-      <find>qn</find>
-      <find>gn</find>
-      <find>group</find>
-      <find>N_poly</find>
-      <find>timeMa</find>
-      <find>quad_state</find>
-      <find>polyder</find>
-    </findStrings>
-    <replaceStrings>
-      <replace />
-      <replace>SIPP_LINK_LIBS</replace>
-      <replace>config</replace>
-      <replace>sr</replace>
-      <replace>qn</replace>
-      <replace>param.group</replace>
-      <replace>color</replace>
-      <replace>nh.</replace>
-      <replace>mission.qn</replace>
-      <replace>N</replace>
-      <replace>N_b</replace>
-      <replace>batch_size</replace>
-      <replace>n</replace>
-    </replaceStrings>
-  </component>
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
-  </component>
-  <component name="IdeDocumentHistory">
-    <option name="CHANGED_PATHS">
-      <list>
-        <option value="$PROJECT_DIR$/include/SwarmPlanner_Node.hpp" />
-        <option value="$PROJECT_DIR$/include/mapper.hpp" />
-        <option value="$PROJECT_DIR$/include/traj_publisher_scp.cpp" />
-        <option value="$PROJECT_DIR$/src/traj_publisher_scp.cpp" />
-        <option value="$PROJECT_DIR$/include/box_generator_geometric.hpp" />
-        <option value="$PROJECT_DIR$/include/sipp_planner.hpp" />
-        <option value="$PROJECT_DIR$/src/map.cpp" />
-        <option value="$PROJECT_DIR$/include/map.hpp" />
-        <option value="$PROJECT_DIR$/src/swarm_planner.cpp" />
-        <option value="$PROJECT_DIR$/include/traj_optimizer_geometric.hpp" />
-        <option value="$PROJECT_DIR$/include/traj_optimizer_scp.hpp" />
-        <option value="$PROJECT_DIR$/src/traj_publisher_rbp.cpp" />
-        <option value="$PROJECT_DIR$/include/traj_publisher_scp.hpp" />
-        <option value="$PROJECT_DIR$/include/swarm_planner_node.hpp" />
-        <option value="$PROJECT_DIR$/src/swarm_planner_node.cpp" />
-        <option value="$PROJECT_DIR$/include/swarm_planner_scp.hpp" />
-        <option value="$PROJECT_DIR$/include/traj_publisher.hpp" />
-        <option value="$PROJECT_DIR$/src/swarm_planner_scp.cpp" />
-        <option value="$PROJECT_DIR$/include/swarm_planner.hpp" />
-        <option value="$PROJECT_DIR$/include/swarm_planner_rbp.hpp" />
-        <option value="$PROJECT_DIR$/include/traj_publisher_rbp.hpp" />
-        <option value="$PROJECT_DIR$/src/swarm_planner_rbp.cpp" />
-        <option value="$PROJECT_DIR$/include/backup2/sipp_planner.hpp" />
-        <option value="$PROJECT_DIR$/include/backup/BoxGeneratorDynamic.hpp" />
-        <option value="$PROJECT_DIR$/include/SIPPPlanner.hpp" />
-        <option value="$PROJECT_DIR$/include/SwarmPlannerSCP.hpp" />
-        <option value="$PROJECT_DIR$/include/TrajPlotterSCP.hpp" />
-        <option value="$PROJECT_DIR$/include/TrajPublisherSCP.hpp" />
-        <option value="$PROJECT_DIR$/include/BoxGeneratorGeometric.hpp" />
-        <option value="$PROJECT_DIR$/third_party/ecbs/include/environment.hpp" />
-        <option value="$PROJECT_DIR$/src/swarm_traj_planner_geometric.cpp" />
-        <option value="$PROJECT_DIR$/src/swarm_traj_planner_node.cpp" />
-        <option value="$PROJECT_DIR$/package.xml" />
-        <option value="$PROJECT_DIR$/third_party/ecbs/include/ecbs.hpp" />
-        <option value="$PROJECT_DIR$/src/swarm_traj_planner_rbp_test_all.cpp" />
-        <option value="$PROJECT_DIR$/include/ECBSPlanner.hpp" />
-        <option value="$PROJECT_DIR$/include/TrajPlotter.hpp" />
-        <option value="$PROJECT_DIR$/include/TrajPublisherGeometric.hpp" />
-        <option value="$PROJECT_DIR$/include/SwarmPlannerGeometric.hpp" />
-        <option value="$PROJECT_DIR$/src/swarm_traj_planner_scp.cpp" />
-        <option value="$PROJECT_DIR$/include/InitTrajPlanner.hpp" />
-        <option value="$PROJECT_DIR$/include/mission.hpp" />
-        <option value="$PROJECT_DIR$/include/sp_const.hpp" />
-        <option value="$PROJECT_DIR$/include/init_traj_planner.hpp" />
-        <option value="$PROJECT_DIR$/include/ecbs_planner.hpp" />
-        <option value="$PROJECT_DIR$/include/rbp_corridor.hpp" />
-        <option value="$PROJECT_DIR$/src/swarm_traj_planner_rbp.cpp" />
-        <option value="$PROJECT_DIR$/include/param.hpp" />
-        <option value="$PROJECT_DIR$/include/rbp_publisher.hpp" />
-        <option value="$PROJECT_DIR$/CMakeLists.txt" />
-        <option value="$PROJECT_DIR$/include/rbp_planner.hpp" />
-      </list>
-    </option>
-  </component>
-  <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="2142" />
     <option name="width" value="1400" />
     <option name="height" value="1000" />
   </component>
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
-  <component name="ProjectView">
-    <navigator proportions="" version="1">
-      <foldersAlwaysOnTop value="true" />
-    </navigator>
-    <panes>
-      <pane id="Scope" />
-      <pane id="ProjectPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="AA-SIPP-m" type="b2602c69:ProjectViewProjectNode" />
-              <item name="swarm_planner" type="47feb1d3:ProjectViewModuleNode" />
-            </path>
-            <path>
-              <item name="AA-SIPP-m" type="b2602c69:ProjectViewProjectNode" />
-              <item name="swarm_planner" type="47feb1d3:ProjectViewModuleNode" />
-              <item name="swarm_planner" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="AA-SIPP-m" type="b2602c69:ProjectViewProjectNode" />
-              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-    </panes>
-  </component>
   <component name="PropertiesComponent">
-    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="cf.advertisement.text.has.clang-format" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/CMakeLists.txt" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="nodejs_package_manager_path" value="npm" />
-    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
-    <property name="settings.editor.selected.configurable" value="settings.github" />
   </component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src" />
-      <recent name="$PROJECT_DIR$/include" />
-      <recent name="$PROJECT_DIR$/include/backup" />
-      <recent name="$PROJECT_DIR$/third_party/AA-SIPP-m" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/include" />
-      <recent name="$PROJECT_DIR$/src/backup" />
-      <recent name="$PROJECT_DIR$/src/backup2" />
-      <recent name="$PROJECT_DIR$/include/backup2" />
-      <recent name="$PROJECT_DIR$/src" />
-    </key>
-  </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
-      <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
-      </list>
-    </option>
-  </component>
-  <component name="RunManager" selected="CMake Application.swarm_traj_planner_rbp">
-    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="0" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" EXPLICIT_BUILD_TARGET_NAME="all">
+  <component name="RunManager" selected="CMake Application.random_map_generator">
+    <configuration name="actionlib_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="actionlib_generate_messages_cpp" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="dynamic_traj_planner" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="4  0  1 -4  0  1 0.3 0.5" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="dynamic_traj_planner" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="dynamic_traj_planner">
+    <configuration name="actionlib_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="actionlib_generate_messages_eus" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="init_traj_generator" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="4  0  1 -4  0  1 0.15                                   4  2  1 -4 -2  1 0.15                                    4  4  1 -4 -4  1 0.15                                   2  4  1 -2 -4  1 0.15                                       0  4  1  0 -4  1 0.15                                  -2  4  1  2 -4  1 0.15                                  -4  4  1  4 -4  1 0.15                                  -4  2  1  4 -2  1 0.15                                  -4  0  1  4  0  1 0.15                                  -4 -2  1  4  2  1 0.15                                  -4 -4  1  4  4  1 0.15                                  -2 -4  1  2  4  1 0.15                                   0 -4  1  0  4  1 0.15                                   2 -4  1 -2  4  1 0.15                                   4 -4  1 -4  4  1 0.15                                   4 -2  1 -4  2  1 0.15" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="init_traj_generator" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="init_traj_generator">
+    <configuration name="actionlib_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="actionlib_generate_messages_lisp" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="random_map_generator" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="4  0  1 -4  0  1 0.15                                   4  1  1 -4 -1  1 0.15                                   4  2  1 -4 -2  1 0.15                                   4  3  1 -4 -3  1 0.15                                    4  4  1 -4 -4  1 0.15                                   3  4  1 -3 -4  1 0.15                                   2  4  1 -2 -4  1 0.15                                   1  4  1 -1 -4  1 0.15                                      0  4  1  0 -4  1 0.15                                  -1  4  1  1 -4  1 0.15                                  -2  4  1  2 -4  1 0.15                                  -3  4  1  3 -4  1 0.15                                  -4  4  1  4 -4  1 0.15                                  -4  3  1  4 -3  1 0.15                                  -4  2  1  4 -2  1 0.15                                  -4  1  1  4 -1  1 0.15                                  -4  0  1  4  0  1 0.15                                  -4 -1  1  4  1  1 0.15                                  -4 -2  1  4  2  1 0.15                                  -4 -3  1  4  3  1 0.15                                  -4 -4  1  4  4  1 0.15                                  -3 -4  1  3  4  1 0.15                                  -2 -4  1  2  4  1 0.15                                  -1 -4  1  1  4  1 0.15                                   0 -4  1  0  4  1 0.15                                   1 -4  1 -1  4  1 0.15                                   2 -4  1 -2  4  1 0.15                                   3 -4  1 -3  4  1 0.15                                   4 -4  1 -4  4  1 0.15                                   4 -3  1 -4  3  1 0.15                                   4 -2  1 -4  2  1 0.15                                   4 -1  1 -4  1  1 0.15" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="random_map_generator" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="random_map_generator">
+    <configuration name="actionlib_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="actionlib_generate_messages_nodejs" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="real_trajectory_publisher" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="2" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="real_trajectory_publisher" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="real_trajectory_publisher">
+    <configuration name="actionlib_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="actionlib_generate_messages_py" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="single_sipp_traj_planner" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="4  0  1 -4  0  1 0.3 0.5" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="single_sipp_traj_planner" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="single_sipp_traj_planner">
+    <configuration name="actionlib_msgs_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="actionlib_msgs_generate_messages_cpp" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="single_traj_planner" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="8  8  1 -8  -8 1 1 1" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="single_traj_planner" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="single_traj_planner">
+    <configuration name="actionlib_msgs_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="actionlib_msgs_generate_messages_eus" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="swarm_traj_planner" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="4    0   1 -4    0   1 0.12 1                                    4    0.5 1 -4   -0.5 1 0.12 1                                    4    1   1 -4   -1   1 0.12 1                                    4    1.5 1 -4   -1.5 1 0.12 1                                    4    2   1 -4   -2   1 0.12 1                                    4    2.5 1 -4   -2.5 1 0.12 1                                    4    3   1 -4   -3   1 0.12 1                                    4    3.5 1 -4   -3.5 1 0.12 1                                    4    4   1 -4   -4   1 0.12 1                                   3.5  4   1 -3.5 -4   1 0.12 1                                   3    4   1 -3   -4   1 0.12 1                                   2.5  4   1 -2.5 -4   1 0.12 1                                   2    4   1 -2   -4   1 0.12 1                                   1.5  4   1 -1.5 -4   1 0.12 1                                   1    4   1 -1   -4   1 0.12 1                                   0.5  4   1 -0.5 -4   1 0.12 1                                   0    4   1  0   -4   1 0.12 1                                  -0.5  4   1  0.5 -4   1 0.12 1                                  -1    4   1  1   -4   1 0.12 1                                  -1.5  4   1  1.5 -4   1 0.12 1                                    -2    4   1  2   -4   1 0.12 1                                  -2.5  4   1  2.5 -4   1 0.12 1                                  -3    4   1  3   -4   1 0.12 1                                  -3.5  4   1  3.5 -4   1 0.12 1                                  -4    4   1  4   -4   1 0.12 1                                  -4    3.5 1  4   -3.5 1 0.12 1                                  -4    3   1  4   -3   1 0.12 1                                  -4    2.5 1  4   -2.5 1 0.12 1                                  -4    2   1  4   -2   1 0.12 1                                  -4    1.5 1  4   -1.5 1 0.12 1                                                           -4    1   1  4   -1   1 0.12 1                                  -4    0.5 1  4   -0.5 1 0.12 1                                  -4    0   1  4    0   1 0.12 1                                  -4   -0.5 1  4    0.5 1 0.12 1                                  -4   -1   1  4    1   1 0.12 1                                  -4   -1.5 1  4    1.5 1 0.12 1                                  -4   -2   1  4    2   1 0.12 1                                  -4   -2.5 1  4    2.5 1 0.12 1                                  -4   -3   1  4    3   1 0.12 1                                  -4   -3.5 1  4    3.5 1 0.12 1                                  -4   -4   1  4    4   1 0.12 1                                  -3.5 -4   1  3.5  4   1 0.12 1                                  -3   -4   1  3    4   1 0.12 1                                  -2.5 -4   1  2.5  4   1 0.12 1                                  -2   -4   1  2    4   1 0.12 1                                  -1.5 -4   1  1.5  4   1 0.12 1                                  -1   -4   1  1    4   1 0.12 1                                  -0.5 -4   1  0.5  4   1 0.12 1                                   0   -4   1  0    4   1 0.12 1                                   0.5 -4   1 -0.5  4   1 0.12 1                                   1   -4   1 -1    4   1 0.12 1                                   1.5 -4   1 -1.5  4   1 0.12 1                                   2   -4   1 -2    4   1 0.12 1                                   2.5 -4   1 -2.5  4   1 0.12 1                                   3   -4   1 -3    4   1 0.12 1                                   3.5 -4   1 -3.5  4   1 0.12 1                                   4   -4   1 -4    4   1 0.12 1                                   4   -3.5 1 -4    3.5 1 0.12 1                                   4   -3   1 -4    3   1 0.12 1                                   4   -2.5 1 -4    2.5 1 0.12 1                                   4   -2   1 -4    2   1 0.12 1                                   4   -1.5 1 -4    1.5 1 0.12 1                                   4   -1   1 -4    1   1 0.12 1                                   4   -0.5 1 -4    0.5 1 0.12 1" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="swarm_traj_planner" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="swarm_traj_planner">
+    <configuration name="actionlib_msgs_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="actionlib_msgs_generate_messages_lisp" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="swarm_traj_planner_geometric" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="4  0  1 -4  0  1 0.15 1                                4  4  1 -4 -4  1 0.15 1                                0  4  1  0 -4  1 0.15 1                               -4  4  1  4 -4  1 0.15 1" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="swarm_traj_planner_geometric" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="swarm_traj_planner_geometric">
+    <configuration name="actionlib_msgs_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="actionlib_msgs_generate_messages_nodejs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="actionlib_msgs_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="actionlib_msgs_generate_messages_py" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="clang-format" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="clang-format" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="clang-tidy" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="clang-tidy" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="clean_test_results" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="clean_test_results" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="download_extra_data" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="download_extra_data" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="doxygen" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="doxygen" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="geometry_msgs_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="geometry_msgs_generate_messages_cpp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="geometry_msgs_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="geometry_msgs_generate_messages_eus" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="geometry_msgs_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="geometry_msgs_generate_messages_lisp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="geometry_msgs_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="geometry_msgs_generate_messages_nodejs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="geometry_msgs_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="geometry_msgs_generate_messages_py" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gmock" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="gmock" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gmock_main" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="gmock_main" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gtest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="gtest" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="gtest_main" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="gtest_main" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="nav_msgs_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="nav_msgs_generate_messages_cpp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="nav_msgs_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="nav_msgs_generate_messages_eus" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="nav_msgs_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="nav_msgs_generate_messages_lisp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="nav_msgs_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="nav_msgs_generate_messages_nodejs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="nav_msgs_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="nav_msgs_generate_messages_py" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="octomap_msgs_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="octomap_msgs_generate_messages_cpp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="octomap_msgs_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="octomap_msgs_generate_messages_eus" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="octomap_msgs_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="octomap_msgs_generate_messages_lisp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="octomap_msgs_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="octomap_msgs_generate_messages_nodejs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="octomap_msgs_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="octomap_msgs_generate_messages_py" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="random_map_generator" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="random_map_generator" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="random_map_generator">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="roscpp_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="roscpp_generate_messages_cpp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="roscpp_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="roscpp_generate_messages_eus" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="roscpp_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="roscpp_generate_messages_lisp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="roscpp_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="roscpp_generate_messages_nodejs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="roscpp_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="roscpp_generate_messages_py" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="rosgraph_msgs_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="rosgraph_msgs_generate_messages_cpp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="rosgraph_msgs_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="rosgraph_msgs_generate_messages_eus" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="rosgraph_msgs_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="rosgraph_msgs_generate_messages_lisp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="rosgraph_msgs_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="rosgraph_msgs_generate_messages_nodejs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="rosgraph_msgs_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="rosgraph_msgs_generate_messages_py" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="run_tests" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="run_tests" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="sensor_msgs_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="sensor_msgs_generate_messages_cpp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="sensor_msgs_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="sensor_msgs_generate_messages_eus" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="sensor_msgs_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="sensor_msgs_generate_messages_lisp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="sensor_msgs_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="sensor_msgs_generate_messages_nodejs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="sensor_msgs_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="sensor_msgs_generate_messages_py" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="std_msgs_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="std_msgs_generate_messages_cpp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="std_msgs_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="std_msgs_generate_messages_eus" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="std_msgs_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="std_msgs_generate_messages_lisp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="std_msgs_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="std_msgs_generate_messages_nodejs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="std_msgs_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="std_msgs_generate_messages_py" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -506,623 +302,130 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="traj_planner" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="4  0  1 -4  0  1 0.15                                   4  2  1 -4 -2  1 0.15                                    4  4  1 -4 -4  1 0.15                                   2  4  1 -2 -4  1 0.15                                       0  4  1  0 -4  1 0.15                                  -2  4  1  2 -4  1 0.15                                  -4  4  1  4 -4  1 0.15                                  -4  2  1  4 -2  1 0.15                                  -4  0  1  4  0  1 0.15                                  -4 -2  1  4  2  1 0.15                                  -4 -4  1  4  4  1 0.15                                  -2 -4  1  2  4  1 0.15                                   0 -4  1  0  4  1 0.15                                   2 -4  1 -2  4  1 0.15                                   4 -4  1 -4  4  1 0.15                                   4 -2  1 -4  2  1 0.15" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="traj_planner" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="traj_planner">
+    <configuration name="tests" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tests" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="traj_sequential_planner" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="4  0  1 -4  0  1 0.12                                   4  2  1 -4 -2  1 0.12                                    4  4  1 -4 -4  1 0.12                                   2  4  1 -2 -4  1 0.12                                       0  4  1  0 -4  1 0.12                                  -2  4  1  2 -4  1 0.12                                  -4  4  1  4 -4  1 0.12                                  -4  2  1  4 -2  1 0.12                                  -4  0  1  4  0  1 0.12                                  -4 -2  1  4  2  1 0.12                                  -4 -4  1  4  4  1 0.12                                  -2 -4  1  2  4  1 0.12                                   0 -4  1  0  4  1 0.12                                   2 -4  1 -2  4  1 0.12                                   4 -4  1 -4  4  1 0.12                                   4 -2  1 -4  2  1 0.12" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="traj_sequential_planner" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="traj_sequential_planner">
+    <configuration name="tf2_msgs_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tf2_msgs_generate_messages_cpp" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="trajectory_publisher" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="1" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="trajectory_publisher" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="trajectory_publisher">
+    <configuration name="tf2_msgs_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tf2_msgs_generate_messages_eus" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="trajectory_relbox_publisher" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="0" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="trajectory_relbox_publisher" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="swarm_planner" RUN_TARGET_NAME="trajectory_relbox_publisher">
+    <configuration name="tf2_msgs_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tf2_msgs_generate_messages_lisp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tf2_msgs_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tf2_msgs_generate_messages_nodejs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tf2_msgs_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tf2_msgs_generate_messages_py" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tf_generate_messages_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tf_generate_messages_cpp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tf_generate_messages_eus" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tf_generate_messages_eus" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tf_generate_messages_lisp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tf_generate_messages_lisp" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tf_generate_messages_nodejs" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tf_generate_messages_nodejs" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="tf_generate_messages_py" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="swarm_planner" TARGET_NAME="tf_generate_messages_py" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <list>
-      <item itemvalue="CMake Application.Build All" />
-      <item itemvalue="CMake Application.dynamic_traj_planner" />
-      <item itemvalue="CMake Application.init_traj_generator" />
+      <item itemvalue="CMake Application.actionlib_generate_messages_cpp" />
+      <item itemvalue="CMake Application.actionlib_generate_messages_eus" />
+      <item itemvalue="CMake Application.actionlib_generate_messages_lisp" />
+      <item itemvalue="CMake Application.actionlib_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.actionlib_generate_messages_py" />
+      <item itemvalue="CMake Application.actionlib_msgs_generate_messages_cpp" />
+      <item itemvalue="CMake Application.actionlib_msgs_generate_messages_eus" />
+      <item itemvalue="CMake Application.actionlib_msgs_generate_messages_lisp" />
+      <item itemvalue="CMake Application.actionlib_msgs_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.actionlib_msgs_generate_messages_py" />
+      <item itemvalue="CMake Application.nav_msgs_generate_messages_cpp" />
+      <item itemvalue="CMake Application.nav_msgs_generate_messages_eus" />
+      <item itemvalue="CMake Application.nav_msgs_generate_messages_lisp" />
+      <item itemvalue="CMake Application.nav_msgs_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.nav_msgs_generate_messages_py" />
+      <item itemvalue="CMake Application.octomap_msgs_generate_messages_cpp" />
+      <item itemvalue="CMake Application.octomap_msgs_generate_messages_eus" />
+      <item itemvalue="CMake Application.octomap_msgs_generate_messages_lisp" />
+      <item itemvalue="CMake Application.octomap_msgs_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.octomap_msgs_generate_messages_py" />
       <item itemvalue="CMake Application.random_map_generator" />
-      <item itemvalue="CMake Application.real_trajectory_publisher" />
-      <item itemvalue="CMake Application.single_sipp_traj_planner" />
-      <item itemvalue="CMake Application.single_traj_planner" />
-      <item itemvalue="CMake Application.swarm_traj_planner" />
-      <item itemvalue="CMake Application.swarm_traj_planner_geometric" />
+      <item itemvalue="CMake Application.roscpp_generate_messages_cpp" />
+      <item itemvalue="CMake Application.roscpp_generate_messages_eus" />
+      <item itemvalue="CMake Application.roscpp_generate_messages_lisp" />
+      <item itemvalue="CMake Application.roscpp_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.roscpp_generate_messages_py" />
+      <item itemvalue="CMake Application.rosgraph_msgs_generate_messages_cpp" />
+      <item itemvalue="CMake Application.rosgraph_msgs_generate_messages_eus" />
+      <item itemvalue="CMake Application.rosgraph_msgs_generate_messages_lisp" />
+      <item itemvalue="CMake Application.rosgraph_msgs_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.rosgraph_msgs_generate_messages_py" />
       <item itemvalue="CMake Application.swarm_traj_planner_rbp" />
-      <item itemvalue="CMake Application.traj_planner" />
-      <item itemvalue="CMake Application.traj_sequential_planner" />
-      <item itemvalue="CMake Application.trajectory_publisher" />
-      <item itemvalue="CMake Application.trajectory_relbox_publisher" />
+      <item itemvalue="CMake Application.tf2_msgs_generate_messages_cpp" />
+      <item itemvalue="CMake Application.tf2_msgs_generate_messages_eus" />
+      <item itemvalue="CMake Application.tf2_msgs_generate_messages_lisp" />
+      <item itemvalue="CMake Application.tf2_msgs_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.tf2_msgs_generate_messages_py" />
+      <item itemvalue="CMake Application.tf_generate_messages_cpp" />
+      <item itemvalue="CMake Application.tf_generate_messages_eus" />
+      <item itemvalue="CMake Application.tf_generate_messages_lisp" />
+      <item itemvalue="CMake Application.tf_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.tf_generate_messages_py" />
+      <item itemvalue="CMake Application.clang-format" />
+      <item itemvalue="CMake Application.clang-tidy" />
+      <item itemvalue="CMake Application.clean_test_results" />
+      <item itemvalue="CMake Application.download_extra_data" />
+      <item itemvalue="CMake Application.doxygen" />
+      <item itemvalue="CMake Application.geometry_msgs_generate_messages_cpp" />
+      <item itemvalue="CMake Application.geometry_msgs_generate_messages_eus" />
+      <item itemvalue="CMake Application.geometry_msgs_generate_messages_lisp" />
+      <item itemvalue="CMake Application.geometry_msgs_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.geometry_msgs_generate_messages_py" />
+      <item itemvalue="CMake Application.run_tests" />
+      <item itemvalue="CMake Application.sensor_msgs_generate_messages_cpp" />
+      <item itemvalue="CMake Application.sensor_msgs_generate_messages_eus" />
+      <item itemvalue="CMake Application.sensor_msgs_generate_messages_lisp" />
+      <item itemvalue="CMake Application.sensor_msgs_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.sensor_msgs_generate_messages_py" />
+      <item itemvalue="CMake Application.std_msgs_generate_messages_cpp" />
+      <item itemvalue="CMake Application.std_msgs_generate_messages_eus" />
+      <item itemvalue="CMake Application.std_msgs_generate_messages_lisp" />
+      <item itemvalue="CMake Application.std_msgs_generate_messages_nodejs" />
+      <item itemvalue="CMake Application.std_msgs_generate_messages_py" />
+      <item itemvalue="CMake Application.tests" />
+      <item itemvalue="CMake Application.gmock" />
+      <item itemvalue="CMake Application.gmock_main" />
+      <item itemvalue="CMake Application.gtest" />
+      <item itemvalue="CMake Application.gtest_main" />
     </list>
-  </component>
-  <component name="SvnConfiguration">
-    <configuration />
-  </component>
-  <component name="TaskManager">
-    <task active="true" id="Default" summary="Default task">
-      <changelist id="b0ce82f3-b4e7-4017-88fe-53b1694301e6" name="Default Changelist" comment="" />
-      <created>1541042211102</created>
-      <option name="number" value="Default" />
-      <option name="presentableId" value="Default" />
-      <updated>1541042211102</updated>
-      <workItem from="1541042212660" duration="1335000" />
-      <workItem from="1546576421496" duration="692000" />
-      <workItem from="1546588486261" duration="648000" />
-      <workItem from="1546944596535" duration="27000" />
-      <workItem from="1546947626061" duration="3103000" />
-      <workItem from="1547004486523" duration="102000" />
-      <workItem from="1547005165466" duration="11936000" />
-      <workItem from="1547098958849" duration="1231000" />
-      <workItem from="1547106772298" duration="282000" />
-      <workItem from="1547112940151" duration="4568000" />
-      <workItem from="1547169200800" duration="7141000" />
-      <workItem from="1547427453762" duration="601000" />
-      <workItem from="1547432411365" duration="7645000" />
-      <workItem from="1547447485936" duration="3046000" />
-      <workItem from="1547696684264" duration="3058000" />
-      <workItem from="1548032990520" duration="51577000" />
-      <workItem from="1548305374820" duration="41615000" />
-      <workItem from="1548588969835" duration="9685000" />
-      <workItem from="1548670378011" duration="10605000" />
-      <workItem from="1548728717775" duration="57229000" />
-      <workItem from="1548917289165" duration="3984000" />
-      <workItem from="1548942198856" duration="7495000" />
-      <workItem from="1548998560371" duration="820000" />
-      <workItem from="1548999395754" duration="1370000" />
-      <workItem from="1549000780455" duration="138000" />
-      <workItem from="1549000936875" duration="559000" />
-      <workItem from="1549329598594" duration="12714000" />
-      <workItem from="1549513695223" duration="41000" />
-      <workItem from="1549513747352" duration="49528000" />
-      <workItem from="1549867616820" duration="1444000" />
-      <workItem from="1549870152451" duration="7995000" />
-      <workItem from="1549956930443" duration="2165000" />
-      <workItem from="1549959721370" duration="4000" />
-      <workItem from="1550129376156" duration="38659000" />
-      <workItem from="1550630522567" duration="4658000" />
-      <workItem from="1550726729674" duration="2746000" />
-      <workItem from="1550748636680" duration="1338000" />
-      <workItem from="1550899385175" duration="15905000" />
-      <workItem from="1551155598553" duration="292000" />
-      <workItem from="1551156239706" duration="763000" />
-      <workItem from="1551157357557" duration="360000" />
-      <workItem from="1551157861847" duration="867000" />
-      <workItem from="1551159043438" duration="90000" />
-      <workItem from="1551162925750" duration="445000" />
-      <workItem from="1551168734487" duration="48000" />
-      <workItem from="1551168797956" duration="987000" />
-      <workItem from="1551172000098" duration="3463000" />
-      <workItem from="1551176365950" duration="1052000" />
-      <workItem from="1551178452964" duration="14000" />
-      <workItem from="1551229797910" duration="1896000" />
-      <workItem from="1551264558017" duration="1694000" />
-      <workItem from="1551277957942" duration="679000" />
-      <workItem from="1551335860288" duration="6882000" />
-      <workItem from="1551417883434" duration="12926000" />
-      <workItem from="1552283585868" duration="29957000" />
-      <workItem from="1552450678871" duration="8983000" />
-      <workItem from="1552465794447" duration="3031000" />
-      <workItem from="1552636623170" duration="5626000" />
-      <workItem from="1552883166331" duration="19433000" />
-      <workItem from="1552988896635" duration="4138000" />
-      <workItem from="1553055589370" duration="16894000" />
-      <workItem from="1553594604296" duration="7389000" />
-      <workItem from="1553660236198" duration="11079000" />
-      <workItem from="1554098751137" duration="2180000" />
-      <workItem from="1554134139680" duration="10816000" />
-      <workItem from="1554274240035" duration="1516000" />
-      <workItem from="1554275869457" duration="2966000" />
-      <workItem from="1554278908930" duration="19708000" />
-      <workItem from="1554450738834" duration="1071000" />
-      <workItem from="1554458278873" duration="12208000" />
-      <workItem from="1554701408465" duration="8693000" />
-      <workItem from="1561008663991" duration="10970000" />
-      <workItem from="1561100886156" duration="3252000" />
-      <workItem from="1561105182026" duration="2077000" />
-      <workItem from="1561273205827" duration="4000" />
-      <workItem from="1561341378752" duration="3695000" />
-      <workItem from="1561529274302" duration="277000" />
-      <workItem from="1561598780525" duration="31000" />
-      <workItem from="1561599066266" duration="17967000" />
-      <workItem from="1561943320562" duration="909000" />
-      <workItem from="1561944516787" duration="2387000" />
-      <workItem from="1561946947174" duration="360000" />
-      <workItem from="1561947642754" duration="1888000" />
-      <workItem from="1561953392061" duration="1301000" />
-      <workItem from="1561955153411" duration="1400000" />
-      <workItem from="1561957559578" duration="12118000" />
-      <workItem from="1562213369344" duration="9723000" />
-      <workItem from="1562223684591" duration="43743000" />
-      <workItem from="1562636231109" duration="3303000" />
-      <workItem from="1562658955124" duration="8770000" />
-      <workItem from="1562721084411" duration="1290000" />
-      <workItem from="1562809043427" duration="601000" />
-      <workItem from="1562828655970" duration="28691000" />
-      <workItem from="1563162615977" duration="25000" />
-      <workItem from="1563162641947" duration="4041000" />
-      <workItem from="1563167332867" duration="77000" />
-      <workItem from="1563167411416" duration="1873000" />
-      <workItem from="1563169303232" duration="75236000" />
-      <workItem from="1563846155061" duration="40000" />
-      <workItem from="1564365719726" duration="43000" />
-      <workItem from="1564365764064" duration="10234000" />
-      <workItem from="1564381133962" duration="32000" />
-      <workItem from="1564381167530" duration="20637000" />
-      <workItem from="1564453152051" duration="67000" />
-      <workItem from="1564453220459" duration="8380000" />
-      <workItem from="1564471104191" duration="623000" />
-      <workItem from="1564482334189" duration="680000" />
-      <workItem from="1564549470583" duration="23000" />
-      <workItem from="1564549495907" duration="1363000" />
-      <workItem from="1564558192565" duration="33000" />
-      <workItem from="1564558226931" duration="8086000" />
-      <workItem from="1564573528605" duration="25000" />
-      <workItem from="1564573555310" duration="278000" />
-      <workItem from="1564641989980" duration="107000" />
-      <workItem from="1564642098728" duration="633000" />
-      <workItem from="1564969408302" duration="255000" />
-      <workItem from="1564969671999" duration="6844000" />
-      <workItem from="1564979272171" duration="263000" />
-      <workItem from="1564982515286" duration="16520000" />
-      <workItem from="1565090135608" duration="97000" />
-      <workItem from="1565090234842" duration="3512000" />
-      <workItem from="1565144882130" duration="121000" />
-      <workItem from="1565145004717" duration="63522000" />
-      <workItem from="1565574771942" duration="598000" />
-      <workItem from="1565576052686" duration="107457000" />
-      <workItem from="1566368788289" duration="20000" />
-      <workItem from="1566368810416" duration="7620000" />
-      <workItem from="1566965178061" duration="38000" />
-      <workItem from="1566965218471" duration="768000" />
-      <workItem from="1566966032010" duration="635000" />
-      <workItem from="1566971004284" duration="171000" />
-      <workItem from="1566987899633" duration="20000" />
-      <workItem from="1566987921308" duration="4914000" />
-      <workItem from="1566993110214" duration="16000" />
-      <workItem from="1566993128052" duration="31922000" />
-      <workItem from="1567149492666" duration="21000" />
-      <workItem from="1567149515948" duration="28000" />
-      <workItem from="1567149834449" duration="40000" />
-      <workItem from="1567149877165" duration="19000" />
-      <workItem from="1567151137309" duration="14000" />
-      <workItem from="1567151154047" duration="817000" />
-      <workItem from="1567160179124" duration="609000" />
-      <workItem from="1567161319632" duration="6994000" />
-      <workItem from="1567248134841" duration="18000" />
-      <workItem from="1567248154566" duration="580000" />
-      <workItem from="1567249016808" duration="182000" />
-      <workItem from="1567249200481" duration="6957000" />
-      <workItem from="1568190600836" duration="27000" />
-      <workItem from="1568190629670" duration="2143000" />
-      <workItem from="1568864827515" duration="2014000" />
-      <workItem from="1568872042221" duration="4259000" />
-      <workItem from="1569286757641" duration="77000" />
-      <workItem from="1569286838770" duration="1902000" />
-      <workItem from="1569296153712" duration="773000" />
-      <workItem from="1569298739840" duration="13240000" />
-      <workItem from="1569326094303" duration="71000" />
-      <workItem from="1569326193412" duration="24000" />
-      <workItem from="1569326239946" duration="38000" />
-      <workItem from="1569326377675" duration="3582000" />
-    </task>
-    <servers />
-  </component>
-  <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1142882000" />
-  </component>
-  <component name="TodoView">
-    <todo-panel id="selected-file">
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
-    <todo-panel id="all">
-      <are-packages-shown value="true" />
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
-  </component>
-  <component name="ToolWindowManager">
-    <frame x="1920" y="-2" width="1920" height="1082" extended-state="6" />
-    <editor active="true" />
-    <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.6267943" visible="true" weight="0.19583778" />
-      <window_info id="Structure" order="1" sideWeight="0.37320575" side_tool="true" weight="0.26895407" />
-      <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" sideWeight="0.4975097" weight="0.32948583" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4975097" weight="0.32984293" />
-      <window_info anchor="bottom" id="Debug" order="3" visible="true" weight="0.43022037" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.4997233" weight="0.32948583" />
-      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Messages" order="8" sideWeight="0.5849474" weight="0.2749213" />
-      <window_info anchor="bottom" id="Terminal" order="9" weight="0.32948583" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5002767" side_tool="true" weight="0.3748691" />
-      <window_info anchor="bottom" id="Version Control" order="11" weight="0.32948583" />
-      <window_info anchor="bottom" id="CMake" order="12" sideWeight="0.7919203" weight="0.36426118" />
-      <window_info anchor="bottom" id="Inspection Results" order="13" weight="0.32984293" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
-      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="Database" order="3" weight="0.32982844" />
-    </layout>
-  </component>
-  <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="1" />
-  </component>
-  <component name="VcsManagerConfiguration">
-    <ignored-roots>
-      <path value="$PROJECT_DIR$" />
-      <path value="$PROJECT_DIR$/third_party/AA-SIPP-m" />
-      <path value="$PROJECT_DIR$/third_party/sipp" />
-    </ignored-roots>
-  </component>
-  <component name="XDebuggerManager">
-    <watches-manager>
-      <configuration name="CMakeRunConfiguration">
-        <watch expression="param.phi" language="ObjectiveC" />
-        <watch expression="quad_state" language="ObjectiveC" />
-        <watch expression="pva" language="ObjectiveC" />
-        <watch expression="coef" language="ObjectiveC" />
-        <watch expression="this" language="ObjectiveC" />
-        <watch expression="t" language="ObjectiveC" />
-        <watch expression="outdim" language="ObjectiveC" />
-      </configuration>
-    </watches-manager>
-  </component>
-  <component name="debuggerHistoryManager">
-    <expressions id="watch">
-      <expression>
-        <expression-string>outdim</expression-string>
-        <language-id>ObjectiveC</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>t</expression-string>
-        <language-id>ObjectiveC</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>this</expression-string>
-        <language-id>ObjectiveC</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>coef</expression-string>
-        <language-id>ObjectiveC</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>pva</expression-string>
-        <language-id>ObjectiveC</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>quad_state</expression-string>
-        <language-id>ObjectiveC</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>param.phi</expression-string>
-        <language-id>ObjectiveC</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>ts_total</expression-string>
-        <language-id>ObjectiveC</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>dummy</expression-string>
-        <language-id>ObjectiveC</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>m_quad_size</expression-string>
-        <language-id>ObjectiveC</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-    </expressions>
-  </component>
-  <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/include/backup2/sipp_planner.hpp" />
-    <entry file="file://$PROJECT_DIR$/src/backup2/swarm_planner_node.cpp" />
-    <entry file="file:///opt/ros/melodic/include/octomap/octomap_types.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="48" column="42" selection-start-line="48" selection-start-column="42" selection-end-line="48" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/backup/BoxGeneratorDynamic.hpp" />
-    <entry file="file://$PROJECT_DIR$/include/backup/BoxGenerator2D.hpp" />
-    <entry file="file:///usr/include/eigen3/Eigen/src/Core/DenseCoeffsBase.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="298">
-          <caret line="361" column="12" selection-start-line="361" selection-start-column="12" selection-end-line="361" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/SIPPPlanner.hpp" />
-    <entry file="file:///opt/ros/melodic/include/dynamicEDT3D/dynamicEDTOctomap.hxx">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="810">
-          <caret line="45" selection-start-line="45" selection-end-line="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/third_party/ecbs/src/a_star.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/third_party/ecbs/src/a_star_epsilon.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-648">
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/x86_64-linux-gnu/bits/mathcalls.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="211">
-          <caret line="142" column="35" selection-start-line="142" selection-start-column="35" selection-end-line="142" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/third_party/ecbs/include/a_star_epsilon.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="107">
-          <caret line="6" selection-start-line="6" selection-end-line="6" />
-          <folding>
-            <element signature="e#89#125#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/random_map_generator.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="422">
-          <caret line="76" column="9" selection-start-line="76" selection-start-column="9" selection-end-line="76" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/BoxGeneratorGeometric.hpp" />
-    <entry file="file://$PROJECT_DIR$/include/TrajPublisherSCP.hpp" />
-    <entry file="file://$PROJECT_DIR$/third_party/ecbs/include/environment.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7470">
-          <caret line="415" column="38" selection-start-line="415" selection-start-column="24" selection-end-line="415" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/swarm_traj_planner_node.cpp" />
-    <entry file="file://$PROJECT_DIR$/src/swarm_traj_planner_geometric.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="214">
-          <caret line="31" column="31" selection-start-line="31" selection-start-column="31" selection-end-line="31" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///opt/ros/melodic/include/octomap/OcTree.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="577">
-          <caret line="67" column="24" selection-start-line="67" selection-start-column="24" selection-end-line="67" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///opt/ros/melodic/include/octomap_msgs/conversions.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="307">
-          <caret line="54" column="41" selection-start-line="54" selection-start-column="16" selection-end-line="54" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///opt/ros/melodic/include/ros/package.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1152">
-          <caret line="98" column="24" selection-start-line="98" selection-start-column="24" selection-end-line="98" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/ECBSPlanner.hpp" />
-    <entry file="file://$PROJECT_DIR$/include/TrajPlotterSCP.hpp" />
-    <entry file="file://$PROJECT_DIR$/include/SwarmPlannerSCP.hpp" />
-    <entry file="file:///usr/include/eigen3/Eigen/src/plugins/CommonCwiseBinaryOps.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="835">
-          <caret line="49" selection-start-line="49" selection-end-line="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/eigen3/Eigen/src/Core/functors/NullaryFunctors.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="19" selection-start-line="19" selection-end-line="19" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/third_party/ecbs/src/ecbs.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="835">
-          <caret line="132" column="3" selection-start-line="132" selection-start-column="3" selection-end-line="132" selection-end-column="3" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/SwarmPlannerGeometric.hpp" />
-    <entry file="file://$PROJECT_DIR$/include/TrajPublisherGeometric.hpp" />
-    <entry file="file://$PROJECT_DIR$/include/TrajPlotter.hpp" />
-    <entry file="file://$PROJECT_DIR$/include/TrajPublisherRBP.hpp" />
-    <entry file="file://$PROJECT_DIR$/src/swarm_traj_planner_rbp_test_all.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486">
-          <caret line="32" column="31" selection-start-line="32" selection-start-column="31" selection-end-line="32" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/InitTrajPlanner.hpp" />
-    <entry file="file://$PROJECT_DIR$/include/SwarmPlannerRBP.hpp" />
-    <entry file="file://$PROJECT_DIR$/src/swarm_traj_planner_scp.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486">
-          <caret line="31" column="24" selection-start-line="31" selection-start-column="24" selection-end-line="31" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/third_party/ecbs/include/ecbs.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="530">
-          <caret line="128" column="46" selection-start-line="128" selection-start-column="46" selection-end-line="128" selection-end-column="46" />
-          <folding>
-            <element signature="e#4146#4267#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/mission.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-270">
-          <caret line="12" column="43" lean-forward="true" selection-start-line="12" selection-start-column="43" selection-end-line="12" selection-end-column="43" />
-          <folding>
-            <element signature="e#13#44#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/init_traj_planner.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="10" column="42" lean-forward="true" selection-start-line="10" selection-start-column="42" selection-end-line="10" selection-end-column="42" />
-          <folding>
-            <element signature="e#14#37#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/third_party/ecbs/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/ecbs_planner.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="738">
-          <caret line="41" column="9" selection-start-line="41" selection-start-column="9" selection-end-line="41" selection-end-column="9" />
-          <folding>
-            <element signature="e#14#46#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/rbp_corridor.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="23" column="50" selection-start-line="23" selection-start-column="50" selection-end-line="23" selection-end-column="50" />
-          <folding>
-            <element signature="e#14#36#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="24" selection-start-line="24" selection-end-line="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/swarm_traj_planner_rbp.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="163">
-          <caret line="119" selection-start-line="119" selection-end-line="119" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/third_party/ecbs/include/planresult.hpp">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/rbp_plotter.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="359">
-          <caret line="118" column="17" selection-start-line="118" selection-start-column="17" selection-end-line="118" selection-end-column="17" />
-          <folding>
-            <element signature="e#240#256#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/include/c++/7/bits/stl_vector.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="171">
-          <caret line="670" selection-start-line="670" selection-end-line="670" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="11" selection-start-line="11" selection-end-line="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/rbp_publisher.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1593">
-          <caret line="771" column="2" selection-start-line="771" selection-start-column="2" selection-end-line="771" selection-end-column="2" />
-          <folding>
-            <element signature="e#23#45#0" expanded="true" />
-            <element signature="e#80#108#0" expanded="true" />
-            <element signature="e#433#449#0" expanded="true" />
-            <element signature="e#393#419#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/sp_const.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
-          <caret line="9" column="30" selection-start-line="9" selection-start-column="30" selection-end-line="9" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/param.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="12" selection-start-column="12" selection-end-column="12" />
-          <folding>
-            <element signature="e#13#33#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/rbp_planner.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="6" column="8" selection-start-line="6" selection-start-column="8" selection-end-line="6" selection-end-column="8" />
-          <folding>
-            <element signature="e#21#60#0" expanded="true" />
-            <element signature="e#113#135#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
   </component>
 </project>
