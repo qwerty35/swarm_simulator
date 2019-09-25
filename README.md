@@ -4,9 +4,9 @@ This package presents an efficient multi-agent trajectory planning algorithm whi
 Our algorithm combines the advantages of both grid-based and optimization-based approaches, and generates safe, dynamically feasible trajectory without suffering from an errorneous optimization setup such as imposing infeasible collision constraints.
 The details can be found at the following link.
 
-# **Authors:** Jungwon Park, Junha Kim, Inkyu Jang and H. Jin Kim from [LARR](http://larr.snu.ac.kr/), Seoul National Univ.
-# **Paper:** Efficient Multi-Agent Trajectory Planning with Feasibility Guarantee using Relative Bernstein Polynomial [PDF Link](https://arxiv.org/abs/1909.10219)
-# **Video:** [Youtube Link](https://www.youtube.com/watch?v=0koj-AlIbbI&list=PLdzwkGI22JhXa63sRb8zPTK3ZNFRmkdIu&index=2&t=0s)
+**Authors:** Jungwon Park, Junha Kim, Inkyu Jang and H. Jin Kim from [LARR](http://larr.snu.ac.kr/), Seoul National Univ.
+**Paper:** Efficient Multi-Agent Trajectory Planning with Feasibility Guarantee using Relative Bernstein Polynomial [PDF Link](https://arxiv.org/abs/1909.10219)
+**Video:** [Youtube Link](https://www.youtube.com/watch?v=0koj-AlIbbI&list=PLdzwkGI22JhXa63sRb8zPTK3ZNFRmkdIu&index=2&t=0s)
 
 ## 0. Dependencies
 Following sources are used to implement this package.
