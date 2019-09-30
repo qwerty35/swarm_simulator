@@ -76,32 +76,22 @@ private:
     }
 
     bool isBoxInBoundary(const std::vector<double>& box){
-        return box[0] >= param.world_x_min &&
-               box[1] >= param.world_y_min &&
-               box[2] >= param.world_z_min &&
-               box[3] <= param.world_x_max &&
-               box[4] <= param.world_y_max &&
-               box[5] <= param.world_z_max;
+        return box[0] > param.world_x_min - SP_EPSILON&&
+               box[1] > param.world_y_min - SP_EPSILON&&
+               box[2] > param.world_z_min - SP_EPSILON&&
+               box[3] < param.world_x_max + SP_EPSILON&&
+               box[4] < param.world_y_max + SP_EPSILON&&
+               box[5] < param.world_z_max + SP_EPSILON;
     }
 
     bool isPointInBox(const octomap::point3d& point,
                       const std::vector<double>& box){
-        return point.x() >= box[0] - SP_EPSILON &&
-               point.y() >= box[1] - SP_EPSILON &&
-               point.z() >= box[2] - SP_EPSILON &&
-               point.x() <= box[3] + SP_EPSILON &&
-               point.y() <= box[4] + SP_EPSILON &&
-               point.z() <= box[5] + SP_EPSILON;
-    }
-
-    bool isBoxInBox(const std::vector<double>& box1,
-                      const std::vector<double>& box2){
-        return box1[0] <= box2[3] &&
-               box1[1] <= box2[4] &&
-               box1[2] <= box2[5] &&
-               box2[0] <= box1[3] &&
-               box2[1] <= box1[4] &&
-               box2[2] <= box1[5];
+        return point.x() > box[0] - SP_EPSILON &&
+               point.y() > box[1] - SP_EPSILON &&
+               point.z() > box[2] - SP_EPSILON &&
+               point.x() < box[3] + SP_EPSILON &&
+               point.y() < box[4] + SP_EPSILON &&
+               point.z() < box[5] + SP_EPSILON;
     }
 
     void expand_box(std::vector<double>& box, double margin) {
@@ -164,8 +154,7 @@ private:
 
         SFC.resize(mission.qn);
         for (size_t qi = 0; qi < mission.qn; ++qi) {
-            std::vector<double> box_prev;
-            for(int i=0; i<6; i++) box_prev.emplace_back(0);
+            std::vector<double> box_prev{0,0,0,0,0,0};
 
             for (int i = 0; i < initTraj[qi].size()-1; i++) {
                 auto state = initTraj[qi][i];
@@ -210,7 +199,6 @@ private:
             int box_max = SFC[qi].size();
             int path_max = initTraj[qi].size();
             Eigen::MatrixXd box_log = Eigen::MatrixXd::Zero(box_max, path_max);
-            std::vector<int> ts;
 
             for(int i=0; i<box_max; i++){
                 for(int j=0; j<path_max; j++){

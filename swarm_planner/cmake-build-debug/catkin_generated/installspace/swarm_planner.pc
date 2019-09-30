@@ -1,8 +1,0 @@
-prefix=/usr/local
-
-Name: swarm_planner
-Description: Description of swarm_planner
-Version: 0.0.1
-Cflags: -I/usr/local/include
-Libs: -L/usr/local/lib 
-Requires: roscpp roslib message_runtime

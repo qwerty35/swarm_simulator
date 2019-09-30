@@ -4,14 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Path1
-        - /Path2
-        - /Path3
-        - /Path4
-        - /Path5
-        - /Path6
-        - /Path7
-        - /Path8
+        - /MarkerArray1
         - /MarkerArray2
         - /MarkerArray2/Namespaces1
         - /MarkerArray3
@@ -305,7 +298,7 @@ Visualization Manager:
       Marker Topic: /occupied_cells_vis_array
       Name: MarkerArray
       Namespaces:
-        map: true
+        {}
       Queue Size: 10
       Value: true
     - Class: rviz/MarkerArray
@@ -346,6 +339,7 @@ Visualization Manager:
       Name: MarkerArray
       Namespaces:
         colBox: true
+        initTraj: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -376,7 +370,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/XYOrbit
-      Distance: 13.066448211669922
+      Distance: 15.045158386230469
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -391,10 +385,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 1.5647963285446167
       Target Frame: world
       Value: XYOrbit (rviz)
-      Yaw: 1.5799980163574219
+      Yaw: 1.5700000524520874
     Saved: ~
 Window Geometry:
   Displays:

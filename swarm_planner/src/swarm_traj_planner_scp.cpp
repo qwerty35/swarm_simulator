@@ -7,9 +7,9 @@
 #include <timer.hpp>
 
 // Submodule
-#include <SwarmPlannerSCP.hpp>
-#include <TrajPublisherSCP.hpp>
-#include <TrajPlotterSCP.hpp>
+#include <scp_planner.hpp>
+#include <scp_publisher.hpp>
+#include <scp_plotter.hpp>
 
 bool has_path = false;
 

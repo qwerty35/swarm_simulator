@@ -18,7 +18,6 @@ include_directories(${PROJECT_SOURCE_DIR}/third_party/ecbs/include)
 find_package(Boost 1.58 REQUIRED COMPONENTS program_options)
 
 #EIGEN
-find_package(Boost 1.58 REQUIRED COMPONENTS program_options)
 set(Eigen3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 
 #PCL
@@ -86,28 +85,28 @@ target_link_libraries(swarm_traj_planner_rbp
   dl
 )
 
-#add_executable(swarm_traj_planner_rbp_test_all src/swarm_traj_planner_rbp_test_all.cpp)
-#target_link_libraries(swarm_traj_planner_rbp_test_all
-#  ${catkin_LIBRARIES}
-#  ${OCTOMAP_INCLUDE_DIRS}
-#  ${SIPP_LINK_LIBS}
-#  ${PYTHON_LIBRARIES}
-#  m
-#  ilocplex
-#  cplex
-#  concert
-#  pthread
-#  dl
-#)
+add_executable(swarm_traj_planner_rbp_test_all src/swarm_traj_planner_rbp_test_all.cpp)
+target_link_libraries(swarm_traj_planner_rbp_test_all
+  ${catkin_LIBRARIES}
+  ${OCTOMAP_INCLUDE_DIRS}
+  ${SIPP_LINK_LIBS}
+  ${PYTHON_LIBRARIES}
+  m
+  ilocplex
+  cplex
+  concert
+  pthread
+  dl
+)
 
-#add_executable(swarm_traj_planner_scp src/swarm_traj_planner_scp.cpp)
-#target_link_libraries(swarm_traj_planner_scp
-#  ${catkin_LIBRARIES}
-#  ${PYTHON_LIBRARIES}
-#  m
-#  ilocplex
-#  cplex
-#  concert
-#  pthread
-#  dl
-#)
+add_executable(swarm_traj_planner_scp src/swarm_traj_planner_scp.cpp)
+target_link_libraries(swarm_traj_planner_scp
+  ${catkin_LIBRARIES}
+  ${PYTHON_LIBRARIES}
+  m
+  ilocplex
+  cplex
+  concert
+  pthread
+  dl
+)

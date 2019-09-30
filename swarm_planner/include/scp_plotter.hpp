@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-#include "SwarmPlannerSCP.hpp"
+#include "scp_planner.hpp"
 #include <mission.hpp>
 #include <param.hpp>
 
