@@ -33,8 +33,24 @@ catkin_make
 source ~/catkin_ws/devel/setup.bash
 ```
 
-## 2. Usage
-At terminal:
+## 2. Demo
 ```
 roslaunch swarm_planner plan_rbp_random_forest.launch
 ```
+
+## 3. Simulation Configuration
+You can configure the simulation setting at the launch file, plan_rbp_random_forest.launch.
+
+(1) Mission: You can deploy the mission by editing the json file in swarm_planner/missions directory.
+
+(2) Environment: In plan_rbp_random_forest.launch,
+If 'replay' tag is false, it runs the simulation at the random forest.
+If 'replay' tag is true, it runs the simulation at the map specified at 'replay_map' tag.
+Map files are located in swarm_planner/worlds, and should be octomap bt files.
+
+(3) Sequential planning: For sequential planning, 'plan_sequential' tag in should be true. 
+You can change the batch size at 'plan_batch_size' tag.
+
+
+## 3. Notes
+(1) You may turn off 'runsim', 'log' arguments to check the correct computation time.

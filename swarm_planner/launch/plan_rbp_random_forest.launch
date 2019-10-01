@@ -2,15 +2,11 @@
 	PLAN_RBP_RANDOM_FOREST.LAUNCH
 	Multi-agent Trajectory Planning and Simulation using Relative Bernstein Polynomial
         
-	USAGE : At terminal, roslaunch swarm_planner plan_rbp_random_forest.launch
-        
-        TIPS : 1. You may turn off 'runsim', 'log' arguments to check the correct computation time.
-               2. If you want to retry this at the same world, 
-                  (1) Do not terminate the previous one, and launch follows at the other terminal. 
-                      roslaunch swarm_planner map_saver.launch
-                  (2) Terminate the previous one, and turn on 'replay' argument in this launch file. 
-                  (3) Relaunch it.
-        
+	Usage: At terminal
+               ``` 
+               roslaunch swarm_planner plan_rbp_random_forest.launch
+               ```
+
 	Jungwon Park
 	Lab for Autonomous Robotics Research
 	Seoul National Univ. 
