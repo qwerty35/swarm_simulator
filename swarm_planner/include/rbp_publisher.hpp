@@ -43,11 +43,16 @@ public:
               param(std::move(_param))
     {
         qn = mission.qn;
-        M = initTrajPlanner_obj->T.size();
         outdim = 3;
 
+        M = RBPPlanner_obj->msgs_traj_info.data.size() - 2 - 1;
+        T.resize(M + 1);
+        for(int m = 0; m < M+1; m++){
+            T[m] = RBPPlanner_obj->msgs_traj_info.data.at(m + 2);
+        }
+
         double dt = 0.1;
-        t.resize(floor(initTrajPlanner_obj.get()->T.back() / dt));
+        t.resize(floor(T.back() / dt));
         for (int i = 0; i < t.size(); i++) {
             t[i] = i * dt;
         }
@@ -139,7 +144,7 @@ private:
     std::vector<Eigen::MatrixXd> pva;
     std::vector<Eigen::MatrixXd> coef;
     std::vector<std::vector<double>> currentState;
-    std::vector<double> t, max_dist, min_dist;
+    std::vector<double> T, t, max_dist, min_dist;
     std::vector<std::vector<std::vector<double>>> quad_state;
 
     // ROS publisher
@@ -166,7 +171,7 @@ private:
 
         // find segment start time tseg
         for(int m = 0; m < M; m++){
-            tcand = initTrajPlanner_obj->T[m];
+            tcand = T[m];
             if(tcand < current_time){
                 tseg = tcand;
                 index = m;
@@ -187,7 +192,7 @@ private:
     }
 
     void update_traj(double current_time){
-        if (current_time > initTrajPlanner_obj->T.back()) {
+        if (current_time > T.back()) {
             return;
         }
         for(int qi = 0; qi < qn; qi++) {
@@ -230,7 +235,7 @@ private:
     void update_initTraj(){
         visualization_msgs::MarkerArray mk_array;
         for (int qi = 0; qi < qn; qi++) {
-            for (int i = 0; i < initTrajPlanner_obj->initTraj[qi].size(); i++) {
+            for (int m = 0; m < M+1; m++) {
                 visualization_msgs::Marker mk;
                 mk.header.frame_id = "world";
                 mk.header.stamp = ros::Time::now();
@@ -248,8 +253,8 @@ private:
                 mk.color.g = param.color[qi][1];
                 mk.color.b = param.color[qi][2];
 
-                mk.id = i;
-                octomap::point3d p_init = initTrajPlanner_obj->initTraj[qi][i];
+                mk.id = m;
+                octomap::point3d p_init = initTrajPlanner_obj->initTraj[qi][m];
                 mk.pose.position.x = p_init.x();
                 mk.pose.position.y = p_init.y();
                 mk.pose.position.z = p_init.z();

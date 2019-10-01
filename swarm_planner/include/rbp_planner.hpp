@@ -226,14 +226,40 @@ private:
         }
 
         Eigen::MatrixXd coef_der;
-        double time_scale, acc_max;
+        double time_scale, time_scale_tmp, acc_max;
+        time_scale = 1;
         for(int qi = 0; qi < N; qi++){
             for(int k = 0; k < outdim; k++) {
                 for (int m = 0; m < M; m++) {
-                    derivative(qi, k, m, coef_der);
+                    derivative(qi, k, m, coef_der); //TODO: coef_def explanation
 
-                    time_scale = scale_to_max_acc(qi, k, m, coef_der); //TODO: time scale
+                    time_scale_tmp = scale_to_max_vel(qi, k, m, coef_der);
+                    if(time_scale < time_scale_tmp) {
+                        time_scale = time_scale_tmp;
+                    }
+
+                    time_scale_tmp = scale_to_max_acc(qi, k, m, coef_der);
+                    if(time_scale < time_scale_tmp) {
+                        time_scale = time_scale_tmp;
+                    }
                 }
+            }
+        }
+
+        ROS_INFO_STREAM("Time scale: " << time_scale);
+        if(time_scale != 1){
+            for (int k = 0; k < outdim; k++) {
+                for (int qi = 0; qi < N; qi++) {
+                    for (int m = 0; m < M; m++) {
+                        Eigen::MatrixXd tm;
+                        timeMatrix(1.0 / time_scale, tm);
+
+                        coef[qi].block(m * offset_seg, k, n + 1, 1) = tm * coef[qi].block(m * offset_seg, k, n + 1, 1);
+                    }
+                }
+            }
+            for (int m = 0; m < M+1; m++) {
+                T[m] = T[m] * time_scale;
             }
         }
     }
@@ -279,7 +305,7 @@ private:
                        -5,     5,     0,     0,     0,     0,
                         1,     0,     0,     0,     0,     0;
         } else {
-            std::cerr << "TODO: debug when n is not 5" << std::endl;
+            std::cerr << "TODO: debug when n is not 5" << std::endl; //TODO: debug when n is not 5
         }
     }
 
@@ -619,7 +645,7 @@ private:
         count_lq = c.getSize() - count_eq;
     }
 
-    void timeMatrix(double t, Eigen::MatrixXd& tm){
+    void timeMatrix(double t, Eigen::MatrixXd& tm){ //TODO: naming duplicated
         tm = Eigen::MatrixXd::Zero(n+1, n+1);
 
         for(int i = 0; i < n+1; i++){
@@ -644,89 +670,118 @@ private:
         return (i == 0) ? 1 : derivative_coef(i-1, j-1) * j;
     }
 
-    double scale_to_max_acc(int qi, int k, int m, const Eigen::MatrixXd& coef_der){
-        double time_scale, a, b, c, D, acc_max, acc_min, acc, t;
+    std::vector<double> roots(int n_poly, const Eigen::MatrixXd& coef_der){
+        std::vector<double> roots_der;
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(n_poly, n_poly);
+        for(int j = 0; j < n_poly; j++){
+            if(j < n_poly-1) {
+                A(j + 1, j) = 1;
+            }
+            if(coef_der(n_poly-1, 0) != 0) {
+                A(0, j) = -coef_der(n_poly - 1, j + 1) / coef_der(n_poly - 1, 0);
+            }
+            else{
+                ROS_ERROR("RBPPlanner: root error");
+                return roots_der;
+            }
+        }
+
+        Eigen::EigenSolver<Eigen::MatrixXd> es(A);
+        for(int i = 0; i < n_poly; i++) {
+            complex<double> lambda = es.eigenvalues()[i];
+            if(lambda.imag() == 0){
+                roots_der.emplace_back(lambda.real());
+            }
+        }
+    }
+
+    double scale_to_max_vel(int qi, int k, int m, const Eigen::MatrixXd& coef_der){
+        assert(phi == 3 && n == 5);
         double scale_update_rate = 1.1;
 
-        time_scale = 1;
+        // Get maximum accelaration
+        double vel_max, t_max = 0;
+
+        std::vector<double> ts = roots(3, coef_der);
+        ts.emplace_back(0);
+        ts.emplace_back(T[m+1] - T[m]);
+        for(auto t : ts){
+            if(t < 0 || t > T[m+1] - T[m]){
+                continue;
+            }
+
+            double vel = 0;
+            for(int i = 0; i < 5; i++) {
+                vel += coef_der(1, i) * pow(t, 4-i);
+            }
+            vel = abs(vel);
+            if(vel_max < vel){
+                vel_max = vel;
+                t_max = t;
+            }
+        }
+
+
+        // time_scale update
+        double time_scale = 1;
+        while(vel_max > mission.max_vel[qi][k]){
+            time_scale *= scale_update_rate;
+
+            double vel = 0;
+            for(int i = 0; i < 5; i++) {
+                vel += coef_der(1, i) * pow(1/time_scale, n - i) * pow(t_max, 4-i);
+            }
+            vel_max = abs(vel);
+        }
+
+        return time_scale;
+    }
+
+
+
+    double scale_to_max_acc(int qi, int k, int m, const Eigen::MatrixXd& coef_der){
+        assert(phi == 3 && n == 5);
+        double scale_update_rate = 1.1;
+
+        // Get maximum accelaration
+        double a, b, c, D, acc_max, t_max = 0;
         a = coef_der(3, 0);
         b = coef_der(3, 1);
         c = coef_der(3, 2);
         D = b * b - 4 * a * c;
         acc_max = 0;
-        acc_min = 0;
 
-
-        acc = 0;
-        for(int i = 0; i < 4; i++) {
-            acc += coef_der(2, i) * pow(0, 3-i);
-        }
-        if(acc > acc_max){
-            acc_max = acc;
-        }
-        if(acc < acc_min){
-            acc_min = acc;
-        }
-
-        acc = 0;
-        for(int i = 0; i < 4; i++) {
-            acc += coef_der(2, i) * pow(T[m+1] - T[m], 3-i);
-        }
-        if(acc > acc_max){
-            acc_max = acc;
-        }
-        if(acc < acc_min){
-            acc_min = acc;
-        }
-
+        std::vector<double> ts{0, T[m+1] - T[m]};
         if(D >= 0){
-            t = (-b + sqrt(D)) / (2 * a);
-            if(t > 0 && t < T[m+1] - T[m]) {
-                acc = 0;
-                for (int i = 0; i < 4; i++) {
-                    acc += coef_der(2, i) * pow(t, 3 - i);
-                }
-                if (acc > acc_max) {
-                    acc_max = acc;
-                }
-                if (acc < acc_min) {
-                    acc_min = acc;
-                }
+            ts.emplace_back((-b + sqrt(D)) / (2 * a));
+            ts.emplace_back((-b - sqrt(D)) / (2 * a));
+        }
+        for(auto t : ts){
+            if(t < 0 || t > T[m+1] - T[m]){
+                continue;
             }
 
-            t = (-b - sqrt(D)) / (2 * a);
-            if(t > 0 && t < T[m+1] - T[m]) {
-                acc = 0;
-                for (int i = 0; i < 4; i++) {
-                    acc += coef_der(2, i) * pow(t, 3 - i);
-                }
-                if (acc > acc_max) {
-                    acc_max = acc;
-                }
-                if (acc < acc_min) {
-                    acc_min = acc;
-                }
+            double acc = 0;
+            for(int i = 0; i < 4; i++) {
+                acc += coef_der(2, i) * pow(t, 3-i);
+            }
+            acc = abs(acc);
+            if(acc_max < acc){
+                acc_max = acc;
+                t_max = t;
             }
         }
 
         // time_scale update
+        double time_scale = 1;
         while(acc_max > mission.max_acc[qi][k]){
             time_scale *= scale_update_rate;
 
-            acc = 0;
+            double acc = 0;
             for(int i = 0; i < 4; i++) {
-                acc += coef_der(2, i) * pow(t, 3-i) * pow(1/time_scale, n - i);
+                acc += coef_der(2, i) * pow(1/time_scale, n - i) * pow(t_max, 3-i);
             }
-            acc_max = acc;
-        }
-        while(acc_min < -mission.max_acc[qi][k]){
-            time_scale *= scale_update_rate;
-
-            acc = 0;
-            for(int i = 0; i < 4; i++) {
-                acc += coef_der(2, i) * pow(t, 3-i) * pow(1/time_scale, n - i);
-            }
-            acc_min = acc;
+            acc_max = abs(acc);
         }
 
         return time_scale;
