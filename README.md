@@ -18,7 +18,7 @@ Following sources are used to implement this package.
 ## 1. Install
 (1) Install ROS Kinetic (for Ubuntu 16.04) or Melodic (for Ubuntu 18.04).
 
-(2) Install CPLEX and fix CMAKELIST depend on intallation location. For instance:
+(2) Install CPLEX and fix CMAKELIST depending on intallation location. For instance:
 ```
 set(CPLEX_PREFIX_DIR /opt/ibm/ILOG/CPLEX_Studio129)
 ```
