@@ -5,10 +5,11 @@ project(swarm_planner)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg -g3 -O3 -m64 -Ofast -flto -msse2 -msse3 -march=native  -mfpmath=sse")
 
 set(CMAKE_CXX_STANDARD 14)
+#SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -pthread")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-#set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release)
 
 #ECBS
 add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/ecbs)
@@ -63,6 +64,7 @@ catkin_package(
 
 #MATPLOTLIB-CPP
 find_package(PythonLibs 2.7)
+find_package (Threads)
 
 #BUILD
 add_executable(random_map_generator src/random_map_generator.cpp)
@@ -103,6 +105,22 @@ add_executable(swarm_traj_planner_scp src/swarm_traj_planner_scp.cpp)
 target_link_libraries(swarm_traj_planner_scp
   ${catkin_LIBRARIES}
   ${PYTHON_LIBRARIES}
+  m
+  ilocplex
+  cplex
+  concert
+  pthread
+  dl
+)
+
+add_executable(swarm_traj_planner_rbp_flat src/swarm_traj_planner_rbp_flat.cpp)
+target_include_directories(swarm_traj_planner_rbp_flat PRIVATE ${PYTHON_INCLUDE_DIRS})
+target_link_libraries(swarm_traj_planner_rbp_flat
+  ${catkin_LIBRARIES}
+  ${OCTOMAP_INCLUDE_DIRS}
+  ${SIPP_LINK_LIBS}
+  ${PYTHON_LIBRARIES}
+#  ${CMAKE_THREAD_LIBS_INIT}
   m
   ilocplex
   cplex

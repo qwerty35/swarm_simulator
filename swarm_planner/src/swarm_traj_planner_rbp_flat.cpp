@@ -34,7 +34,7 @@ void octomapCallback(const octomap_msgs::Octomap& octomap_msg)
 
 int main(int argc, char* argv[]) {
     ROS_INFO("Swarm Trajectory Planner");
-    ros::init (argc, argv, "swarm_traj_planner_rbp");
+    ros::init (argc, argv, "swarm_traj_planner_rbp_flat");
     ros::NodeHandle nh( "~" );
     ros::Subscriber octomap_sub = nh.subscribe( "/octomap_full", 1, octomapCallback );
 
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
             timer_step.reset();
             {
                 corridor_obj.reset(new Corridor(initTrajPlanner_obj, distmap_obj, mission, param));
-                if (!corridor_obj.get()->update(param.log)) {
+                if (!corridor_obj.get()->update_flat_box(param.log)) {
                     return -1;
                 }
             }
@@ -104,8 +104,7 @@ int main(int argc, char* argv[]) {
             // Step 3: Formulate QP problem and solving it to generate trajectory for quadrotor swarm
             timer_step.reset();
             {
-                RBPPlanner_obj.reset(new RBPPlanner(corridor_obj, initTrajPlanner_obj, initTrajPlanner_obj.get()->T,
-                                                    mission, param));
+                RBPPlanner_obj.reset(new RBPPlanner(corridor_obj, initTrajPlanner_obj, corridor_obj.get()->T, mission, param));
                 if (!RBPPlanner_obj.get()->update(param.log)) {
                     return -1;
                 }

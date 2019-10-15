@@ -89,7 +89,8 @@ int main(int argc, char* argv[]) {
         // Step 3: Formulate QP problem and solving it to generate trajectory for quadrotor swarm
         timer_step.reset();
         {
-            RBPPlanner_obj.reset(new RBPPlanner(corridor_obj, initTrajPlanner_obj, mission, param));
+            RBPPlanner_obj.reset(new RBPPlanner(corridor_obj, initTrajPlanner_obj, initTrajPlanner_obj.get()->T,
+                                                mission, param));
             if (!RBPPlanner_obj.get()->update(param.log)) {
                 return -1;
             }

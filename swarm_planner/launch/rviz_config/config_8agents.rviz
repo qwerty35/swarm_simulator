@@ -298,17 +298,18 @@ Visualization Manager:
       Marker Topic: /occupied_cells_vis_array
       Name: MarkerArray
       Namespaces:
-        {}
+        map: true
       Queue Size: 10
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /relative_box/mav5
       Name: MarkerArray
       Namespaces:
-        {}
+        mav6: false
+        mav7: false
       Queue Size: 10
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /obstacle_box
@@ -318,28 +319,41 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /initTraj
       Name: MarkerArray
       Namespaces:
-        {}
+        mav0: false
+        mav1: false
+        mav2: false
+        mav3: false
+        mav4: false
+        mav5: false
+        mav6: false
+        mav7: false
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /feasible_box
       Name: MarkerArray
       Namespaces:
-        {}
+        mav0: false
+        mav1: false
+        mav2: false
+        mav3: false
+        mav4: false
+        mav5: true
+        mav6: false
+        mav7: false
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /collision_model
       Name: MarkerArray
       Namespaces:
         colBox: true
-        initTraj: true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -369,26 +383,21 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/XYOrbit
-      Distance: 15.045158386230469
+      Angle: 0
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 0
-        Y: 3
-        Z: 0
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5647963285446167
+      Scale: 83.66500854492188
       Target Frame: world
-      Value: XYOrbit (rviz)
-      Yaw: 1.5700000524520874
+      Value: TopDownOrtho (rviz)
+      X: 0
+      Y: 0
     Saved: ~
 Window Geometry:
   Displays:

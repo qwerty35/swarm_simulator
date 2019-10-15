@@ -26,22 +26,23 @@ public:
 
     RBPPlanner(std::shared_ptr<Corridor> _corridor_obj,
                std::shared_ptr<InitTrajPlanner> _initTrajPlanner_obj,
+               std::vector<double> _T,
                SwarmPlanning::Mission _mission,
                SwarmPlanning::Param _param)
             : corridor_obj(std::move(_corridor_obj)),
               initTrajPlanner_obj(std::move(_initTrajPlanner_obj)),
+              T(std::move(_T)),
               mission(std::move(_mission)),
               param(std::move(_param))
 
     {
-        M = initTrajPlanner_obj.get()->T.size()-1; // the number of segments
+        M = T.size()-1; // the number of segments
         n = param.n; // degree of polynomial
         phi = param.phi; // desired derivatives
         N = mission.qn; // the number of agents
         outdim = 3; // the number of outputs (x,y,z)
 
         initTraj = initTrajPlanner_obj.get()->initTraj;
-        T = initTrajPlanner_obj.get()->T;
 
         SFC = corridor_obj.get()->SFC;
         RSFC = corridor_obj.get()->RSFC;

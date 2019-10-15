@@ -19,6 +19,7 @@
 #include <cmath>
 #include "matplotlibcpp.h"
 namespace plt = matplotlibcpp;
+//#include <thread>
 
 // Submodules
 #include <rbp_planner.hpp>
@@ -51,7 +52,7 @@ public:
             T[m] = RBPPlanner_obj->msgs_traj_info.data.at(m + 2);
         }
 
-        double dt = 0.1;
+        dt = 0.1;
         t.resize(floor(T.back() / dt));
         for (int i = 0; i < t.size(); i++) {
             t[i] = i * dt;
@@ -74,26 +75,25 @@ public:
             }
         }
 
-        traj_coef_pubs.resize(qn);
-        traj_pubs.resize(qn);
-        relBox_pubs.resize(qn);
+        pubs_traj_coef.resize(qn);
+        pubs_traj.resize(qn);
+        pubs_relBox.resize(qn);
         for(int qi = 0; qi < qn; qi++){
             std::string mav_name = "/mav" + std::to_string(qi);
-            traj_coef_pubs[qi] = nh.advertise<std_msgs::Float64MultiArray>("/traj_coef" + mav_name, 1);
-            traj_pubs[qi] = nh.advertise<nav_msgs::Path>("/desired_trajectory" + mav_name, 1);
-            relBox_pubs[qi] = nh.advertise<visualization_msgs::MarkerArray>("/relative_box" + mav_name, 1);
+            pubs_traj_coef[qi] = nh.advertise<std_msgs::Float64MultiArray>("/traj_coef" + mav_name, 1);
+            pubs_traj[qi] = nh.advertise<nav_msgs::Path>("/desired_trajectory" + mav_name, 1);
+            pubs_relBox[qi] = nh.advertise<visualization_msgs::MarkerArray>("/relative_box" + mav_name, 1);
         }
-        traj_info_pub = nh.advertise<std_msgs::Float64MultiArray>("/traj_info", 1);
-        initTraj_pub = nh.advertise<visualization_msgs::MarkerArray>("/initTraj", 1);
-        obsBox_pub = nh.advertise<visualization_msgs::MarkerArray>("/obstacle_box", 1);
-        feasibleBox_pub = nh.advertise<visualization_msgs::MarkerArray>("/feasible_box", 1);
-        colBox_pub = nh.advertise<visualization_msgs::MarkerArray>("/collision_model", 1);
+        pub_traj_info = nh.advertise<std_msgs::Float64MultiArray>("/traj_info", 1);
+        pub_initTraj = nh.advertise<visualization_msgs::MarkerArray>("/initTraj", 1);
+        pub_obsBox = nh.advertise<visualization_msgs::MarkerArray>("/obstacle_box", 1);
+        pub_feasibleBox = nh.advertise<visualization_msgs::MarkerArray>("/feasible_box", 1);
+        pub_colBox = nh.advertise<visualization_msgs::MarkerArray>("/collision_model", 1);
+        pub_minDist = nh.advertise<geometry_msgs::Pose>("/min_dist", 1);
 
         msgs_traj.resize(qn);
         msgs_relBox.resize(qn);
     }
-
-
 
     void update(double current_time){
         update_traj(current_time);
@@ -102,20 +102,21 @@ public:
         update_relBox(current_time);
         update_feasibleBox(current_time);
         update_colBox();
-
+        update_distance_between_agents_realtime(current_time);
     }
 
     void publish(){
         for(int qi = 0; qi < qn; qi++){
-            traj_coef_pubs[qi].publish(RBPPlanner_obj.get()->msgs_traj_coef[qi]);
-            traj_pubs[qi].publish(msgs_traj[qi]);
-            relBox_pubs[qi].publish(msgs_relBox[qi]);
+            pubs_traj_coef[qi].publish(RBPPlanner_obj.get()->msgs_traj_coef[qi]);
+            pubs_traj[qi].publish(msgs_traj[qi]);
+            pubs_relBox[qi].publish(msgs_relBox[qi]);
         }
-        traj_info_pub.publish(RBPPlanner_obj.get()->msgs_traj_info);
-        initTraj_pub.publish(msgs_initTraj);
-        obsBox_pub.publish(msgs_obsBox);
-        feasibleBox_pub.publish(msgs_feasibleBox);
-        colBox_pub.publish(msgs_colBox);
+        pub_traj_info.publish(RBPPlanner_obj.get()->msgs_traj_info);
+        pub_initTraj.publish(msgs_initTraj);
+        pub_obsBox.publish(msgs_obsBox);
+        pub_feasibleBox.publish(msgs_feasibleBox);
+        pub_colBox.publish(msgs_colBox);
+        pub_minDist.publish(msgs_minDist);
     }
 
     void plot(bool log) {
@@ -130,6 +131,10 @@ public:
         ROS_INFO_STREAM("Total flight distance: " << trajectory_length_sum());
     }
 
+//    void plot_real_time(){
+//        plot_distance_between_agents_realtime();
+//    }
+
 private:
     ros::NodeHandle nh;
     std::shared_ptr<RBPPlanner> RBPPlanner_obj;
@@ -139,23 +144,25 @@ private:
     SwarmPlanning::Param param;
 
     int qn, M, outdim;
-    double global_min_dist;
+    double global_min_dist, dt;
     tf::TransformBroadcaster br;
     std::vector<Eigen::MatrixXd> pva;
     std::vector<Eigen::MatrixXd> coef;
     std::vector<std::vector<double>> currentState;
-    std::vector<double> T, t, max_dist, min_dist;
+    std::vector<double> T, t, max_dist, min_dist, collision_dist;
     std::vector<std::vector<std::vector<double>>> quad_state;
+//    std::shared_ptr<plt::Plot> plot_min_dist_obj;
 
     // ROS publisher
-    ros::Publisher traj_info_pub;
-    std::vector<ros::Publisher> traj_coef_pubs;
-    std::vector<ros::Publisher> traj_pubs;
-    ros::Publisher initTraj_pub;
-    ros::Publisher obsBox_pub;
-    std::vector<ros::Publisher> relBox_pubs;
-    ros::Publisher feasibleBox_pub;
-    ros::Publisher colBox_pub;
+    ros::Publisher pub_traj_info;
+    std::vector<ros::Publisher> pubs_traj_coef;
+    std::vector<ros::Publisher> pubs_traj;
+    ros::Publisher pub_initTraj;
+    ros::Publisher pub_obsBox;
+    std::vector<ros::Publisher> pubs_relBox;
+    ros::Publisher pub_feasibleBox;
+    ros::Publisher pub_colBox;
+    ros::Publisher pub_minDist;
 
     // ROS messages
     std::vector<nav_msgs::Path> msgs_traj;
@@ -164,6 +171,7 @@ private:
     std::vector<visualization_msgs::MarkerArray> msgs_relBox;
     visualization_msgs::MarkerArray msgs_feasibleBox;
     visualization_msgs::MarkerArray msgs_colBox;
+    geometry_msgs::Pose msgs_minDist;
 
     void timeMatrix(double current_time, int& index, Eigen::MatrixXd& polyder){
         double tseg = 0;
@@ -235,7 +243,7 @@ private:
     void update_initTraj(){
         visualization_msgs::MarkerArray mk_array;
         for (int qi = 0; qi < qn; qi++) {
-            for (int m = 0; m < M+1; m++) {
+            for (int m = 0; m < initTrajPlanner_obj->initTraj[qi].size(); m++) {
                 visualization_msgs::Marker mk;
                 mk.header.frame_id = "world";
                 mk.header.stamp = ros::Time::now();
@@ -497,26 +505,26 @@ private:
                 octomap::point3d normal_vector;
                 int box_curr = 0;
                 if(qi < qj) { // RSFC
-//                    while (box_curr < box_generator->relative_boxes[qi][qj].size() &&
-//                           box_generator->relative_boxes[qi][qj][box_curr].second < current_time) {
-//                        box_curr++;
-//                    }
-//                    if (box_curr >= box_generator->relative_boxes[qi][qj].size()) {
-//                        box_curr = box_generator->relative_boxes[qi][qj].size() - 1;
-//                    }
-//
-//                    normal_vector = box_generator->relative_boxes[qi][qj][box_curr].first;
+                    while (box_curr < corridor_obj->RSFC[qi][qj].size() &&
+                            corridor_obj->RSFC[qi][qj][box_curr].second < current_time) {
+                        box_curr++;
+                    }
+                    if (box_curr >= corridor_obj->RSFC[qi][qj].size()) {
+                        box_curr = corridor_obj->RSFC[qi][qj].size() - 1;
+                    }
+
+                    normal_vector = corridor_obj->RSFC[qi][qj][box_curr].first;
                 }
                 else if(qi > qj){ // RSFC
-//                    while (box_curr < box_generator->relative_boxes[qj][qi].size() &&
-//                           box_generator->relative_boxes[qj][qi][box_curr].second < current_time) {
-//                        box_curr++;
-//                    }
-//                    if (box_curr >= box_generator->relative_boxes[qj][qi].size()) {
-//                        box_curr = box_generator->relative_boxes[qj][qi].size() - 1;
-//                    }
-//
-//                    normal_vector = -box_generator->relative_boxes[qj][qi][box_curr].first;
+                    while (box_curr < corridor_obj->RSFC[qj][qi].size() &&
+                            corridor_obj->RSFC[qj][qi][box_curr].second < current_time) {
+                        box_curr++;
+                    }
+                    if (box_curr >= corridor_obj->RSFC[qj][qi].size()) {
+                        box_curr = corridor_obj->RSFC[qj][qi].size() - 1;
+                    }
+
+                    normal_vector = -corridor_obj->RSFC[qj][qi][box_curr].first;
                 }
                 else{ // SFC
                     while(box_curr < corridor_obj->SFC[qi].size() &&
@@ -583,21 +591,21 @@ private:
                     continue;
                 }
 
-//                double distance = r / normal_vector.norm() - mk.scale.z / 2;
-//                mk.pose.position.x = pva[qi](0, 0) + normal_vector.normalized().x() * distance;
-//                mk.pose.position.y = pva[qi](0, 1) + normal_vector.normalized().y() * distance;
-//                mk.pose.position.z = pva[qi](0, 2) + normal_vector.normalized().z() * distance;
-//
-//                Eigen::Vector3d V3d_normal_vector(normal_vector.x(), normal_vector.y(), normal_vector.z());
-//                Eigen::Vector3d z_0 = Eigen::Vector3d::UnitZ();
-//                Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors(z_0, V3d_normal_vector);
-//
-//                mk.pose.orientation.x = q.x();
-//                mk.pose.orientation.y = q.y();
-//                mk.pose.orientation.z = q.z();
-//                mk.pose.orientation.w = q.w();
-//
-//                mk_array.markers.emplace_back(mk);
+                double distance = r / normal_vector.norm() - mk.scale.z / 2;
+                mk.pose.position.x = pva[qi](0, 0) + normal_vector.normalized().x() * distance;
+                mk.pose.position.y = pva[qi](0, 1) + normal_vector.normalized().y() * distance;
+                mk.pose.position.z = pva[qi](0, 2) + normal_vector.normalized().z() * distance;
+
+                Eigen::Vector3d V3d_normal_vector(normal_vector.x(), normal_vector.y(), normal_vector.z());
+                Eigen::Vector3d z_0 = Eigen::Vector3d::UnitZ();
+                Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors(z_0, V3d_normal_vector);
+
+                mk.pose.orientation.x = q.x();
+                mk.pose.orientation.y = q.y();
+                mk.pose.orientation.z = q.z();
+                mk.pose.orientation.w = q.w();
+
+                mk_array.markers.emplace_back(mk);
             }
         }
         msgs_feasibleBox = mk_array;
@@ -681,7 +689,7 @@ private:
     }
 
     void plot_quad_dynamics() {
-        plt::figure_size(1500, 1000);
+        plt::figure_size(1280, 960);
 
         // Plot Quad Velocity
         plt::subplot(3, 2, 1);
@@ -758,7 +766,7 @@ private:
 
     void plot_distance_between_agents(){
         plt::figure(1);
-        plt::figure_size(1500, 1000);
+        plt::figure_size(1280, 720);
 
         std::vector<double> collision_dist;
         collision_dist.resize(t.size());
@@ -767,11 +775,51 @@ private:
         }
 
         plt::plot(t, collision_dist);
-        plt::plot(t, max_dist);
+//        plt::plot(t, max_dist);
         plt::plot(t, min_dist);
 
         plt::title("Ellipsoidal Distance between Quadrotor");
 
         plt::show(false);
+    }
+
+//    void plot_distance_between_agents_realtime(){
+//        collision_dist.resize(t.size());
+//        for(int i = 0; i < t.size(); i++){
+//            collision_dist[i] = 2 * mission.quad_size[0]; //TODO: heterogeous case
+//        }
+//
+//        plt::figure(2);
+//        plt::title("Ellipsoidal Distance between Quadrotor");
+//        plt::figure_size(1280, 960);
+//        plt::ylim(0, 5);
+//        plt::named_plot("collision constraint", t, collision_dist);
+//        plot_min_dist_obj.reset(new plt::Plot());
+//        plt::axis("equal");
+//        plt::legend();
+//
+//        for(int index = 0; index < t.size(); index++) {
+//            std::vector<double> t_partial(t.begin(), t.begin() + index);
+//            std::vector<double> min_dist_partial(min_dist.begin(), min_dist.begin() + index);
+//            plot_min_dist_obj.get()->update(t_partial, min_dist_partial);
+//            plt::pause(0.001);
+//        }
+//    }
+
+    void update_distance_between_agents_realtime(double current_time){
+        int index = floor(current_time / dt);
+        double current_min_dist, alpha;
+
+        if(index >= t.size()){
+            index = t.size() - 1;
+            current_min_dist = min_dist[index];
+        }
+        else{
+            alpha = (current_time - index * dt) / dt;
+            current_min_dist = (1-alpha) * min_dist[index] + alpha * min_dist[index];
+        }
+
+        msgs_minDist.position.x = current_min_dist;
+        msgs_minDist.position.y = 2 * mission.quad_size[0];
     }
 };
