@@ -5,7 +5,6 @@ project(swarm_planner)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg -g3 -O3 -m64 -Ofast -flto -msse2 -msse3 -march=native  -mfpmath=sse")
 
 set(CMAKE_CXX_STANDARD 14)
-#SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -pthread")
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 set(CMAKE_BUILD_TYPE Debug)
@@ -120,7 +119,6 @@ target_link_libraries(swarm_traj_planner_rbp_flat
   ${OCTOMAP_INCLUDE_DIRS}
   ${SIPP_LINK_LIBS}
   ${PYTHON_LIBRARIES}
-#  ${CMAKE_THREAD_LIBS_INIT}
   m
   ilocplex
   cplex

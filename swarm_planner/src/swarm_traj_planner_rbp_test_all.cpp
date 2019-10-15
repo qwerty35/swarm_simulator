@@ -14,19 +14,21 @@
 #include <rbp_corridor.hpp>
 #include <rbp_planner.hpp>
 
+using namespace SwarmPlanning;
+
 int main(int argc, char* argv[]) {
     ROS_INFO("Swarm Trajectory Planner");
     ros::init (argc, argv, "swarm_traj_planner_rbp_test_all");
     ros::NodeHandle nh( "~" );
 
     // Set Mission
-    SwarmPlanning::Mission mission;
+    Mission mission;
     if(!mission.setMission(nh)){
         return -1;
     }
 
     // Set ROS Parameters
-    SwarmPlanning::Param param;
+    Param param;
     if(!param.setROSParam(nh)){
         return -1;
     }

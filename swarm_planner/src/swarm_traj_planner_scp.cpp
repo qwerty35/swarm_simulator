@@ -11,8 +11,9 @@
 #include <scp_publisher.hpp>
 #include <scp_plotter.hpp>
 
-bool has_path = false;
+using namespace SwarmPlanning;
 
+bool has_path = false;
 
 int main(int argc, char* argv[]) {
     ROS_INFO("Swarm Trajectory Planner - Sequential Convex Programming");
@@ -22,14 +23,14 @@ int main(int argc, char* argv[]) {
     ros::removeROSArgs(argc, argv, args);
 
     // Set Mission
-    SwarmPlanning::Mission mission;
+    Mission mission;
     if(!mission.setMission(nh)){
         return -1;
     }
     mission.applyNoise(0.01);
 
     // Set ROS Parameters
-    SwarmPlanning::Param param;
+    Param param;
     if(!param.setROSParam(nh)){
         return -1;
     }
@@ -37,9 +38,9 @@ int main(int argc, char* argv[]) {
 
 
     // Submodules
-    std::shared_ptr<SwarmPlannerSCP> swarm_planner;
-    std::shared_ptr<TrajPublisherSCP> traj_publisher;
-    std::shared_ptr<TrajPlotterSCP> traj_plotter;
+    std::shared_ptr<SCPPlanner> SCPPlanner_obj;
+    std::shared_ptr<SCPPublisher> SCPPublisher_obj;
+    std::shared_ptr<SCPPlotter> SCPPlotter_obj;
 
     // Main Loop
     ros::Rate rate(20);
@@ -53,8 +54,8 @@ int main(int argc, char* argv[]) {
             // Plan Swarm Trajectory
             timer_step.reset();
 
-            swarm_planner.reset(new SwarmPlannerSCP(mission, param));
-            if(!swarm_planner.get()->update(param.log)){
+            SCPPlanner_obj.reset(new SCPPlanner(mission, param));
+            if(!SCPPlanner_obj.get()->update(param.log)){
                 return -1;
             }
 
@@ -62,11 +63,11 @@ int main(int argc, char* argv[]) {
             ROS_INFO_STREAM("Overall runtime: " << timer_total.elapsedSeconds());
 
             // Initialize Trajectory Publisher
-            traj_publisher.reset(new TrajPublisherSCP(nh, swarm_planner, mission, param));
+            SCPPublisher_obj.reset(new SCPPublisher(nh, SCPPlanner_obj, mission, param));
 
             // Plot Planning Result
-            traj_plotter.reset(new TrajPlotterSCP(swarm_planner, mission, param));
-            traj_plotter->plot();
+            SCPPlotter_obj.reset(new SCPPlotter(SCPPlanner_obj, mission, param));
+            SCPPlotter_obj->plot();
 
             start_time = ros::Time::now().toSec();
             has_path = true;
@@ -74,8 +75,8 @@ int main(int argc, char* argv[]) {
         if(has_path) {
             // Publish Swarm Trajectory
             current_time = ros::Time::now().toSec() - start_time;
-            traj_publisher.get()->update(current_time);
-            traj_publisher.get()->publish();
+            SCPPublisher_obj.get()->update(current_time);
+            SCPPublisher_obj.get()->publish();
         }
         ros::spinOnce();
         rate.sleep();

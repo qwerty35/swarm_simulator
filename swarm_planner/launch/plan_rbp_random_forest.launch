@@ -52,7 +52,7 @@
   <arg name="box_z_res"             default="0.1"/>
 
   <!-- RBPPlanner Parameters -->
-  <arg name="plan_time_step"        default="1"/>
+  <arg name="plan_time_step"        default="0.1"/>
   <arg name="plan_downwash"         default="2.0"/>
   <arg name="plan_n"                default="5"/>
   <arg name="plan_phi"              default="3"/>  

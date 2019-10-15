@@ -18,6 +18,8 @@
 #include <rbp_planner.hpp>
 #include <rbp_publisher.hpp>
 
+using namespace SwarmPlanning;
+
 bool has_octomap = false;
 bool has_path = false;
 std::shared_ptr<octomap::OcTree> octree_obj;
@@ -39,13 +41,13 @@ int main(int argc, char* argv[]) {
     ros::Subscriber octomap_sub = nh.subscribe( "/octomap_full", 1, octomapCallback );
 
     // Mission
-    SwarmPlanning::Mission mission;
+    Mission mission;
     if(!mission.setMission(nh)){
         return -1;
     }
 
     // ROS Parameters
-    SwarmPlanning::Param param;
+    Param param;
     if(!param.setROSParam(nh)){
         return -1;
     }
@@ -56,7 +58,7 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<InitTrajPlanner> initTrajPlanner_obj;
     std::shared_ptr<Corridor> corridor_obj;
     std::shared_ptr<RBPPlanner> RBPPlanner_obj;
-    std::shared_ptr<ResultPublisher> resultPublisher_obj;
+    std::shared_ptr<RBPPublisher> RBPPublisher_obj;
 
     // Main Loop
     ros::Rate rate(20);
@@ -116,8 +118,8 @@ int main(int argc, char* argv[]) {
             ROS_INFO_STREAM("Overall runtime: " << timer_total.elapsedSeconds());
 
             // Plot Planning Result
-            resultPublisher_obj.reset(new ResultPublisher(nh, RBPPlanner_obj, corridor_obj, initTrajPlanner_obj, mission, param));
-            resultPublisher_obj->plot(param.log);
+            RBPPublisher_obj.reset(new RBPPublisher(nh, RBPPlanner_obj, corridor_obj, initTrajPlanner_obj, mission, param));
+            RBPPublisher_obj->plot(param.log);
 
             start_time = ros::Time::now().toSec();
             has_path = true;
@@ -125,8 +127,8 @@ int main(int argc, char* argv[]) {
         if(has_path) {
             // Publish Swarm Trajectory
             current_time = ros::Time::now().toSec() - start_time;
-            resultPublisher_obj.get()->update(current_time);
-            resultPublisher_obj.get()->publish();
+            RBPPublisher_obj.get()->update(current_time);
+            RBPPublisher_obj.get()->publish();
         }
         ros::spinOnce();
         rate.sleep();

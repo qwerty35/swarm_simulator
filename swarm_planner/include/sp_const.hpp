@@ -10,7 +10,20 @@
 #define SP_IPT_ECBS          0
 
 #include <octomap/OcTree.h>
+#include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/MultiArrayDimension.h>
+
 typedef std::vector<std::vector<octomap::point3d>> initTraj_t;
 typedef std::vector<std::vector<std::pair<std::vector<double>, double>>> SFC_t;
 typedef std::vector<std::vector<std::vector<std::pair<octomap::point3d, double> >>> RSFC_t;
 
+namespace SwarmPlanning{
+    struct PlanResult{
+        initTraj_t initTraj;
+        std::vector<double> T;
+        SFC_t SFC;
+        RSFC_t RSFC;
+        std_msgs::Float64MultiArray msgs_traj_info;
+        std::vector<std_msgs::Float64MultiArray> msgs_traj_coef;
+    };
+}
