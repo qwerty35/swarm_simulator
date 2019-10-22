@@ -8,14 +8,11 @@
 namespace SwarmPlanning {
     class InitTrajPlanner {
     public:
-        initTraj_t initTraj; // discrete initial trajectory: pi_0,...,pi_M
-        std::vector<double> T; // segment time: T_0,...,T_M
-
-        virtual bool update(bool log) = 0;
+        virtual bool update(bool log, SwarmPlanning::PlanResult* planResult_ptr) = 0;
 
         InitTrajPlanner(std::shared_ptr<DynamicEDTOctomap> _distmap_obj,
-                        Mission _mission,
-                        Param _param)
+                        SwarmPlanning::Mission _mission,
+                        SwarmPlanning::Param _param)
                 : distmap_obj(std::move(_distmap_obj)),
                   mission(std::move(_mission)),
                   param(std::move(_param)) {
@@ -34,8 +31,8 @@ namespace SwarmPlanning {
 
     protected:
         std::shared_ptr<DynamicEDTOctomap> distmap_obj;
-        Mission mission;
-        Param param;
+        SwarmPlanning::Mission mission;
+        SwarmPlanning::Param param;
 
         double grid_x_min, grid_y_min, grid_z_min, grid_x_max, grid_y_max, grid_z_max;
         int dimx, dimy, dimz;

@@ -85,8 +85,8 @@ int main(int argc, char* argv[]) {
             // Step 1: Plan Initial Trajectory
             timer_step.reset();
             {
-                initTrajPlanner_obj.reset(new ECBSPlanner(distmap_obj, mission, param, planResult));
-                if (!initTrajPlanner_obj.get()->update(param.log)) {
+                initTrajPlanner_obj.reset(new ECBSPlanner(distmap_obj, mission, param));
+                if (!initTrajPlanner_obj.get()->update(param.log, &planResult)) {
                     return -1;
                 }
             }
@@ -96,8 +96,8 @@ int main(int argc, char* argv[]) {
             // Step 2: Generate SFC, RSFC
             timer_step.reset();
             {
-                corridor_obj.reset(new Corridor(distmap_obj, mission, param, planResult));
-                if (!corridor_obj.get()->update(param.log)) {
+                corridor_obj.reset(new Corridor(distmap_obj, mission, param));
+                if (!corridor_obj.get()->update(param.log, &planResult)) {
                     return -1;
                 }
             }
@@ -107,8 +107,8 @@ int main(int argc, char* argv[]) {
             // Step 3: Formulate QP problem and solving it to generate trajectory for quadrotor swarm
             timer_step.reset();
             {
-                RBPPlanner_obj.reset(new RBPPlanner(mission, param, planResult));
-                if (!RBPPlanner_obj.get()->update(param.log)) {
+                RBPPlanner_obj.reset(new RBPPlanner(mission, param));
+                if (!RBPPlanner_obj.get()->update(param.log, &planResult)) {
                     return -1;
                 }
             }
@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
             ROS_INFO_STREAM("Overall runtime: " << timer_total.elapsedSeconds());
 
             // Plot Planning Result
-            RBPPublisher_obj.reset(new RBPPublisher(nh, mission, param, planResult));
+            RBPPublisher_obj.reset(new RBPPublisher(nh, planResult, mission, param));
             RBPPublisher_obj->plot(param.log);
 
             start_time = ros::Time::now().toSec();

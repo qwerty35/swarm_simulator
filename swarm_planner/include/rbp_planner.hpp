@@ -18,36 +18,20 @@ ILOSTLBEGIN
 namespace SwarmPlanning {
     class RBPPlanner {
     public:
-        std_msgs::Float64MultiArray msgs_traj_info;
-        std::vector<std_msgs::Float64MultiArray> msgs_traj_coef;
-
-        RBPPlanner(std::shared_ptr<Corridor> _corridor_obj,
-                   std::shared_ptr<InitTrajPlanner> _initTrajPlanner_obj,
-                   std::vector<double> _T,
-                   Mission _mission,
+        RBPPlanner(Mission _mission,
                    Param _param)
-                : corridor_obj(std::move(_corridor_obj)),
-                  initTrajPlanner_obj(std::move(_initTrajPlanner_obj)),
-                  T(std::move(_T)),
-                  mission(std::move(_mission)),
+                : mission(std::move(_mission)),
                   param(std::move(_param)) {
-            M = T.size() - 1; // the number of segments
             n = param.n; // degree of polynomial
             phi = param.phi; // desired derivatives
             N = mission.qn; // the number of agents
             outdim = 3; // the number of outputs (x,y,z)
 
-            initTraj = initTrajPlanner_obj.get()->initTraj;
-
-            SFC = corridor_obj.get()->SFC;
-            RSFC = corridor_obj.get()->RSFC;
-
             if (param.sequential) {
                 if (param.N_b > 0 && param.N_b < N / param.batch_size) {
 
                 } else {
-                    param.N_b =
-                            N / param.batch_size; //TODO: the number of batch, NOTE THAT N/batch_size should be integer
+                    param.N_b = N / param.batch_size; //TODO: Currently, N/batch_size should be integer
                 }
             } else {
                 param.batch_size = N;
@@ -55,26 +39,30 @@ namespace SwarmPlanning {
             }
 
             //N_b = std::ceil(static_cast<double>(N) / static_cast<double>(plan_batch_size));
+        }
 
+        bool update(bool log, SwarmPlanning::PlanResult* _planResult_ptr) {
+            planResult_ptr = _planResult_ptr;
+            M = planResult_ptr->T.size() - 1; // the number of segments
             offset_dim = param.batch_size * M * (n + 1);
             offset_quad = M * (n + 1);
             offset_seg = n + 1;
-        }
-
-        bool update(bool log) {
-            IloEnv env;
-            Timer timer;
 
             coef.resize(N);
             for (int qi = 0; qi < N; qi++) {
                 coef[qi] = Eigen::MatrixXd::Zero(offset_quad, outdim);
             }
+
+            IloEnv env;
+            Timer timer;
             try {
+                // Construct constraint matrix
                 timer.reset();
                 buildConstMtx();
                 timer.stop();
                 ROS_INFO_STREAM("RBPPlanner: Constraint Matrix runtime=" << timer.elapsedSeconds());
 
+                // Solve QP
                 timer.reset();
                 solveQP(env, log);
                 timer.stop();
@@ -93,22 +81,20 @@ namespace SwarmPlanning {
             }
             env.end();
 
+            timer.reset();
             timeScale();
-            createMsg();
+            timer.stop();
+            ROS_INFO_STREAM("RBPPlanner: timeScale runtime=" << timer.elapsedSeconds());
+
+            generateROSMsg();
             return true;
         }
 
     private:
-        std::shared_ptr<Corridor> corridor_obj;
-        std::shared_ptr<InitTrajPlanner> initTrajPlanner_obj;
         Mission mission;
         Param param;
 
-        initTraj_t initTraj;
-        std::vector<double> T;
-        SFC_t SFC;
-        RSFC_t RSFC;
-
+        SwarmPlanning::PlanResult* planResult_ptr;
         int M, n, phi, N, outdim, offset_dim, offset_quad, offset_seg;
         IloNum count_x, count_eq, count_lq;
 
@@ -126,8 +112,6 @@ namespace SwarmPlanning {
             if (param.sequential) {
                 build_dummy();
             }
-//        build_dummy();
-
         }
 
         void solveQP(const IloEnv &env, bool log) {
@@ -135,7 +119,7 @@ namespace SwarmPlanning {
             IloNum total_cost = 0;
 
             IloCplex cplex(env);
-//        cplex.setParam(IloCplex::Param::TimeLimit, 0.04);
+//            cplex.setParam(IloCplex::Param::TimeLimit, 0.04);
 
             for (int iter = 0; iter < param.iteration; iter++) {
                 total_cost = 0;
@@ -146,9 +130,7 @@ namespace SwarmPlanning {
                     IloRangeArray con(env);
 
                     populatebyrow(model, var, con, gi);
-
                     cplex.extract(model);
-
                     if (log) {
                         std::string QPmodel_path = param.package_path + "/log/QPmodel.lp";
                         cplex.exportModel(QPmodel_path.c_str());
@@ -172,7 +154,7 @@ namespace SwarmPlanning {
                             for (int m = 0; m < M; m++) {
                                 Eigen::MatrixXd c = Eigen::MatrixXd::Zero(1, n + 1);
                                 Eigen::MatrixXd tm;
-                                timeMatrix(1.0 / (T[m + 1] - T[m]), tm);
+                                timeMatrix(1.0 / (planResult_ptr->T[m+1] - planResult_ptr->T[m]), &tm);
                                 tm = basis * tm;
 
                                 if (qi >= gi * param.batch_size && qi < (gi + 1) * param.batch_size) {
@@ -194,12 +176,6 @@ namespace SwarmPlanning {
                                     }
                                     coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
                                 }
-//                            {
-//                                for (int i = 0; i < n + 1; i++) {
-//                                    c = c + dummy(qi * offset_quad + m * offset_seg + i, k) * tm.row(i);
-//                                }
-//                                coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
-//                            }
                             }
                         }
                         timer.stop();
@@ -215,6 +191,7 @@ namespace SwarmPlanning {
             ROS_INFO_STREAM("RBPPlanner: QP total cost=" << total_cost);
         }
 
+        // For all segment of trajectory, check maximum velocity and accelation, and scale the segment time
         void timeScale() {
             if (phi != 3 || n != 5) {
                 return;
@@ -226,7 +203,7 @@ namespace SwarmPlanning {
             for (int qi = 0; qi < N; qi++) {
                 for (int k = 0; k < outdim; k++) {
                     for (int m = 0; m < M; m++) {
-                        derivative(qi, k, m, coef_der); //TODO: coef_def explanation
+                        derivative_segment(qi, k, m, &coef_der);
 
                         time_scale_tmp = scale_to_max_vel(qi, k, m, coef_der);
                         if (time_scale < time_scale_tmp) {
@@ -248,7 +225,7 @@ namespace SwarmPlanning {
                     for (int k = 0; k < outdim; k++) {
                         for (int m = 0; m < M; m++) {
                             Eigen::MatrixXd tm;
-                            timeMatrix(1.0 / time_scale, tm);
+                            timeMatrix(1.0 / time_scale, &tm);
 
                             coef[qi].block(m * offset_seg, k, n + 1, 1) =
                                     tm * coef[qi].block(m * offset_seg, k, n + 1, 1);
@@ -256,43 +233,46 @@ namespace SwarmPlanning {
                     }
 
                     // SFC
-                    for (int bi = 0; bi < SFC[qi].size(); bi++){
-                        SFC[qi][bi].second *= time_scale;
+                    for (int bi = 0; bi < planResult_ptr->SFC[qi].size(); bi++){
+                        planResult_ptr->SFC[qi][bi].second *= time_scale;
                     }
 
                     // RSFC
                     for (int qj = qi + 1; qj < N; qj++){
-                        for (int ri = 0; ri < RSFC[qi][qj].size(); ri++){
-                            RSFC[qi][qj][ri].second *= time_scale;
+                        for (int ri = 0; ri < planResult_ptr->RSFC[qi][qj].size(); ri++){
+                            planResult_ptr->RSFC[qi][qj][ri].second *= time_scale;
                         }
                     }
                 }
                 // segment time
                 for (int m = 0; m < M + 1; m++) {
-                    T[m] *= time_scale;
+                    planResult_ptr->T[m] *= time_scale;
                 }
             }
         }
 
-        void createMsg() {
+        // generate ros message to tranfer planning result
+        void generateROSMsg() {
             std::vector<double> traj_info;
             traj_info.emplace_back(N);
             traj_info.emplace_back(n);
-            traj_info.insert(traj_info.end(), T.begin(), T.end());
-            msgs_traj_info.data = traj_info;
+            traj_info.insert(traj_info.end(), planResult_ptr->T.begin(), planResult_ptr->T.end());
+            planResult_ptr->msgs_traj_info.data = traj_info;
 
-            msgs_traj_coef.resize(N);
+            planResult_ptr->msgs_traj_coef.resize(N);
             for (int qi = 0; qi < N; qi++) {
                 std_msgs::MultiArrayDimension rows;
                 rows.size = M * (n + 1);
-                msgs_traj_coef[qi].layout.dim.emplace_back(rows);
+                planResult_ptr->msgs_traj_coef[qi].layout.dim.emplace_back(rows);
 
                 std_msgs::MultiArrayDimension cols;
                 cols.size = outdim;
-                msgs_traj_coef[qi].layout.dim.emplace_back(cols);
+                planResult_ptr->msgs_traj_coef[qi].layout.dim.emplace_back(cols);
 
                 std::vector<double> coef_temp(coef[qi].data(), coef[qi].data() + coef[qi].size());
-                msgs_traj_coef[qi].data.insert(msgs_traj_coef[qi].data.end(), coef_temp.begin(), coef_temp.end());
+                planResult_ptr->msgs_traj_coef[qi].data.insert(planResult_ptr->msgs_traj_coef[qi].data.end(),
+                                                               coef_temp.begin(),
+                                                               coef_temp.end());
             }
         }
 
@@ -320,7 +300,7 @@ namespace SwarmPlanning {
         }
 
         Eigen::MatrixXd build_Q_p(int qi, int m) {
-            return Q_base * pow(T[m + 1] - T[m], -2 * phi + 1);
+            return Q_base * pow(planResult_ptr->T[m+1] - planResult_ptr->T[m], -2 * phi + 1);
         }
 
         void build_Aeq_base() {
@@ -352,9 +332,10 @@ namespace SwarmPlanning {
             // Build A_waypoints
             int nn = 1;
             for (int i = 0; i < phi; i++) {
-                A_waypoints.block(i, 0, 1, n + 1) = pow(T[1] - T[0], -i) * nn * A_0.row(i);
+                A_waypoints.block(i, 0, 1, n + 1) =
+                        pow(planResult_ptr->T[1] - planResult_ptr->T[0], -i) * nn * A_0.row(i);
                 A_waypoints.block(phi + i, (n + 1) * (M - 1), 1, n + 1) =
-                        pow(T[T.size() - 1] - T[T.size() - 2], -i) * nn * A_T.row(i);
+                        pow(planResult_ptr->T[planResult_ptr->T.size() - 1] - planResult_ptr->T[planResult_ptr->T.size() - 2], -i) * nn * A_T.row(i);
                 nn = nn * (n - i);
             }
 
@@ -363,9 +344,9 @@ namespace SwarmPlanning {
                 nn = 1;
                 for (int j = 0; j < phi; j++) {
                     A_cont.block(phi * (m - 1) + j, (n + 1) * (m - 1), 1, n + 1) =
-                            pow(T[m] - T[m - 1], -j) * nn * A_T.row(j);
+                            pow(planResult_ptr->T[m] - planResult_ptr->T[m-1], -j) * nn * A_T.row(j);
                     A_cont.block(phi * (m - 1) + j, (n + 1) * m, 1, n + 1) =
-                            -pow(T[m + 1] - T[m], -j) * nn * A_0.row(j);
+                            -pow(planResult_ptr->T[m+1] - planResult_ptr->T[m], -j) * nn * A_0.row(j);
                     nn = nn * (n - j);
                 }
             }
@@ -419,24 +400,25 @@ namespace SwarmPlanning {
                 int bi = 0;
                 for (int m = 0; m < M; m++) {
                     // find box number
-                    while (bi < SFC[qi].size() && SFC[qi][bi].second < T[m + 1]) {
+                    while (bi < planResult_ptr->SFC[qi].size() &&
+                           planResult_ptr->SFC[qi][bi].second < planResult_ptr->T[m + 1]) {
                         bi++;
                     }
 
                     d_upper.block((n + 1) * m, 0, n + 1, 1) =
-                            Eigen::MatrixXd::Constant(n + 1, 1, SFC[qi][bi].first[3]);
+                            Eigen::MatrixXd::Constant(n + 1, 1, planResult_ptr->SFC[qi][bi].first[3]);
                     d_lower.block((n + 1) * m, 0, n + 1, 1) =
-                            Eigen::MatrixXd::Constant(n + 1, 1, -SFC[qi][bi].first[0]);
+                            Eigen::MatrixXd::Constant(n + 1, 1, -planResult_ptr->SFC[qi][bi].first[0]);
 
                     d_upper.block((n + 1) * m, 1, n + 1, 1) =
-                            Eigen::MatrixXd::Constant(n + 1, 1, SFC[qi][bi].first[4]);
+                            Eigen::MatrixXd::Constant(n + 1, 1, planResult_ptr->SFC[qi][bi].first[4]);
                     d_lower.block((n + 1) * m, 1, n + 1, 1) =
-                            Eigen::MatrixXd::Constant(n + 1, 1, -SFC[qi][bi].first[1]);
+                            Eigen::MatrixXd::Constant(n + 1, 1, -planResult_ptr->SFC[qi][bi].first[1]);
 
                     d_upper.block((n + 1) * m, 2, n + 1, 1) =
-                            Eigen::MatrixXd::Constant(n + 1, 1, SFC[qi][bi].first[5]);
+                            Eigen::MatrixXd::Constant(n + 1, 1, planResult_ptr->SFC[qi][bi].first[5]);
                     d_lower.block((n + 1) * m, 2, n + 1, 1) =
-                            Eigen::MatrixXd::Constant(n + 1, 1, -SFC[qi][bi].first[2]);
+                            Eigen::MatrixXd::Constant(n + 1, 1, -planResult_ptr->SFC[qi][bi].first[2]);
                 }
 
                 int dlq_box_rows = d_upper.rows() + d_lower.rows();
@@ -454,11 +436,12 @@ namespace SwarmPlanning {
                     for (int m = 0; m < M; m++) {
                         // Find box number
                         int ri = 0;
-                        while (ri < RSFC[qi][qj].size() && RSFC[qi][qj][ri].second < T[m + 1]) {
+                        while (ri < planResult_ptr->RSFC[qi][qj].size() &&
+                               planResult_ptr->RSFC[qi][qj][ri].second < planResult_ptr->T[m + 1]) {
                             ri++;
                         }
 
-                        octomap::point3d normal_vector = RSFC[qi][qj][ri].first;
+                        octomap::point3d normal_vector = planResult_ptr->RSFC[qi][qj][ri].first;
                         d_upper.block((n + 1) * m, 0, n + 1, 1) =
                                 Eigen::MatrixXd::Constant(n + 1, 1, normal_vector.x());
                         d_upper.block((n + 1) * m, 1, n + 1, 1) =
@@ -487,12 +470,12 @@ namespace SwarmPlanning {
                 int m = 0;
                 int idx = 0;
                 while (m < M) {
-                    if (idx >= initTraj[qi].size() - 1) {
-                        idx = initTraj[qi].size() - 1;
+                    if (idx >= planResult_ptr->initTraj[qi].size() - 1) {
+                        idx = planResult_ptr->initTraj[qi].size() - 1;
                         for (int j = 0; j < n + 1; j++) {
-                            dummy(qi * offset_quad + m * (n + 1) + j, 0) = initTraj[qi][idx].x();
-                            dummy(qi * offset_quad + m * (n + 1) + j, 1) = initTraj[qi][idx].y();
-                            dummy(qi * offset_quad + m * (n + 1) + j, 2) = initTraj[qi][idx].z();
+                            dummy(qi * offset_quad + m * (n + 1) + j, 0) = planResult_ptr->initTraj[qi][idx].x();
+                            dummy(qi * offset_quad + m * (n + 1) + j, 1) = planResult_ptr->initTraj[qi][idx].y();
+                            dummy(qi * offset_quad + m * (n + 1) + j, 2) = planResult_ptr->initTraj[qi][idx].z();
                         }
                         m++;
                     } else {
@@ -502,11 +485,14 @@ namespace SwarmPlanning {
                                 a = 0;
                             }
                             dummy(qi * offset_quad + m * (n + 1) + j, 0) =
-                                    (1 - a) * initTraj[qi][idx].x() + a * initTraj[qi][idx + 1].x();
+                                    (1 - a) * planResult_ptr->initTraj[qi][idx].x()
+                                    + a * planResult_ptr->initTraj[qi][idx + 1].x();
                             dummy(qi * offset_quad + m * (n + 1) + j, 1) =
-                                    (1 - a) * initTraj[qi][idx].y() + a * initTraj[qi][idx + 1].y();
+                                    (1 - a) * planResult_ptr->initTraj[qi][idx].y()
+                                    + a * planResult_ptr->initTraj[qi][idx + 1].y();
                             dummy(qi * offset_quad + m * (n + 1) + j, 2) =
-                                    (1 - a) * initTraj[qi][idx].z() + a * initTraj[qi][idx + 1].z();
+                                    (1 - a) * planResult_ptr->initTraj[qi][idx].z()
+                                    + a * planResult_ptr->initTraj[qi][idx + 1].z();
                         }
                         m++;
                     }
@@ -663,48 +649,65 @@ namespace SwarmPlanning {
             count_lq = c.getSize() - count_eq;
         }
 
-        void timeMatrix(double t, Eigen::MatrixXd &tm) { //TODO: naming duplicated
-            tm = Eigen::MatrixXd::Zero(n + 1, n + 1);
-
+        // timeMatrix is mapping matrix (n + 1) x (n + 1)
+        // e.g. [1   0   0   ...]
+        //      [0   t   0   ...]
+        //      [0   0   t^2 ...]
+        //      [... ... ... ...]
+        void timeMatrix(double t, Eigen::MatrixXd* tm_ptr) {
+            *tm_ptr = Eigen::MatrixXd::Zero(n + 1, n + 1);
             for (int i = 0; i < n + 1; i++) {
-                tm(i, i) = pow(t, n - i);
+                (*tm_ptr)(i, i) = pow(t, n - i);
             }
         }
 
-        void derivative(int qi, int k, int m, Eigen::MatrixXd &coef_der) {
-            coef_der = Eigen::MatrixXd::Zero(phi + 1, n + 1);
+        // Get derivative of m^th segment(polynomial) of qi^th agent
+        // e.g. if phi = 3, n = 5, polynomial [1 1 1 1 1 1] then
+        //      coef_der = [1  1  1  1  1  1]
+        //                 [5  4  3  2  1  0]
+        //                 [20 12 6  2  0  0]
+        //                 [60 24 6  0  0  0]
+        void derivative_segment(int qi, int k, int m, Eigen::MatrixXd* coef_der_ptr) {
+            *coef_der_ptr = Eigen::MatrixXd::Zero(phi + 1, n + 1);
             for (int i = 0; i < phi + 1; i++) {
                 for (int j = 0; j < n + 1; j++) {
                     if (i <= j)
-                        coef_der(i, n - j) = derivative_coef(i, j) * coef[qi](m * offset_seg + n - j, k);
+                        (*coef_der_ptr)(i, n - j) = coef_derivative(i, j) * coef[qi](m * offset_seg + n - j, k);
                     else
-                        coef_der(i, n - j) = 0;
+                        (*coef_der_ptr)(i, n - j) = 0;
                 }
             }
         }
 
-        int derivative_coef(int i, int j) {
-            return (i == 0) ? 1 : derivative_coef(i - 1, j - 1) * j;
+        // Get j^th coefficient of i^th derivative of polynomial [1 1 1 1 ... 1]
+        int coef_derivative(int i, int j) {
+            return (i == 0) ? 1 : coef_derivative(i - 1, j - 1) * j;
         }
 
-        std::vector<double> roots(int n_poly, const Eigen::MatrixXd &coef_der) {
+        // Get roots of i^th derivative of polynomial with coefficient coef
+        // The roots of the polynomial are calculated by computing the eigenvalues of the companion matrix, A
+        std::vector<double> roots_derivative(int i, const Eigen::MatrixXd& coef_der) {
             std::vector<double> roots_der;
-            Eigen::MatrixXd A = Eigen::MatrixXd::Zero(n_poly, n_poly);
-            for (int j = 0; j < n_poly; j++) {
-                if (j < n_poly - 1) {
+            int n_der = n - i;
+            int iter = 0;
+            while(n_der > 0 && coef_der(i, n - i - n_der) == 0 ){
+                n_der--;
+            }
+            if(n_der == 0){
+                return roots_der; // return empty vector
+            }
+
+            Eigen::MatrixXd A = Eigen::MatrixXd::Zero(n_der, n_der);
+            for (int j = 0; j < n_der; j++) {
+                if (j < n_der - 1) {
                     A(j + 1, j) = 1;
                 }
-                if (coef_der(n_poly - 1, 0) != 0) {
-                    A(0, j) = -coef_der(n_poly - 1, j + 1) / coef_der(n_poly - 1, 0);
-                } else {
-                    ROS_ERROR("RBPPlanner: root error");
-                    return roots_der;
-                }
+                A(0, j) = -coef_der(i, n - i - n_der + j + 1) / coef_der(i, n - i - n_der);
             }
 
             Eigen::EigenSolver<Eigen::MatrixXd> es(A);
-            for (int i = 0; i < n_poly; i++) {
-                complex<double> lambda = es.eigenvalues()[i];
+            for (int j = 0; j < i; j++) {
+                complex<double> lambda = es.eigenvalues()[j];
                 if (lambda.imag() == 0) {
                     roots_der.emplace_back(lambda.real());
                 }
@@ -712,24 +715,23 @@ namespace SwarmPlanning {
             return roots_der;
         }
 
-        double scale_to_max_vel(int qi, int k, int m, const Eigen::MatrixXd &coef_der) {
-            assert(phi == 3 && n == 5);
-            double scale_update_rate = 1.1;
+        double scale_to_max_vel(int qi, int k, int m, const Eigen::MatrixXd& coef_der) {
+            assert(phi > 1);
+            double scale_update_rate = 1.1; //TODO: parameterization?
 
-            // Get maximum accelaration
-            double vel_max, t_max = 0;
-
-            std::vector<double> ts = roots(3, coef_der);
+            // Get maximum velocity
+            double vel_max = 0, t_max = 0;
+            std::vector<double> ts = roots_derivative(2, coef_der);
             ts.emplace_back(0);
-            ts.emplace_back(T[m + 1] - T[m]);
+            ts.emplace_back(planResult_ptr->T[m + 1] - planResult_ptr->T[m]);
             for (auto t : ts) {
-                if (t < 0 || t > T[m + 1] - T[m]) {
+                if (t < 0 || t > planResult_ptr->T[m + 1] - planResult_ptr->T[m]) {
                     continue;
                 }
 
                 double vel = 0;
-                for (int i = 0; i < 5; i++) {
-                    vel += coef_der(1, i) * pow(t, 4 - i);
+                for (int i = 0; i < n - 1; i++) {
+                    vel += coef_der(1, i) * pow(t, n - 1 - i);
                 }
                 vel = abs(vel);
                 if (vel_max < vel) {
@@ -738,15 +740,14 @@ namespace SwarmPlanning {
                 }
             }
 
-
             // time_scale update
             double time_scale = 1;
             while (vel_max > mission.max_vel[qi][k]) {
                 time_scale *= scale_update_rate;
 
                 double vel = 0;
-                for (int i = 0; i < 5; i++) {
-                    vel += coef_der(1, i) * pow(1 / time_scale, n - i) * pow(t_max, 4 - i);
+                for (int i = 0; i < n - 1; i++) {
+                    vel += coef_der(1, i) * pow(1 / time_scale, n - i) * pow(t_max, n - 1 - i);
                 }
                 vel_max = abs(vel);
             }
@@ -757,7 +758,7 @@ namespace SwarmPlanning {
 
         double scale_to_max_acc(int qi, int k, int m, const Eigen::MatrixXd &coef_der) {
             assert(phi == 3 && n == 5);
-            double scale_update_rate = 1.1;
+            double scale_update_rate = 1.1; //TODO: parameterization?
 
             // Get maximum accelaration
             double a, b, c, D, acc_max, t_max = 0;
@@ -767,13 +768,17 @@ namespace SwarmPlanning {
             D = b * b - 4 * a * c;
             acc_max = 0;
 
-            std::vector<double> ts{0, T[m + 1] - T[m]};
-            if (D >= 0) {
+            std::vector<double> ts{0, planResult_ptr->T[m+1] - planResult_ptr->T[m]};
+            if (D >= 0 && a != 0) {
                 ts.emplace_back((-b + sqrt(D)) / (2 * a));
                 ts.emplace_back((-b - sqrt(D)) / (2 * a));
             }
+            else if(a == 0 && b != 0){
+                ts.emplace_back(-c/b);
+            }
+
             for (auto t : ts) {
-                if (t < 0 || t > T[m + 1] - T[m]) {
+                if (t < 0 || t > planResult_ptr->T[m+1] - planResult_ptr->T[m]) {
                     continue;
                 }
 

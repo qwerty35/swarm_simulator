@@ -31,24 +31,20 @@ namespace SwarmPlanning {
     class RBPPublisher {
     public:
         RBPPublisher(ros::NodeHandle _nh,
-                     std::shared_ptr<RBPPlanner> _RBPPlanner_obj,
-                     std::shared_ptr<Corridor> _corridor_obj,
-                     std::shared_ptr<InitTrajPlanner> _initTrajPlanner_obj,
+                     SwarmPlanning::PlanResult _planResult,
                      SwarmPlanning::Mission _mission,
                      SwarmPlanning::Param _param)
                 : nh(std::move(_nh)),
-                  RBPPlanner_obj(std::move(_RBPPlanner_obj)),
-                  corridor_obj(std::move(_corridor_obj)),
-                  initTrajPlanner_obj(std::move(_initTrajPlanner_obj)),
+                  planResult(std::move(_planResult)),
                   mission(std::move(_mission)),
                   param(std::move(_param)) {
             qn = mission.qn;
             outdim = 3;
 
-            M = RBPPlanner_obj->msgs_traj_info.data.size() - 2 - 1;
+            M = planResult.msgs_traj_info.data.size() - 2 - 1;
             T.resize(M + 1);
             for (int m = 0; m < M + 1; m++) {
-                T[m] = RBPPlanner_obj->msgs_traj_info.data.at(m + 2);
+                T[m] = planResult.msgs_traj_info.data.at(m + 2);
             }
 
             dt = 0.1;
@@ -62,9 +58,9 @@ namespace SwarmPlanning {
             quad_state.resize(qn);
             currentState.resize(qn);
             for (int qi = 0; qi < qn; qi++) {
-                float rows = RBPPlanner_obj->msgs_traj_coef[qi].layout.dim.at(0).size;
-                float cols = RBPPlanner_obj->msgs_traj_coef[qi].layout.dim.at(1).size;
-                std::vector<double> data = RBPPlanner_obj->msgs_traj_coef[qi].data;
+                float rows = planResult.msgs_traj_coef[qi].layout.dim.at(0).size;
+                float cols = planResult.msgs_traj_coef[qi].layout.dim.at(1).size;
+                std::vector<double> data = planResult.msgs_traj_coef[qi].data;
                 coef[qi] = Eigen::Map<Eigen::MatrixXd>(data.data(), rows, cols);
 
                 currentState[qi].resize(outdim * param.phi);
@@ -106,11 +102,11 @@ namespace SwarmPlanning {
 
         void publish() {
             for (int qi = 0; qi < qn; qi++) {
-                pubs_traj_coef[qi].publish(RBPPlanner_obj.get()->msgs_traj_coef[qi]);
+                pubs_traj_coef[qi].publish(planResult.msgs_traj_coef[qi]);
                 pubs_traj[qi].publish(msgs_traj[qi]);
                 pubs_relBox[qi].publish(msgs_relBox[qi]);
             }
-            pub_traj_info.publish(RBPPlanner_obj.get()->msgs_traj_info);
+            pub_traj_info.publish(planResult.msgs_traj_info);
             pub_initTraj.publish(msgs_initTraj);
             pub_obsBox.publish(msgs_obsBox);
             pub_feasibleBox.publish(msgs_feasibleBox);
@@ -136,9 +132,7 @@ namespace SwarmPlanning {
 
     private:
         ros::NodeHandle nh;
-        std::shared_ptr<RBPPlanner> RBPPlanner_obj;
-        std::shared_ptr<Corridor> corridor_obj;
-        std::shared_ptr<InitTrajPlanner> initTrajPlanner_obj;
+        SwarmPlanning::PlanResult planResult;
         SwarmPlanning::Mission mission;
         SwarmPlanning::Param param;
 
@@ -243,7 +237,7 @@ namespace SwarmPlanning {
         void update_initTraj() {
             visualization_msgs::MarkerArray mk_array;
             for (int qi = 0; qi < qn; qi++) {
-                for (int m = 0; m < initTrajPlanner_obj->initTraj[qi].size(); m++) {
+                for (int m = 0; m < planResult.initTraj[qi].size(); m++) {
                     visualization_msgs::Marker mk;
                     mk.header.frame_id = "world";
                     mk.header.stamp = ros::Time::now();
@@ -262,7 +256,7 @@ namespace SwarmPlanning {
                     mk.color.b = param.color[qi][2];
 
                     mk.id = m;
-                    octomap::point3d p_init = initTrajPlanner_obj->initTraj[qi][m];
+                    octomap::point3d p_init = planResult.initTraj[qi][m];
                     mk.pose.position.x = p_init.x();
                     mk.pose.position.y = p_init.y();
                     mk.pose.position.z = p_init.z();
@@ -282,12 +276,12 @@ namespace SwarmPlanning {
             for (int qi = 0; qi < qn; qi++) {
                 // find current obsBox number
                 int box_curr = 0;
-                while (box_curr < corridor_obj->SFC[qi].size() &&
-                       corridor_obj->SFC[qi][box_curr].second < current_time) {
+                while (box_curr < planResult.SFC[qi].size() &&
+                        planResult.SFC[qi][box_curr].second < current_time) {
                     box_curr++;
                 }
-                if (box_curr >= corridor_obj->SFC[qi].size()) {
-                    box_curr = corridor_obj->SFC[qi].size() - 1;
+                if (box_curr >= planResult.SFC[qi].size()) {
+                    box_curr = planResult.SFC[qi].size() - 1;
                 }
 
                 visualization_msgs::Marker mk;
@@ -301,10 +295,10 @@ namespace SwarmPlanning {
                 mk.pose.orientation.z = 0.0;
                 mk.pose.orientation.w = 1.0;
 
-                for (int bi = 0; bi < corridor_obj->SFC[qi].size(); bi++) {
+                for (int bi = 0; bi < planResult.SFC[qi].size(); bi++) {
                     mk.id = bi;
 //                mk.header.stamp = ros::Time(obstacle_boxes[qi][bi].second);
-                    std::vector<double> obstacle_box = corridor_obj->SFC[qi][bi].first;
+                    std::vector<double> obstacle_box = planResult.SFC[qi][bi].first;
 
                     {
                         double margin = mission.quad_size[qi];
@@ -340,12 +334,12 @@ namespace SwarmPlanning {
                 visualization_msgs::MarkerArray mk_array;
                 for (int qj = qi + 1; qj < qn; qj++) {
                     int box_curr = 0;
-                    while (box_curr < corridor_obj->RSFC[qi][qj].size() &&
-                           corridor_obj->RSFC[qi][qj][box_curr].second < current_time) {
+                    while (box_curr < planResult.RSFC[qi][qj].size() &&
+                           planResult.RSFC[qi][qj][box_curr].second < current_time) {
                         box_curr++;
                     }
-                    if (box_curr >= corridor_obj->RSFC[qi][qj].size()) {
-                        box_curr = corridor_obj->RSFC[qi][qj].size() - 1;
+                    if (box_curr >= planResult.RSFC[qi][qj].size()) {
+                        box_curr = planResult.RSFC[qi][qj].size() - 1;
                     }
 
                     visualization_msgs::Marker mk;
@@ -430,7 +424,7 @@ namespace SwarmPlanning {
                     qi_vector.y() = pva[qi](0, 1);
                     qi_vector.z() = pva[qi](0, 2);
 
-                    octomap::point3d normal_vector = corridor_obj->RSFC[qi][qj][box_curr].first;
+                    octomap::point3d normal_vector = planResult.RSFC[qi][qj][box_curr].first;
                     Eigen::Vector3d V3d_normal_vector(normal_vector.x(), normal_vector.y(), normal_vector.z());
 
                     double distance = r / normal_vector.norm() + mk.scale.z / 2;
@@ -503,34 +497,34 @@ namespace SwarmPlanning {
                     octomap::point3d normal_vector;
                     int box_curr = 0;
                     if (qi < qj) { // RSFC
-                        while (box_curr < corridor_obj->RSFC[qi][qj].size() &&
-                               corridor_obj->RSFC[qi][qj][box_curr].second < current_time) {
+                        while (box_curr < planResult.RSFC[qi][qj].size() &&
+                               planResult.RSFC[qi][qj][box_curr].second < current_time) {
                             box_curr++;
                         }
-                        if (box_curr >= corridor_obj->RSFC[qi][qj].size()) {
-                            box_curr = corridor_obj->RSFC[qi][qj].size() - 1;
+                        if (box_curr >= planResult.RSFC[qi][qj].size()) {
+                            box_curr = planResult.RSFC[qi][qj].size() - 1;
                         }
 
-                        normal_vector = corridor_obj->RSFC[qi][qj][box_curr].first;
+                        normal_vector = planResult.RSFC[qi][qj][box_curr].first;
                     } else if (qi > qj) { // RSFC
-                        while (box_curr < corridor_obj->RSFC[qj][qi].size() &&
-                               corridor_obj->RSFC[qj][qi][box_curr].second < current_time) {
+                        while (box_curr < planResult.RSFC[qj][qi].size() &&
+                               planResult.RSFC[qj][qi][box_curr].second < current_time) {
                             box_curr++;
                         }
-                        if (box_curr >= corridor_obj->RSFC[qj][qi].size()) {
-                            box_curr = corridor_obj->RSFC[qj][qi].size() - 1;
+                        if (box_curr >= planResult.RSFC[qj][qi].size()) {
+                            box_curr = planResult.RSFC[qj][qi].size() - 1;
                         }
 
-                        normal_vector = -corridor_obj->RSFC[qj][qi][box_curr].first;
+                        normal_vector = -planResult.RSFC[qj][qi][box_curr].first;
                     } else { // SFC
-                        while (box_curr < corridor_obj->SFC[qi].size() &&
-                               corridor_obj->SFC[qi][box_curr].second < current_time) {
+                        while (box_curr < planResult.SFC[qi].size() &&
+                               planResult.SFC[qi][box_curr].second < current_time) {
                             box_curr++;
                         }
-                        if (box_curr >= corridor_obj->SFC[qi].size()) {
-                            box_curr = corridor_obj->SFC[qi].size() - 1;
+                        if (box_curr >= planResult.SFC[qi].size()) {
+                            box_curr = planResult.SFC[qi].size() - 1;
                         }
-                        std::vector<double> obstacle_box = corridor_obj->SFC[qi][box_curr].first;
+                        std::vector<double> obstacle_box = planResult.SFC[qi][box_curr].first;
                         for (int iter = 0; iter < 6; iter++) {
                             double margin = mission.quad_size[qi];
                             if (iter == 2 || iter == 5)

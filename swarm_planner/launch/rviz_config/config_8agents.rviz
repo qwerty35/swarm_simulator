@@ -311,13 +311,20 @@ Visualization Manager:
       Queue Size: 10
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /obstacle_box
       Name: MarkerArray
       Namespaces:
-        {}
+        mav0: false
+        mav1: false
+        mav2: false
+        mav3: false
+        mav4: false
+        mav5: false
+        mav6: false
+        mav7: false
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /initTraj
@@ -328,7 +335,7 @@ Visualization Manager:
         mav2: false
         mav3: false
         mav4: false
-        mav5: false
+        mav5: true
         mav6: false
         mav7: false
       Queue Size: 100

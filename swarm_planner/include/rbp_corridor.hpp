@@ -10,39 +10,35 @@
 namespace SwarmPlanning {
     class Corridor {
     public:
-        SFC_t SFC; // safe flight corridors to avoid obstacles
-        RSFC_t RSFC; // relative safe flight corridors to avoid inter-collision
-        std::vector<double> T; // segment time
-
-        Corridor(std::shared_ptr<InitTrajPlanner> _initTrajPlanner_obj,
-                 std::shared_ptr<DynamicEDTOctomap> _distmap_obj,
+        Corridor(std::shared_ptr<DynamicEDTOctomap> _distmap_obj,
                  Mission _mission,
                  Param _param)
-                : initTrajPlanner_obj(std::move(_initTrajPlanner_obj)),
-                  distmap_obj(std::move(_distmap_obj)),
+                : distmap_obj(std::move(_distmap_obj)),
                   mission(std::move(_mission)),
                   param(std::move(_param)) {
-            initTraj = initTrajPlanner_obj.get()->initTraj;
         }
 
-        bool update(bool log) {
-            T = initTrajPlanner_obj.get()->T;
-            makespan = initTrajPlanner_obj.get()->T.back();
-            return updateObsBox(log) && updateRelBox(log);
+        bool update(bool _log, SwarmPlanning::PlanResult* _planResult_ptr) {
+            log = _log;
+            planResult_ptr = _planResult_ptr;
+            makespan = planResult_ptr->T.back();
+            return updateObsBox() && updateRelBox();
         }
 
-        bool update_flat_box(bool log) {
-            makespan = initTrajPlanner_obj.get()->T.size() - 1;
-            return updateFlatObsBox(log) && updateFlatRelBox(log) && updateTs();
+        bool update_flat_box(bool _log, SwarmPlanning::PlanResult* _planResult_ptr) {
+            log = _log;
+            planResult_ptr = _planResult_ptr;
+            makespan = planResult_ptr->T.size() - 1;
+            return updateFlatObsBox() && updateFlatRelBox() && updateTs();
         }
 
     private:
-        std::shared_ptr<SwarmPlanning::InitTrajPlanner> initTrajPlanner_obj;
         std::shared_ptr<DynamicEDTOctomap> distmap_obj;
         Mission mission;
         Param param;
 
-        initTraj_t initTraj;
+        bool log;
+        SwarmPlanning::PlanResult* planResult_ptr;
         double makespan;
 
         bool isObstacleInBox(const std::vector<double> &box, double margin) {
@@ -149,22 +145,22 @@ namespace SwarmPlanning {
             }
         }
 
-        bool updateObsBox(bool log) {
+        bool updateObsBox() {
             double x_next, y_next, z_next, dx, dy, dz;
             Timer timer;
 
-            SFC.resize(mission.qn);
+            planResult_ptr->SFC.resize(mission.qn);
             for (size_t qi = 0; qi < mission.qn; ++qi) {
                 std::vector<double> box_prev{0, 0, 0, 0, 0, 0};
 
-                for (int i = 0; i < initTraj[qi].size() - 1; i++) {
-                    auto state = initTraj[qi][i];
+                for (int i = 0; i < planResult_ptr->initTraj[qi].size() - 1; i++) {
+                    auto state = planResult_ptr->initTraj[qi][i];
                     double x = state.x();
                     double y = state.y();
                     double z = state.z();
 
                     std::vector<double> box;
-                    auto state_next = initTraj[qi][i + 1];
+                    auto state_next = planResult_ptr->initTraj[qi][i + 1];
                     x_next = state_next.x();
                     y_next = state_next.y();
                     z_next = state_next.z();
@@ -187,19 +183,19 @@ namespace SwarmPlanning {
                     }
                     expand_box(box, mission.quad_size[qi]);
 
-                    SFC[qi].emplace_back(std::make_pair(box, -1));
+                    planResult_ptr->SFC[qi].emplace_back(std::make_pair(box, -1));
 
                     box_prev = box;
                 }
 
                 // Generate box time segment
-                int box_max = SFC[qi].size();
-                int path_max = initTraj[qi].size();
+                int box_max = planResult_ptr->SFC[qi].size();
+                int path_max = planResult_ptr->initTraj[qi].size();
                 Eigen::MatrixXd box_log = Eigen::MatrixXd::Zero(box_max, path_max);
 
                 for (int i = 0; i < box_max; i++) {
                     for (int j = 0; j < path_max; j++) {
-                        if (isPointInBox(initTraj[qi][j], SFC[qi][i].first)) {
+                        if (isPointInBox(planResult_ptr->initTraj[qi][j], planResult_ptr->SFC[qi][i].first)) {
                             if (j == 0) {
                                 box_log(i, j) = 1;
                             } else {
@@ -225,7 +221,7 @@ namespace SwarmPlanning {
                             count++;
                         }
                         int obs_index = path_iter + count / 2;
-                        SFC[qi][box_iter].second = T[obs_index];
+                        planResult_ptr->SFC[qi][box_iter].second = planResult_ptr->T[obs_index];
 
                         path_iter = path_iter + count / 2;
                         box_iter++;
@@ -234,7 +230,7 @@ namespace SwarmPlanning {
                         path_iter--;
                     }
                 }
-                SFC[qi][box_max - 1].second = makespan;
+                planResult_ptr->SFC[qi][box_max - 1].second = makespan;
             }
 
             timer.stop();
@@ -242,24 +238,24 @@ namespace SwarmPlanning {
             return true;
         }
 
-        bool updateRelBox(bool log) {
+        bool updateRelBox() {
             Timer timer;
 
-            RSFC.resize(mission.qn);
+            planResult_ptr->RSFC.resize(mission.qn);
             for (int qi = 0; qi < mission.qn; qi++) {
-                RSFC[qi].resize(mission.qn);
+                planResult_ptr->RSFC[qi].resize(mission.qn);
                 for (int qj = qi + 1; qj < mission.qn; qj++) {
-                    int path_size = initTraj[qi].size();
-                    if (initTraj[qi].size() != initTraj[qj].size()) {
+                    int path_size = planResult_ptr->initTraj[qi].size();
+                    if (planResult_ptr->initTraj[qi].size() != planResult_ptr->initTraj[qj].size()) {
                         ROS_ERROR("Corridor: size of initial trajectories must be equal");
                         return false;
                     }
 
                     octomap::point3d a, b, c, n, m;
                     double dist, dist_min;
-                    for (int iter = 1; iter < T.size(); iter++) {
-                        a = initTraj[qj][iter - 1] - initTraj[qi][iter - 1];
-                        b = initTraj[qj][iter] - initTraj[qi][iter];
+                    for (int iter = 1; iter < planResult_ptr->T.size(); iter++) {
+                        a = planResult_ptr->initTraj[qj][iter - 1] - planResult_ptr->initTraj[qi][iter - 1];
+                        b = planResult_ptr->initTraj[qj][iter] - planResult_ptr->initTraj[qi][iter];
 
                         // Coordinate transformation
                         a.z() = a.z() / param.downwash;
@@ -294,7 +290,7 @@ namespace SwarmPlanning {
                             return false;
                         }
 
-                        RSFC[qi][qj].emplace_back(std::make_pair(m, T[iter]));
+                        planResult_ptr->RSFC[qi][qj].emplace_back(std::make_pair(m, planResult_ptr->T[iter]));
                     }
                 }
             }
@@ -304,24 +300,24 @@ namespace SwarmPlanning {
             return true;
         }
 
-        bool updateFlatObsBox(bool log) {
+        bool updateFlatObsBox() {
             double x_next, y_next, z_next, dx, dy, dz;
 
             Timer timer;
 
-            SFC.resize(mission.qn);
+            planResult_ptr->SFC.resize(mission.qn);
             for (size_t qi = 0; qi < mission.qn; ++qi) {
                 std::vector<double> box_prev;
                 for (int i = 0; i < 6; i++) box_prev.emplace_back(0);
 
-                for (int i = 0; i < initTraj[qi].size() - 1; i++) {
-                    auto state = initTraj[qi][i];
+                for (int i = 0; i < planResult_ptr->initTraj[qi].size() - 1; i++) {
+                    auto state = planResult_ptr->initTraj[qi][i];
                     double x = state.x();
                     double y = state.y();
                     double z = state.z();
 
                     std::vector<double> box;
-                    auto state_next = initTraj[qi][i + 1];
+                    auto state_next = planResult_ptr->initTraj[qi][i + 1];
                     x_next = state_next.x();
                     y_next = state_next.y();
                     z_next = state_next.z();
@@ -345,20 +341,20 @@ namespace SwarmPlanning {
                     }
                     expand_box(box, mission.quad_size[qi]);
 
-                    SFC[qi].emplace_back(std::make_pair(box, -1));
+                    planResult_ptr->SFC[qi].emplace_back(std::make_pair(box, -1));
 
                     box_prev = box;
                 }
 
                 // Generate box time segment
-                int box_max = SFC[qi].size();
-                int path_max = initTraj[qi].size();
+                int box_max = planResult_ptr->SFC[qi].size();
+                int path_max = planResult_ptr->initTraj[qi].size();
                 Eigen::MatrixXd box_log = Eigen::MatrixXd::Zero(box_max, path_max);
                 std::vector<int> ts;
 
                 for (int i = 0; i < box_max; i++) {
                     for (int j = 0; j < path_max; j++) {
-                        if (isPointInBox(initTraj[qi][j], SFC[qi][i].first)) {
+                        if (isPointInBox(planResult_ptr->initTraj[qi][j], planResult_ptr->SFC[qi][i].first)) {
                             if (j == 0) {
                                 box_log(i, j) = 1;
                             } else {
@@ -385,14 +381,14 @@ namespace SwarmPlanning {
                             count++;
                         }
                         double obs_index = path_iter + count / 2;
-                        SFC[qi][box_iter].second = obs_index * param.time_step;
-                        T.emplace_back(obs_index);
+                        planResult_ptr->SFC[qi][box_iter].second = obs_index * param.time_step;
+                        planResult_ptr->T.emplace_back(obs_index);
 
                         path_iter = path_iter + count / 2;
                         box_iter++;
                     }
                 }
-                SFC[qi][box_max - 1].second = makespan * param.time_step;
+                planResult_ptr->SFC[qi][box_max - 1].second = makespan * param.time_step;
             }
 
             timer.stop();
@@ -400,17 +396,19 @@ namespace SwarmPlanning {
             return true;
         }
 
-        bool updateFlatRelBox(bool log) {
+        bool updateFlatRelBox() {
             int sector_range[6] = {-3, -2, -1, 1, 2, 3};
 
             Timer timer;
 
-            RSFC.resize(mission.qn);
+            planResult_ptr->RSFC.resize(mission.qn);
             for (int qi = 0; qi < mission.qn; qi++) {
-                RSFC[qi].resize(mission.qn);
+                planResult_ptr->RSFC[qi].resize(mission.qn);
                 for (int qj = qi + 1; qj < mission.qn; qj++) {
-                    int path_max = std::max<int>(initTraj[qi].size(), initTraj[qj].size());
-                    int path_min = std::min<int>(initTraj[qi].size(), initTraj[qj].size());
+                    int path_max = std::max<int>(planResult_ptr->initTraj[qi].size(),
+                                                 planResult_ptr->initTraj[qj].size());
+                    int path_min = std::min<int>(planResult_ptr->initTraj[qi].size(),
+                                                 planResult_ptr->initTraj[qj].size());
                     Eigen::MatrixXd sector_log = Eigen::MatrixXd::Zero(6, path_max);
 
                     for (int iter = 0; iter < path_max; iter++) {
@@ -419,17 +417,26 @@ namespace SwarmPlanning {
                         double dx, dy, dz;
 
                         if (iter < path_min) {
-                            dx = round((initTraj[qj][iter].x() - initTraj[qi][iter].x()) / param.grid_xy_res);
-                            dy = round((initTraj[qj][iter].y() - initTraj[qi][iter].y()) / param.grid_xy_res);
-                            dz = round((initTraj[qj][iter].z() - initTraj[qi][iter].z()) / param.grid_z_res);
-                        } else if (initTraj[qi].size() == path_min) {
-                            dx = round((initTraj[qj][iter].x() - initTraj[qi][path_min - 1].x()) / param.grid_xy_res);
-                            dy = round((initTraj[qj][iter].y() - initTraj[qi][path_min - 1].y()) / param.grid_xy_res);
-                            dz = round((initTraj[qj][iter].z() - initTraj[qi][path_min - 1].z()) / param.grid_z_res);
+                            dx = round((planResult_ptr->initTraj[qj][iter].x()
+                                    - planResult_ptr->initTraj[qi][iter].x()) / param.grid_xy_res);
+                            dy = round((planResult_ptr->initTraj[qj][iter].y()
+                                    - planResult_ptr->initTraj[qi][iter].y()) / param.grid_xy_res);
+                            dz = round((planResult_ptr->initTraj[qj][iter].z()
+                                    - planResult_ptr->initTraj[qi][iter].z()) / param.grid_z_res);
+                        } else if (planResult_ptr->initTraj[qi].size() == path_min) {
+                            dx = round((planResult_ptr->initTraj[qj][iter].x()
+                                    - planResult_ptr->initTraj[qi][path_min - 1].x()) / param.grid_xy_res);
+                            dy = round((planResult_ptr->initTraj[qj][iter].y()
+                                    - planResult_ptr->initTraj[qi][path_min - 1].y()) / param.grid_xy_res);
+                            dz = round((planResult_ptr->initTraj[qj][iter].z()
+                                    - planResult_ptr->initTraj[qi][path_min - 1].z()) / param.grid_z_res);
                         } else {
-                            dx = round((initTraj[qj][path_min - 1].x() - initTraj[qi][iter].x()) / param.grid_xy_res);
-                            dy = round((initTraj[qj][path_min - 1].y() - initTraj[qi][iter].y()) / param.grid_xy_res);
-                            dz = round((initTraj[qj][path_min - 1].z() - initTraj[qi][iter].z()) / param.grid_z_res);
+                            dx = round((planResult_ptr->initTraj[qj][path_min - 1].x()
+                                    - planResult_ptr->initTraj[qi][iter].x()) / param.grid_xy_res);
+                            dy = round((planResult_ptr->initTraj[qj][path_min - 1].y()
+                                    - planResult_ptr->initTraj[qi][iter].y()) / param.grid_xy_res);
+                            dz = round((planResult_ptr->initTraj[qj][path_min - 1].z()
+                                    - planResult_ptr->initTraj[qi][iter].z()) / param.grid_z_res);
                         }
                         // Caution: (q1_size+q2_size)/grid_size should be small enough!
                         rel_pose[1] = (dx > SP_EPSILON_FLOAT) - (dx < -SP_EPSILON_FLOAT);
@@ -455,7 +462,7 @@ namespace SwarmPlanning {
                     int sector_next = -1;
                     int count_next = sector_log.col(iter).maxCoeff(&sector_next);
 
-                    RSFC[qi][qj].emplace_back(
+                    planResult_ptr->RSFC[qi][qj].emplace_back(
                             std::make_pair(sec2normVec(sector_range[sector_next]), makespan * param.time_step));
                     iter = iter - count_next + 1;
 
@@ -503,10 +510,10 @@ namespace SwarmPlanning {
                             rel_index = floor(iter + count / 2.0);
                         }
 
-                        RSFC[qi][qj].insert(RSFC[qi][qj].begin(),
-                                            std::make_pair(sec2normVec(sector_range[sector_curr]),
-                                                           rel_index * param.time_step));
-                        T.emplace_back(rel_index);
+                        planResult_ptr->RSFC[qi][qj].insert(planResult_ptr->RSFC[qi][qj].begin(),
+                                                            std::make_pair(sec2normVec(sector_range[sector_curr]),
+                                                                           rel_index * param.time_step));
+                        planResult_ptr->T.emplace_back(rel_index);
 
                         sector_next = sector_curr;
                         iter = iter - sector_log.col(iter).maxCoeff() + 1;
@@ -546,8 +553,8 @@ namespace SwarmPlanning {
         bool updateTs() {
             Timer timer;
 
-            T.emplace_back(0);
-            T.emplace_back(makespan);
+            planResult_ptr->T.emplace_back(0);
+            planResult_ptr->T.emplace_back(makespan);
 
 //        // Delete redundant time delay
 //        for(int qi = 0; qi < mission.qn; qi++){
@@ -626,8 +633,9 @@ namespace SwarmPlanning {
 //        }
 
             // update ts_total
-            std::sort(T.begin(), T.end());
-            T.erase(std::unique(T.begin(), T.end()), T.end());
+            std::sort(planResult_ptr->T.begin(), planResult_ptr->T.end());
+            planResult_ptr->T.erase(std::unique(planResult_ptr->T.begin(), planResult_ptr->T.end()),
+                                    planResult_ptr->T.end());
 
 //        // check isolate box and update ts_each
 //        for(int qi = 0; qi < mission.qn; qi++){
@@ -657,8 +665,8 @@ namespace SwarmPlanning {
 //        }
 
             // scaling
-            for (int i = 0; i < T.size(); i++) {
-                T[i] = T[i] * param.time_step;
+            for (int i = 0; i < planResult_ptr->T.size(); i++) {
+                planResult_ptr->T[i] = planResult_ptr->T[i] * param.time_step;
             }
 
             timer.stop();

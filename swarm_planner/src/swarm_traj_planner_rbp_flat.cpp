@@ -54,6 +54,7 @@ int main(int argc, char* argv[]) {
     param.setColor(mission.qn);
 
     // Submodules
+    SwarmPlanning::PlanResult planResult;
     std::shared_ptr<DynamicEDTOctomap> distmap_obj;
     std::shared_ptr<InitTrajPlanner> initTrajPlanner_obj;
     std::shared_ptr<Corridor> corridor_obj;
@@ -85,7 +86,7 @@ int main(int argc, char* argv[]) {
             timer_step.reset();
             {
                 initTrajPlanner_obj.reset(new ECBSPlanner(distmap_obj, mission, param));
-                if (!initTrajPlanner_obj.get()->update(param.log)) {
+                if (!initTrajPlanner_obj.get()->update(param.log, &planResult)) {
                     return -1;
                 }
             }
@@ -95,8 +96,8 @@ int main(int argc, char* argv[]) {
             // Step 2: Generate SFC, RSFC
             timer_step.reset();
             {
-                corridor_obj.reset(new Corridor(initTrajPlanner_obj, distmap_obj, mission, param));
-                if (!corridor_obj.get()->update_flat_box(param.log)) {
+                corridor_obj.reset(new Corridor(distmap_obj, mission, param));
+                if (!corridor_obj.get()->update_flat_box(param.log, &planResult)) {
                     return -1;
                 }
             }
@@ -106,8 +107,8 @@ int main(int argc, char* argv[]) {
             // Step 3: Formulate QP problem and solving it to generate trajectory for quadrotor swarm
             timer_step.reset();
             {
-                RBPPlanner_obj.reset(new RBPPlanner(corridor_obj, initTrajPlanner_obj, corridor_obj.get()->T, mission, param));
-                if (!RBPPlanner_obj.get()->update(param.log)) {
+                RBPPlanner_obj.reset(new RBPPlanner(mission, param));
+                if (!RBPPlanner_obj.get()->update(param.log, &planResult)) {
                     return -1;
                 }
             }
@@ -118,7 +119,7 @@ int main(int argc, char* argv[]) {
             ROS_INFO_STREAM("Overall runtime: " << timer_total.elapsedSeconds());
 
             // Plot Planning Result
-            RBPPublisher_obj.reset(new RBPPublisher(nh, RBPPlanner_obj, corridor_obj, initTrajPlanner_obj, mission, param));
+            RBPPublisher_obj.reset(new RBPPublisher(nh, planResult, mission, param));
             RBPPublisher_obj->plot(param.log);
 
             start_time = ros::Time::now().toSec();

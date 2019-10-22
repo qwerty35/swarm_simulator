@@ -19,10 +19,10 @@ typedef std::vector<std::vector<std::vector<std::pair<octomap::point3d, double> 
 
 namespace SwarmPlanning{
     struct PlanResult{
-        initTraj_t initTraj;
-        std::vector<double> T;
-        SFC_t SFC;
-        RSFC_t RSFC;
+        initTraj_t initTraj; // discrete initial trajectory: pi_0,...,pi_M
+        std::vector<double> T; // segment time: T_0,...,T_M
+        SFC_t SFC; // safe flight corridors to avoid obstacles
+        RSFC_t RSFC; // relative safe flight corridors to avoid inter-collision
         std_msgs::Float64MultiArray msgs_traj_info;
         std::vector<std_msgs::Float64MultiArray> msgs_traj_coef;
     };

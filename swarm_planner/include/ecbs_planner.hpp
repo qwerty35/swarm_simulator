@@ -18,11 +18,11 @@ namespace SwarmPlanning {
             setWaypoints();
         }
 
-        bool update(bool log) override {
+        bool update(bool log, SwarmPlanning::PlanResult* planResult_ptr) override {
             Environment mapf(dimx, dimy, dimz, ecbs_obstacles, ecbs_goalLocations, mission.quad_size,
                              param.grid_xy_res);
             ECBS<State, Action, int, Conflict, Constraints, Environment> ecbs(mapf, param.ecbs_w);
-            std::vector<PlanResult<State, Action, int>> solution;
+            std::vector<libMultiRobotPlanning::PlanResult<State, Action, int>> solution;
 
             // Execute ECBS algorithm
             bool success = ecbs.search(ecbs_startStates, solution, param.log);
@@ -31,7 +31,7 @@ namespace SwarmPlanning {
                 return false;
             }
 
-            // Update segment time
+            // Update segment time T
             int cost = 0;
             int makespan = 0;
             for (const auto &s : solution) {
@@ -39,29 +39,33 @@ namespace SwarmPlanning {
                 makespan = std::max<int>(makespan, s.cost);
             }
             for (int i = 0; i <= makespan + 2; i++) {
-                T.emplace_back(i * param.time_step);
+                planResult_ptr->T.emplace_back(i * param.time_step);
             }
             if (log) {
-                ROS_INFO_STREAM("ECBSPlanner: M=" << T.size() - 1);
-                ROS_INFO_STREAM("ECBSPlanner: makespan=" << T.back());
+                ROS_INFO_STREAM("ECBSPlanner: M=" << planResult_ptr->T.size() - 1);
+                ROS_INFO_STREAM("ECBSPlanner: makespan=" << planResult_ptr->T.back());
             }
 
-            // Append start, goal points to both ends respectively
-            initTraj.resize(solution.size());
+            planResult_ptr->initTraj.resize(solution.size());
             for (size_t a = 0; a < solution.size(); ++a) {
-                initTraj[a].emplace_back(octomap::point3d(mission.startState[a][0],
-                                                          mission.startState[a][1],
-                                                          mission.startState[a][2]));
+                // Append start, goal points to both ends of initial trajectory respectively
+                planResult_ptr->initTraj[a].emplace_back(octomap::point3d(mission.startState[a][0],
+                                                                     mission.startState[a][1],
+                                                                     mission.startState[a][2]));
 
                 for (const auto &state : solution[a].states) {
-                    initTraj[a].emplace_back(octomap::point3d(state.first.x * param.grid_xy_res + grid_x_min,
-                                                              state.first.y * param.grid_xy_res + grid_y_min,
-                                                              state.first.z * param.grid_z_res + grid_z_min));
+                    planResult_ptr->initTraj[a].emplace_back(
+                            octomap::point3d(state.first.x * param.grid_xy_res + grid_x_min,
+                                             state.first.y * param.grid_xy_res + grid_y_min,
+                                             state.first.z * param.grid_z_res + grid_z_min)
+                            );
                 }
-                while (initTraj[a].size() <= makespan + 2) {
-                    initTraj[a].emplace_back(octomap::point3d(mission.goalState[a][0],
-                                                              mission.goalState[a][1],
-                                                              mission.goalState[a][2]));
+
+                // The length of the initial trajectories should be equal
+                while (planResult_ptr->initTraj[a].size() <= makespan + 2) {
+                    planResult_ptr->initTraj[a].emplace_back(octomap::point3d(mission.goalState[a][0],
+                                                                         mission.goalState[a][1],
+                                                                         mission.goalState[a][2]));
                 }
             }
             return true;
