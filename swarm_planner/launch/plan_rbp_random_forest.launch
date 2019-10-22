@@ -57,7 +57,7 @@
   <arg name="plan_n"                default="5"/>
   <arg name="plan_phi"              default="3"/>  
 
-  <arg name="plan_sequential"       default="true"/>
+  <arg name="plan_sequential"       default="false"/>
   <arg name="plan_batch_size"       default="4"/>
   <arg name="plan_N_b"              default="0"/>
   <arg name="plan_iteration"        default="1"/> 

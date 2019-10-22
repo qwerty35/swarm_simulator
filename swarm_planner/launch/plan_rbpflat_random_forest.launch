@@ -20,17 +20,17 @@
   <arg name="runsim"                default="true"/>
   <arg name="log"                   default="true"/>
 
-  <arg name="mission"               default="mission_8agents_15.json"/>
-  <arg name="replay"                default="true"/>
+  <arg name="mission"               default="mission_64agents_15.json"/>
+  <arg name="replay"                default="false"/>
   <arg name="replay_map"            default="IROS2019.bt"/>
   
   <!-- Environment -->
   <arg name="world_x_min"           default="-5"/>
   <arg name="world_y_min"           default="-5"/>
-  <arg name="world_z_min"           default="0.6"/>
+  <arg name="world_z_min"           default="0"/>
   <arg name="world_x_max"           default="5"/>
   <arg name="world_y_max"           default="5"/>
-  <arg name="world_z_max"           default="1.4"/>
+  <arg name="world_z_max"           default="2.5"/>
   <arg name="world_resolution"      default="0.1"/>
 
   <!-- Obstacles -->

@@ -142,7 +142,7 @@ namespace SwarmPlanning {
         std::vector<Eigen::MatrixXd> pva;
         std::vector<Eigen::MatrixXd> coef;
         std::vector<std::vector<double>> currentState;
-        std::vector<double> T, t, max_dist, min_dist, collision_dist;
+        std::vector<double> T, t, max_dist, min_dist;
         std::vector<std::vector<std::vector<double>>> quad_state;
 //    std::shared_ptr<plt::Plot> plot_min_dist_obj;
 

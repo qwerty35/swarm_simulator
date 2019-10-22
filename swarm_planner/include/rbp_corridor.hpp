@@ -540,7 +540,7 @@ namespace SwarmPlanning {
                     n.y() = sgn;
                     break;
                 case 3:
-                    n.z() = sgn;
+                    n.z() = sgn / param.downwash;
                     break;
                 default:
                     ROS_ERROR("Corridor: Invalid sector number.");
