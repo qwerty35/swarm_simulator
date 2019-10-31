@@ -31,7 +31,7 @@ namespace SwarmPlanning {
                 if (param.N_b > 0 && param.N_b < N / param.batch_size) {
 
                 } else {
-                    param.N_b = N / param.batch_size; //TODO: Currently, N/batch_size should be integer
+//                    param.N_b = N / param.batch_size; //TODO: Currently, N/batch_size should be integer
                 }
             } else {
                 param.batch_size = N;
@@ -81,10 +81,11 @@ namespace SwarmPlanning {
             }
             env.end();
 
-            timer.reset();
-            timeScale();
-            timer.stop();
-            ROS_INFO_STREAM("RBPPlanner: timeScale runtime=" << timer.elapsedSeconds());
+//            timer.reset();
+//            timeScale();
+//            timer.stop();
+//            ROS_INFO_STREAM("RBPPlanner: timeScale runtime=" << timer.elapsedSeconds());
+
 
             generateROSMsg();
             return true;
@@ -120,6 +121,28 @@ namespace SwarmPlanning {
 
             IloCplex cplex(env);
 //            cplex.setParam(IloCplex::Param::TimeLimit, 0.04);
+
+            // publish Initial trajectory
+            if(param.sequential && param.N_b == 0){
+                // Translate Bernstein basis to Polynomial coefficients
+                for (int k = 0; k < outdim; k++) {
+                    for (int qi = 0; qi < N; qi++) {
+                        for (int m = 0; m < M; m++) {
+                            Eigen::MatrixXd c = Eigen::MatrixXd::Zero(1, n + 1);
+                            Eigen::MatrixXd tm;
+                            timeMatrix(1.0 / (planResult_ptr->T[m+1] - planResult_ptr->T[m]), &tm);
+                            tm = basis * tm;
+
+                            for (int i = 0; i < n + 1; i++) {
+                                c = c + dummy(qi * offset_quad + m * offset_seg + i, k) * tm.row(i);
+                            }
+                            coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
+                        }
+                    }
+                    timer.stop();
+                }
+                return;
+            }
 
             for (int iter = 0; iter < param.iteration; iter++) {
                 total_cost = 0;

@@ -1,0 +1,640 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 78
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Path2
+        - /Path3
+        - /Path4
+        - /Path5
+        - /Path6
+        - /Path7
+        - /Path8
+        - /MarkerArray1
+        - /MarkerArray2
+        - /MarkerArray2/Namespaces1
+        - /MarkerArray3
+        - /MarkerArray3/Namespaces1
+        - /MarkerArray4
+        - /MarkerArray4/Namespaces1
+        - /MarkerArray5
+        - /MarkerArray5/Namespaces1
+        - /MarkerArray6
+        - /MarkerArray6/Namespaces1
+      Splitter Ratio: 0.5353773832321167
+    Tree Height: 796
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5501858592033386
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: ""
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 0; 0; 0
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 20
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: false
+        mav0/base_link:
+          Value: true
+        mav1/base_link:
+          Value: true
+        mav10/base_link:
+          Value: true
+        mav11/base_link:
+          Value: true
+        mav12/base_link:
+          Value: true
+        mav13/base_link:
+          Value: true
+        mav14/base_link:
+          Value: true
+        mav15/base_link:
+          Value: true
+        mav16/base_link:
+          Value: true
+        mav17/base_link:
+          Value: true
+        mav18/base_link:
+          Value: true
+        mav19/base_link:
+          Value: true
+        mav2/base_link:
+          Value: true
+        mav20/base_link:
+          Value: true
+        mav21/base_link:
+          Value: true
+        mav22/base_link:
+          Value: true
+        mav23/base_link:
+          Value: true
+        mav24/base_link:
+          Value: true
+        mav25/base_link:
+          Value: true
+        mav26/base_link:
+          Value: true
+        mav27/base_link:
+          Value: true
+        mav28/base_link:
+          Value: true
+        mav29/base_link:
+          Value: true
+        mav3/base_link:
+          Value: true
+        mav30/base_link:
+          Value: true
+        mav31/base_link:
+          Value: true
+        mav32/base_link:
+          Value: true
+        mav33/base_link:
+          Value: true
+        mav34/base_link:
+          Value: true
+        mav35/base_link:
+          Value: true
+        mav36/base_link:
+          Value: true
+        mav37/base_link:
+          Value: true
+        mav38/base_link:
+          Value: true
+        mav39/base_link:
+          Value: true
+        mav4/base_link:
+          Value: true
+        mav40/base_link:
+          Value: true
+        mav41/base_link:
+          Value: true
+        mav42/base_link:
+          Value: true
+        mav43/base_link:
+          Value: true
+        mav44/base_link:
+          Value: true
+        mav45/base_link:
+          Value: true
+        mav46/base_link:
+          Value: true
+        mav47/base_link:
+          Value: true
+        mav48/base_link:
+          Value: true
+        mav49/base_link:
+          Value: true
+        mav5/base_link:
+          Value: true
+        mav50/base_link:
+          Value: true
+        mav51/base_link:
+          Value: true
+        mav52/base_link:
+          Value: true
+        mav53/base_link:
+          Value: true
+        mav54/base_link:
+          Value: true
+        mav55/base_link:
+          Value: true
+        mav56/base_link:
+          Value: true
+        mav57/base_link:
+          Value: true
+        mav58/base_link:
+          Value: true
+        mav59/base_link:
+          Value: true
+        mav6/base_link:
+          Value: true
+        mav60/base_link:
+          Value: true
+        mav61/base_link:
+          Value: true
+        mav62/base_link:
+          Value: true
+        mav63/base_link:
+          Value: true
+        mav7/base_link:
+          Value: true
+        mav8/base_link:
+          Value: true
+        mav9/base_link:
+          Value: true
+        world:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: false
+      Show Axes: false
+      Show Names: false
+      Tree:
+        world:
+          mav0/base_link:
+            {}
+          mav1/base_link:
+            {}
+          mav10/base_link:
+            {}
+          mav11/base_link:
+            {}
+          mav12/base_link:
+            {}
+          mav13/base_link:
+            {}
+          mav14/base_link:
+            {}
+          mav15/base_link:
+            {}
+          mav16/base_link:
+            {}
+          mav17/base_link:
+            {}
+          mav18/base_link:
+            {}
+          mav19/base_link:
+            {}
+          mav2/base_link:
+            {}
+          mav20/base_link:
+            {}
+          mav21/base_link:
+            {}
+          mav22/base_link:
+            {}
+          mav23/base_link:
+            {}
+          mav24/base_link:
+            {}
+          mav25/base_link:
+            {}
+          mav26/base_link:
+            {}
+          mav27/base_link:
+            {}
+          mav28/base_link:
+            {}
+          mav29/base_link:
+            {}
+          mav3/base_link:
+            {}
+          mav30/base_link:
+            {}
+          mav31/base_link:
+            {}
+          mav32/base_link:
+            {}
+          mav33/base_link:
+            {}
+          mav34/base_link:
+            {}
+          mav35/base_link:
+            {}
+          mav36/base_link:
+            {}
+          mav37/base_link:
+            {}
+          mav38/base_link:
+            {}
+          mav39/base_link:
+            {}
+          mav4/base_link:
+            {}
+          mav40/base_link:
+            {}
+          mav41/base_link:
+            {}
+          mav42/base_link:
+            {}
+          mav43/base_link:
+            {}
+          mav44/base_link:
+            {}
+          mav45/base_link:
+            {}
+          mav46/base_link:
+            {}
+          mav47/base_link:
+            {}
+          mav48/base_link:
+            {}
+          mav49/base_link:
+            {}
+          mav5/base_link:
+            {}
+          mav50/base_link:
+            {}
+          mav51/base_link:
+            {}
+          mav52/base_link:
+            {}
+          mav53/base_link:
+            {}
+          mav54/base_link:
+            {}
+          mav55/base_link:
+            {}
+          mav56/base_link:
+            {}
+          mav57/base_link:
+            {}
+          mav58/base_link:
+            {}
+          mav59/base_link:
+            {}
+          mav6/base_link:
+            {}
+          mav60/base_link:
+            {}
+          mav61/base_link:
+            {}
+          mav62/base_link:
+            {}
+          mav63/base_link:
+            {}
+          mav7/base_link:
+            {}
+          mav8/base_link:
+            {}
+          mav9/base_link:
+            {}
+      Update Interval: 0
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 0; 0
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /desired_trajectory/mav0
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 191; 0
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /desired_trajectory/mav8
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 127; 255; 0
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /desired_trajectory/mav16
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 0; 255; 64
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /desired_trajectory/mav24
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 0; 255; 255
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /desired_trajectory/mav32
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 0; 64; 255
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /desired_trajectory/mav40
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 128; 0; 255
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /desired_trajectory/mav48
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 255; 0; 191
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /desired_trajectory/mav56
+      Unreliable: false
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /occupied_cells_vis_array
+      Name: MarkerArray
+      Namespaces:
+        map: true
+      Queue Size: 10
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /relative_box/mav5
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 10
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /obstacle_box
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /initTraj
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: false
+      Marker Topic: /feasible_box
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /collision_model
+      Name: MarkerArray
+      Namespaces:
+        colBox: true
+      Queue Size: 100
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 255; 255; 255
+    Default Light: true
+    Fixed Frame: world
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
+      Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Class: rviz/XYOrbit
+      Distance: 17.119518280029297
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: -2
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.43539828062057495
+      Target Frame: world
+      Value: XYOrbit (rviz)
+      Yaw: 4.000380516052246
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 1025
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd0000000400000000000001aa000003a7fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003d000003a7000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000003a7fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003d000003a7000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003efc0100000002fb0000000800540069006d006500000000000000073f000002eb00fffffffb0000000800540069006d0065010000000000000450000000000000000000000478000003a700000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1853
+  X: 67
+  Y: 27

@@ -600,6 +600,39 @@ namespace SwarmPlanning {
         }
 
         // obstacle-collision model
+//        void update_colBox() {
+//            visualization_msgs::MarkerArray mk_array;
+//            for (int qi = 0; qi < qn; qi++) {
+//                visualization_msgs::Marker mk;
+//                mk.header.frame_id = "world";
+//                mk.ns = "colBox";
+//                mk.type = visualization_msgs::Marker::CUBE;
+//                mk.action = visualization_msgs::Marker::ADD;
+//
+//                mk.pose.orientation.x = 0;
+//                mk.pose.orientation.y = 0;
+//                mk.pose.orientation.z = 0;
+//                mk.pose.orientation.w = 1.0;
+//
+//                mk.id = qi;
+//                mk.pose.position.x = pva[qi](0, 0);
+//                mk.pose.position.y = pva[qi](0, 1);
+//                mk.pose.position.z = pva[qi](0, 2);
+//
+//                mk.scale.x = 2 * mission.quad_size[qi];
+//                mk.scale.y = 2 * mission.quad_size[qi];
+//                mk.scale.z = 2 * mission.quad_size[qi] * param.downwash;
+//
+//                mk.color.a = 0.7;
+//                mk.color.r = param.color[qi][0];
+//                mk.color.g = param.color[qi][1];
+//                mk.color.b = param.color[qi][2];
+//
+//                mk_array.markers.emplace_back(mk);
+//            }
+//            msgs_colBox = mk_array;
+//        }
+
         void update_colBox() {
             visualization_msgs::MarkerArray mk_array;
             for (int qi = 0; qi < qn; qi++) {
@@ -738,7 +771,7 @@ namespace SwarmPlanning {
 
         void plot_distance_between_agents() {
             plt::figure(1);
-            plt::figure_size(1280, 720);
+            plt::figure_size(480, 270);
 
             std::vector<double> collision_dist;
             collision_dist.resize(t.size());
@@ -746,7 +779,7 @@ namespace SwarmPlanning {
                 collision_dist[i] = 2 * mission.quad_size[0]; //TODO: heterogeous case
             }
 
-            plt::plot(t, collision_dist);
+            plt::plot(t, collision_dist, "r--");
 //            plt::plot(t, max_dist);
             plt::plot(t, min_dist);
 
