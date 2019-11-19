@@ -77,18 +77,6 @@ Visualization Manager:
           Value: true
         mav1/base_link:
           Value: true
-        mav2/base_link:
-          Value: true
-        mav3/base_link:
-          Value: true
-        mav4/base_link:
-          Value: true
-        mav5/base_link:
-          Value: true
-        mav6/base_link:
-          Value: true
-        mav7/base_link:
-          Value: true
         world:
           Value: true
       Marker Scale: 1
@@ -101,18 +89,6 @@ Visualization Manager:
           mav0/base_link:
             {}
           mav1/base_link:
-            {}
-          mav2/base_link:
-            {}
-          mav3/base_link:
-            {}
-          mav4/base_link:
-            {}
-          mav5/base_link:
-            {}
-          mav6/base_link:
-            {}
-          mav7/base_link:
             {}
       Update Interval: 0
       Value: true
@@ -331,22 +307,17 @@ Visualization Manager:
       Namespaces:
         mav0: true
         mav1: true
-        mav2: true
-        mav3: true
-        mav4: true
-        mav5: true
-        mav6: true
-        mav7: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /feasible_box
       Name: MarkerArray
       Namespaces:
-        {}
+        mav0: true
+        mav1: false
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /collision_model
@@ -392,7 +363,7 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 80.10246276855469
+      Scale: 70.49016571044922
       Target Frame: world
       Value: TopDownOrtho (rviz)
       X: 0.10818812251091003

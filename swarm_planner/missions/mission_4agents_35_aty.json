@@ -1,0 +1,14 @@
+{
+  "quadrotors": {
+    "crazyflie": {"max_vel": [1.7, 1.7, 1.7], "max_acc": [6.2, 6.2, 6.2], "radius": 0.15, "speed": 1.0 },
+    "default": {"max_vel": [1.7, 1.7, 1.7], "max_acc": [6.2, 6.2, 6.2], "radius": 0.15, "speed": 1.0 }
+  },
+
+  "agents": [
+    {"name": "crazyflie", "start": [-7.0, 1.5, 0.5], "goal": [8.0, 1.5, 0.5], "radius": 0.35, "speed": 1.0 },
+    {"name": "crazyflie", "start": [7.0, 1.5, 0.5], "goal": [-8.0, 1.5, 0.5], "radius": 0.35, "speed": 1.0 },
+    {"name": "crazyflie", "start": [-8.0, 1.5, 0.5], "goal": [7.0, 1.5, 0.5], "radius": 0.35, "speed": 1.0 },
+    {"name": "crazyflie", "start": [8.0, 1.5, 0.5], "goal": [-7.0, 1.5, 0.5], "radius": 0.35, "speed": 1.0 }
+  ]
+}
+

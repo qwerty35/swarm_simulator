@@ -227,7 +227,7 @@ namespace SwarmPlanning {
                 tf::Transform transform;
                 transform.setOrigin(tf::Vector3(pva[qi](0, 0), pva[qi](0, 1), pva[qi](0, 2)));
                 tf::Quaternion q;
-                q.setRPY(0, 0, 0);
+                q.setRPY(0, 0, atan2(pva[qi](1, 1), pva[qi](1, 0)));
                 transform.setRotation(q);
                 br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),
                                                       "world", "/mav" + std::to_string(qi) + "/base_link"));
@@ -598,6 +598,7 @@ namespace SwarmPlanning {
             }
             msgs_feasibleBox = mk_array;
         }
+
 
         // obstacle-collision model
 //        void update_colBox() {

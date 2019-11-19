@@ -238,6 +238,99 @@ namespace SwarmPlanning {
             return true;
         }
 
+        bool updateObsBox_seperate() {
+            double x_next, y_next, z_next, dx, dy, dz;
+            Timer timer;
+
+            planResult_ptr->SFC.resize(mission.qn);
+            for (size_t qi = 0; qi < mission.qn; ++qi) {
+                std::vector<double> box_prev{0, 0, 0, 0, 0, 0};
+
+                for (int i = 0; i < planResult_ptr->initTraj[qi].size() - 1; i++) {
+                    auto state = planResult_ptr->initTraj[qi][i];
+                    double x = state.x();
+                    double y = state.y();
+                    double z = state.z();
+
+                    std::vector<double> box;
+                    auto state_next = planResult_ptr->initTraj[qi][i + 1];
+                    x_next = state_next.x();
+                    y_next = state_next.y();
+                    z_next = state_next.z();
+
+                    if (isPointInBox(octomap::point3d(x_next, y_next, z_next), box_prev)) {
+                        continue;
+                    }
+
+                    // Initialize box
+                    box.emplace_back(round(std::min(x, x_next) / param.box_xy_res) * param.box_xy_res);
+                    box.emplace_back(round(std::min(y, y_next) / param.box_xy_res) * param.box_xy_res);
+                    box.emplace_back(round(std::min(z, z_next) / param.box_z_res) * param.box_z_res);
+                    box.emplace_back(round(std::max(x, x_next) / param.box_xy_res) * param.box_xy_res);
+                    box.emplace_back(round(std::max(y, y_next) / param.box_xy_res) * param.box_xy_res);
+                    box.emplace_back(round(std::max(z, z_next) / param.box_z_res) * param.box_z_res);
+
+                    if (isObstacleInBox(box, mission.quad_size[qi])) {
+                        ROS_ERROR("Corridor: Invalid initial trajectory. Obstacle invades initial trajectory.");
+                        return false;
+                    }
+                    expand_box(box, mission.quad_size[qi]);
+
+                    planResult_ptr->SFC[qi].emplace_back(std::make_pair(box, -1));
+
+                    box_prev = box;
+                }
+
+                // Generate box time segment
+                int box_max = planResult_ptr->SFC[qi].size();
+                int path_max = planResult_ptr->initTraj[qi].size();
+                Eigen::MatrixXd box_log = Eigen::MatrixXd::Zero(box_max, path_max);
+
+                for (int i = 0; i < box_max; i++) {
+                    for (int j = 0; j < path_max; j++) {
+                        if (isPointInBox(planResult_ptr->initTraj[qi][j], planResult_ptr->SFC[qi][i].first)) {
+                            if (j == 0) {
+                                box_log(i, j) = 1;
+                            } else {
+                                box_log(i, j) = box_log(i, j - 1) + 1;
+                            }
+                        }
+                    }
+                }
+
+                int box_iter = 0;
+                for (int path_iter = 0; path_iter < path_max; path_iter++) {
+                    if (box_iter == box_max - 1) {
+                        if (box_log(box_iter, path_iter) > 0) {
+                            continue;
+                        } else {
+                            box_iter--;
+                        }
+                    }
+                    if (box_log(box_iter, path_iter) > 0 && box_log(box_iter + 1, path_iter) > 0) {
+                        int count = 1;
+                        while (path_iter + count < path_max && box_log(box_iter, path_iter + count) > 0
+                               && box_log(box_iter + 1, path_iter + count) > 0) {
+                            count++;
+                        }
+                        int obs_index = path_iter + count / 2;
+                        planResult_ptr->SFC[qi][box_iter].second = planResult_ptr->T[obs_index];
+
+                        path_iter = path_iter + count / 2;
+                        box_iter++;
+                    } else if (box_log(box_iter, path_iter) == 0) {
+                        box_iter--;
+                        path_iter--;
+                    }
+                }
+                planResult_ptr->SFC[qi][box_max - 1].second = makespan;
+            }
+
+            timer.stop();
+            ROS_INFO_STREAM("Corridor: SFC runtime=" << timer.elapsedSeconds());
+            return true;
+        }
+
         bool updateRelBox() {
             Timer timer;
 
