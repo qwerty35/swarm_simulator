@@ -23,7 +23,7 @@ namespace SwarmPlanning{
         std::vector<double> T; // segment time: T_0,...,T_M
         SFC_t SFC; // safe flight corridors to avoid obstacles
         RSFC_t RSFC; // relative safe flight corridors to avoid inter-collision
-        std_msgs::Float64MultiArray msgs_traj_info;
-        std::vector<std_msgs::Float64MultiArray> msgs_traj_coef;
+        std_msgs::Float64MultiArray msgs_traj_info; // [N, n, T_0, ... , T_M]
+        std::vector<std_msgs::Float64MultiArray> msgs_traj_coef; //
     };
 }

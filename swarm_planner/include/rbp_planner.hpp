@@ -274,7 +274,7 @@ namespace SwarmPlanning {
             }
         }
 
-        // generate ros message to tranfer planning result
+        // generate ros message to transfer planning result
         void generateROSMsg() {
             std::vector<double> traj_info;
             traj_info.emplace_back(N);

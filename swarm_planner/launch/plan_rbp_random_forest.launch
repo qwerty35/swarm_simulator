@@ -20,9 +20,10 @@
   <arg name="runsim"                default="true"/>
   <arg name="log"                   default="true"/>
 
-  <arg name="mission"               default="mission_8agents_15.json"/>
-  <arg name="replay"                default="false"/>
-  <arg name="replay_map"            default="map17.bt"/>
+  <arg name="mission"               default="mission_64agents_15.json"/>
+  <arg name="replay"                default="true"/>
+  <arg name="replay_map"            default="ICRA2020_64agents_presentation.bt"/> 
+  <!--arg name="replay_map"            default="map17.bt"/--> 
   
   <!-- Environment -->
   <arg name="world_x_min"           default="-5"/>
@@ -34,7 +35,7 @@
   <arg name="world_resolution"      default="0.1"/>
 
   <!-- Obstacles -->
-  <arg name="world_obs_num"         default="20"/>
+  <arg name="world_obs_num"         default="25"/>
   <arg name="world_r_min"           default="0.3"/>
   <arg name="world_r_max"           default="0.3"/>
   <arg name="world_h_min"           default="1.0"/>
@@ -57,9 +58,9 @@
   <arg name="plan_n"                default="5"/>
   <arg name="plan_phi"              default="3"/>  
 
-  <arg name="plan_sequential"       default="false"/>
+  <arg name="plan_sequential"       default="true"/>
   <arg name="plan_batch_size"       default="4"/>
-  <arg name="plan_N_b"              default="0"/>
+  <arg name="plan_N_b"              default="16"/>
   <arg name="plan_iteration"        default="1"/> 
 
 <!-- Arguments End -->
@@ -139,7 +140,7 @@
     <param name="plan/iteration"             value="$(arg plan_iteration)" />
   </node>
 
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find swarm_planner)/launch/rviz_config/config_8agents.rviz" if="$(arg runsim)"/>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find swarm_planner)/launch/rviz_config/config_64agents.rviz" if="$(arg runsim)"/>
 
 <!-- Nodes End -->
 </launch>
