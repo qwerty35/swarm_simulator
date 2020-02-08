@@ -24,7 +24,7 @@
   <arg name="runsim"                default="true"/>
   <arg name="log"                   default="true"/>
 
-  <arg name="mission"               default="mission_8agents_15.json"/>
+  <arg name="mission"               default="mission_2agents_25.json"/>
   <arg name="replay"                default="true"/>
 
   <!-- Environment -->
@@ -37,7 +37,7 @@
   <arg name="world_resolution"      default="0.1"/>
 
   <!-- Obstacles -->
-  <arg name="world_obs_num"         default="20"/>
+  <arg name="world_obs_num"         default="1"/>
   <arg name="world_r_min"           default="0.3"/>
   <arg name="world_r_max"           default="0.3"/>
   <arg name="world_h_min"           default="1.0"/>
@@ -46,9 +46,9 @@
   
   <!-- InitTrajPlanner Parameters -->
   <arg name="ecbs_w"                default="1.3"/>
-  <arg name="grid_xy_res"           default="0.5"/>
-  <arg name="grid_z_res"            default="1.0"/>
-  <arg name="grid_margin"           default="0.2"/>
+  <arg name="grid_xy_res"           default="0.3"/>
+  <arg name="grid_z_res"            default="0.6"/>
+  <arg name="grid_margin"           default="0.0"/>
 
   <!-- Corridor Parameters-->
   <arg name="box_xy_res"            default="0.1"/>

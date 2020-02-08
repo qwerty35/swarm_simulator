@@ -38,7 +38,7 @@ link_libraries(${DYNAMICEDT3D_LIBRARIES})
 #CPLEX
 add_definitions(-DNDEBUG)
 add_definitions(-DIL_STD)
-set(CPLEX_PREFIX_DIR      /opt/ibm/ILOG/CPLEX_Studio129)
+set(CPLEX_PREFIX_DIR      /opt/ibm/ILOG/CPLEX_Studio1210)
 set(CPLEX_INCLUDE_DIR     ${CPLEX_PREFIX_DIR}/cplex/include)
 set(CPLEX_LIBRARIES_DIR   ${CPLEX_PREFIX_DIR}/cplex/lib/x86-64_linux/static_pic)
 set(CONCERT_INCLUDE_DIR   ${CPLEX_PREFIX_DIR}/concert/include)
@@ -63,7 +63,7 @@ catkin_package(
 
 #MATPLOTLIB-CPP
 find_package(PythonLibs 2.7)
-find_package (Threads)
+find_package(Threads)
 
 #BUILD
 add_executable(random_map_generator src/random_map_generator.cpp)
@@ -73,6 +73,7 @@ target_link_libraries(random_map_generator
 )
 
 add_executable(swarm_traj_planner_rbp src/swarm_traj_planner_rbp.cpp)
+target_include_directories(swarm_traj_planner_rbp PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(swarm_traj_planner_rbp
   ${catkin_LIBRARIES}
   ${OCTOMAP_INCLUDE_DIRS}
@@ -87,6 +88,7 @@ target_link_libraries(swarm_traj_planner_rbp
 )
 
 add_executable(swarm_traj_planner_rbp_test_all src/swarm_traj_planner_rbp_test_all.cpp)
+target_include_directories(swarm_traj_planner_rbp_test_all PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(swarm_traj_planner_rbp_test_all
   ${catkin_LIBRARIES}
   ${OCTOMAP_INCLUDE_DIRS}
@@ -101,6 +103,7 @@ target_link_libraries(swarm_traj_planner_rbp_test_all
 )
 
 add_executable(swarm_traj_planner_scp src/swarm_traj_planner_scp.cpp)
+target_include_directories(swarm_traj_planner_scp PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(swarm_traj_planner_scp
   ${catkin_LIBRARIES}
   ${PYTHON_LIBRARIES}

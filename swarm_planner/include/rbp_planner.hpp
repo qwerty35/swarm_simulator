@@ -88,6 +88,7 @@ namespace SwarmPlanning {
 
 
             generateROSMsg();
+            generateCoefCSV();
             return true;
         }
 
@@ -296,6 +297,39 @@ namespace SwarmPlanning {
                 planResult_ptr->msgs_traj_coef[qi].data.insert(planResult_ptr->msgs_traj_coef[qi].data.end(),
                                                                coef_temp.begin(),
                                                                coef_temp.end());
+            }
+        }
+
+        // translate coef to crazyswarm trajectory csv file
+        // n should be smaller than 7
+        void generateCoefCSV(){
+            if(n > 7){
+                ROS_WARN("RBPPlanner: n>8, do not make CSV file");
+                return;
+            }
+            for(int qi = 0; qi < N; qi++) {
+                std::ofstream coefCSV;
+                coefCSV.open(param.package_path + "/log/coef" + std::to_string(qi + 1) + ".csv");
+                coefCSV << "duration,x^0,x^1,x^2,x^3,x^4,x^5,x^6,x^7,y^0,y^1,y^2,y^3,y^4,y^5,y^6,y^7,z^0,z^1,z^2,z^3,z^4,z^5,z^6,z^7,yaw^0,yaw^1,yaw^2,yaw^3,yaw^4,yaw^5,yaw^6,yaw^7\n";
+                for(int m = 0; m < M; m++) {
+                    coefCSV << planResult_ptr->T[m + 1] - planResult_ptr->T[m] << ",";
+                    // x,y,z
+                    for (int k = 0; k < outdim; k++) {
+                        for (int i = n; i >= 0; i--) {
+                            coefCSV << coef[qi](m * offset_seg + i, k) << ",";
+                        }
+                        // to match
+                        for(int i = 0; i < 7 - n; i++){
+                            coefCSV << "0,";
+                        }
+                    }
+                    // yaw
+                    for(int i = 0; i < 7; i++){
+                        coefCSV << "0,";
+                    }
+                    coefCSV << "\n";
+                }
+                coefCSV.close();
             }
         }
 

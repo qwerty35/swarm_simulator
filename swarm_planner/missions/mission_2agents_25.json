@@ -5,10 +5,8 @@
   },
 
   "agents": [
-    {"name": "crazyflie", "start": [-7.0, 1.5, 0.5], "goal": [7.0, 1.5, 0.5], "radius": 0.25, "speed": 1.0 },
-    {"name": "crazyflie", "start": [7.0, 1.5, 0.5], "goal": [-7.0, 1.5, 0.5], "radius": 0.25, "speed": 1.0 },
-    {"name": "crazyflie", "start": [-7.0, 1.5, 0.5], "goal": [7.0, 1.5, 0.5], "radius": 0.25, "speed": 1.0 },
-    {"name": "crazyflie", "start": [7.0, 1.5, 0.5], "goal": [-7.0, 1.5, 0.5], "radius": 0.25, "speed": 1.0 }
+    {"name": "crazyflie", "start": [-1.0, 0.0, 0.5], "goal": [1.0, 0.0, 0.5], "radius": 0.25, "speed": 1.0 },
+    {"name": "crazyflie", "start": [1.0, 0.0, 0.5], "goal": [-1.0, 0.0, 0.5], "radius": 0.25, "speed": 1.0 }
   ]
 }
 
