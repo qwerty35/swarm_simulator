@@ -40,22 +40,28 @@ roslaunch swarm_planner plan_rbp_random_forest.launch
 
 ## 3. Simulation Configuration
 You can configure the simulation setting at the launch file, plan_rbp_random_forest.launch.
-runsim: true - You can see the planning result at the rviz.
 
-log: true - You can see more detail message, and QPmodel and planning results will be saved in "swarm_planner/log"
+- runsim: You can see the planning result at the rviz.
 
-mission: You can deploy the mission by editing the json file in "swarm_planner/missions" directory.
+- log: You can see more detail message, and QPmodel and planning results will be saved in "swarm_planner/log"
 
-replay: false - It runs the simulation at the random forest. true - It runs the simulation at the map specified at 'replay_map' tag.
-Map files are located in "swarm_planner/worlds", and should be octomap bt files.
+- mission: You can deploy the mission by editing the json file in "swarm_planner/missions" directory.
 
-plan_time_scale: true - Execute time scale to match dynamic limits specified at mission file.
+- replay: 
+  * false: It runs the simulation at the random forest. 
+  * true: It runs the simulation at the map specified at 'replay_map' tag.
+  * Map files are located in "swarm_planner/worlds", and should be octomap bt files.
 
-plan_time_step: You can execute time scale with this tag manually unless plan_time_step is true 
+- plan_time_scale: Execute time scale to match dynamic limits specified at mission file.
 
-plan_sequential: true - Execute seqeuntial planning. You can change the batch size at 'plan_batch_size' tag. 
+- plan_time_step: You can execute time scale with this tag manually unless plan_time_step is true 
 
-plan_batch_iter: positive number - You can see the intermediate result of seqential planning. 0 - it shows initial trajectory. -1  - it means maximum batch iteration.
+- plan_sequential: Execute seqeuntial planning. You can change the batch size at 'plan_batch_size' tag. 
+
+- plan_batch_iter: 
+  * positive number: You can see the intermediate result of seqential planning. 
+  * 0: it shows initial trajectory. 
+  * -1: it means maximum batch iteration.
 
 
 ## 3. Notes
