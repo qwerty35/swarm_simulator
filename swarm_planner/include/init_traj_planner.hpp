@@ -16,13 +16,13 @@ namespace SwarmPlanning {
                 : distmap_obj(std::move(_distmap_obj)),
                   mission(std::move(_mission)),
                   param(std::move(_param)) {
-            grid_x_min = ceil((param.world_x_min + SP_EPSILON) / param.grid_xy_res) * param.grid_xy_res;
-            grid_y_min = ceil((param.world_y_min + SP_EPSILON) / param.grid_xy_res) * param.grid_xy_res;
-            grid_z_min = ceil((param.world_z_min + SP_EPSILON) / param.grid_z_res) * param.grid_z_res;
+            grid_x_min = ceil((param.world_x_min - SP_EPSILON) / param.grid_xy_res) * param.grid_xy_res;
+            grid_y_min = ceil((param.world_y_min - SP_EPSILON) / param.grid_xy_res) * param.grid_xy_res;
+            grid_z_min = ceil((param.world_z_min - SP_EPSILON) / param.grid_z_res) * param.grid_z_res;
 
-            grid_x_max = floor((param.world_x_max - SP_EPSILON) / param.grid_xy_res) * param.grid_xy_res;
-            grid_y_max = floor((param.world_y_max - SP_EPSILON) / param.grid_xy_res) * param.grid_xy_res;
-            grid_z_max = floor((param.world_z_max - SP_EPSILON) / param.grid_z_res) * param.grid_z_res;
+            grid_x_max = floor((param.world_x_max + SP_EPSILON) / param.grid_xy_res) * param.grid_xy_res;
+            grid_y_max = floor((param.world_y_max + SP_EPSILON) / param.grid_xy_res) * param.grid_xy_res;
+            grid_z_max = floor((param.world_z_max + SP_EPSILON) / param.grid_z_res) * param.grid_z_res;
 
             dimx = (int) round((grid_x_max - grid_x_min) / param.grid_xy_res) + 1;
             dimy = (int) round((grid_y_max - grid_y_min) / param.grid_xy_res) + 1;

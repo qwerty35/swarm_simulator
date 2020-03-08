@@ -37,7 +37,6 @@ int main(int argc, char* argv[]) {
     std::shared_ptr<octomap::OcTree> octree_obj;
 
     // Submodules
-    SwarmPlanning::PlanResult planResult;
     std::shared_ptr<DynamicEDTOctomap> distmap_obj;
     std::shared_ptr<InitTrajPlanner> initTrajPlanner_obj;
     std::shared_ptr<Corridor> corridor_obj;
@@ -50,7 +49,7 @@ int main(int argc, char* argv[]) {
     for(int i = 1; i <= 50; i++) {
         ROS_INFO_STREAM("Map: map" << i << ".bt");
         octree_obj.reset(new octomap::OcTree(param.package_path + "/worlds/map" + std::to_string(i) + ".bt"));
-
+        SwarmPlanning::PlanResult planResult;
         timer_total.reset();
 
         // Build 3D Euclidean Distance Field

@@ -50,19 +50,20 @@ namespace SwarmPlanning {
                     int count3 = 0;
                     for (double k = box[2]; k < box[5] + SP_EPSILON_FLOAT; k += param.box_z_res) {
                         x = i + SP_EPSILON_FLOAT;
-                        if (count1 == 0)
+                        if (count1 == 0 && box[0] > param.world_x_min + SP_EPSILON_FLOAT) {
                             x = box[0] - SP_EPSILON_FLOAT;
+                        }
                         y = j + SP_EPSILON_FLOAT;
-                        if (count2 == 0)
+                        if (count2 == 0 && box[1] > param.world_y_min + SP_EPSILON_FLOAT) {
                             y = box[1] - SP_EPSILON_FLOAT;
+                        }
                         z = k + SP_EPSILON_FLOAT;
-                        if (count3 == 0)
+                        if (count3 == 0 && box[2] > param.world_z_min + SP_EPSILON_FLOAT) {
                             z = box[2] - SP_EPSILON_FLOAT;
+                        }
 
                         octomap::point3d cur_point(x, y, z);
                         float dist = distmap_obj.get()->getDistance(cur_point);
-
-                        assert(dist >= 0);
                         if (dist < margin - SP_EPSILON_FLOAT) {
                             return true;
                         }
@@ -179,6 +180,9 @@ namespace SwarmPlanning {
 
                     if (isObstacleInBox(box, mission.quad_size[qi])) {
                         ROS_ERROR("Corridor: Invalid initial trajectory. Obstacle invades initial trajectory.");
+                        ROS_ERROR_STREAM("Corridor: x " << x << ", y " << y << ", z " << z);
+
+                        bool debug =isObstacleInBox(box, mission.quad_size[qi]);
                         return false;
                     }
                     expand_box(box, mission.quad_size[qi]);

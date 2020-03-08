@@ -24,13 +24,13 @@
   <arg name="runsim"                default="true"/>
   <arg name="log"                   default="true"/>
 
-  <arg name="mission"               default="mission_2agents_25.json"/>
+  <arg name="mission"               default="mission_2agents_50.json"/>
   <arg name="replay"                default="true"/>
 
   <!-- Environment -->
   <arg name="world_x_min"           default="-5"/>
   <arg name="world_y_min"           default="-5"/>
-  <arg name="world_z_min"           default="0.0"/>
+  <arg name="world_z_min"           default="0.3"/>
   <arg name="world_x_max"           default="5"/>
   <arg name="world_y_max"           default="5"/>
   <arg name="world_z_max"           default="2.5"/>

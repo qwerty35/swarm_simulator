@@ -25,12 +25,13 @@ namespace SwarmPlanning{
         double box_xy_res;
         double box_z_res;
 
+        bool time_scale;
         double time_step;
         double downwash; // downwash coefficient
         int iteration;
         bool sequential;
         int batch_size; // the number of agents in a batch
-        int N_b; // the number of batches
+        int batch_iter; // the number of batches
         int n; // degree of polynomial
         int phi; // desired derivatives
 
@@ -58,13 +59,14 @@ namespace SwarmPlanning{
         nh.param<double>("box/xy_res", box_xy_res, 0.1);
         nh.param<double>("box/z_res", box_z_res, 0.1);
 
+        nh.param<bool>("plan/time_scale", time_scale, true);
         nh.param<double>("plan/time_step", time_step, 1);
         nh.param<double>("plan/downwash", downwash, 2.0);
         nh.param<int>("plan/n", n, 5);
         nh.param<int>("plan/phi", phi, 3);
         nh.param<bool>("plan/sequential", sequential, false);
         nh.param<int>("plan/batch_size", batch_size, 4);
-        nh.param<int>("plan/N_b", N_b, 0);
+        nh.param<int>("plan/batch_iter", batch_iter, 0);
         nh.param<int>("plan/iteration", iteration, 1);
 
         package_path = ros::package::getPath("swarm_planner");

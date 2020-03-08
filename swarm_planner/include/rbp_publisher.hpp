@@ -84,7 +84,7 @@ namespace SwarmPlanning {
             pub_obsBox = nh.advertise<visualization_msgs::MarkerArray>("/obstacle_box", 1);
             pub_feasibleBox = nh.advertise<visualization_msgs::MarkerArray>("/feasible_box", 1);
             pub_colBox = nh.advertise<visualization_msgs::MarkerArray>("/collision_model", 1);
-            pub_minDist = nh.advertise<geometry_msgs::Pose>("/min_dist", 1);
+//            pub_minDist = nh.advertise<geometry_msgs::Pose>("/min_dist", 1);
 
             msgs_traj.resize(qn);
             msgs_relBox.resize(qn);
@@ -97,7 +97,7 @@ namespace SwarmPlanning {
             update_relBox(current_time);
             update_feasibleBox(current_time);
             update_colBox();
-            update_distance_between_agents_realtime(current_time);
+//            update_distance_between_agents_realtime(current_time);
         }
 
         void publish() {
@@ -111,18 +111,18 @@ namespace SwarmPlanning {
             pub_obsBox.publish(msgs_obsBox);
             pub_feasibleBox.publish(msgs_feasibleBox);
             pub_colBox.publish(msgs_colBox);
-            pub_minDist.publish(msgs_minDist);
+//            pub_minDist.publish(msgs_minDist);
         }
 
         void plot(bool log) {
             update_quad_state();
-            update_distance_between_agents();
+            update_safety_margin_ratio();
 
             if (log) {
                 plot_quad_dynamics();
-                plot_distance_between_agents();
+                plot_safety_margin_ratio();
             }
-            ROS_INFO_STREAM("Global min_dist between agents: " << global_min_dist);
+            ROS_INFO_STREAM("Global min_dist between agents: " << safety_margin_ratio);
             ROS_INFO_STREAM("Total flight distance: " << trajectory_length_sum());
         }
 
@@ -137,12 +137,12 @@ namespace SwarmPlanning {
         SwarmPlanning::Param param;
 
         int qn, M, outdim;
-        double global_min_dist, dt;
+        double safety_margin_ratio, dt;
         tf::TransformBroadcaster br;
         std::vector<Eigen::MatrixXd> pva;
         std::vector<Eigen::MatrixXd> coef;
         std::vector<std::vector<double>> currentState;
-        std::vector<double> T, t, max_dist, min_dist;
+        std::vector<double> T, t, max_ratio, min_ratio;
         std::vector<std::vector<std::vector<double>>> quad_state;
 //    std::shared_ptr<plt::Plot> plot_min_dist_obj;
 
@@ -155,7 +155,7 @@ namespace SwarmPlanning {
         std::vector<ros::Publisher> pubs_relBox;
         ros::Publisher pub_feasibleBox;
         ros::Publisher pub_colBox;
-        ros::Publisher pub_minDist;
+//        ros::Publisher pub_minDist;
 
         // ROS messages
         std::vector<nav_msgs::Path> msgs_traj;
@@ -164,7 +164,7 @@ namespace SwarmPlanning {
         std::vector<visualization_msgs::MarkerArray> msgs_relBox;
         visualization_msgs::MarkerArray msgs_feasibleBox;
         visualization_msgs::MarkerArray msgs_colBox;
-        geometry_msgs::Pose msgs_minDist;
+//        geometry_msgs::Pose msgs_minDist;
 
         void timeMatrix(double current_time, int &index, Eigen::MatrixXd &polyder) {
             double tseg = 0;
@@ -697,23 +697,38 @@ namespace SwarmPlanning {
         void plot_quad_dynamics() {
             plt::figure_size(1280, 960);
 
+            std::vector<double> dynamic_limit;
+            dynamic_limit.resize(t.size());
+
             // Plot Quad Velocity
             plt::subplot(3, 2, 1);
             for (int qi = 0; qi < qn; qi++) {
                 plt::named_plot("agent" + std::to_string(qi), t, quad_state[qi][3]);
             }
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), mission.max_vel[0][0]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), -mission.max_vel[0][0]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
             plt::title("velocity -x axis");
 
             plt::subplot(3, 2, 3);
             for (int qi = 0; qi < qn; qi++) {
                 plt::named_plot("agent" + std::to_string(qi), t, quad_state[qi][4]);
             }
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), mission.max_vel[0][1]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), -mission.max_vel[0][1]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
             plt::title("velocity -y axis");
 
             plt::subplot(3, 2, 5);
             for (int qi = 0; qi < qn; qi++) {
                 plt::named_plot("agent" + std::to_string(qi), t, quad_state[qi][5]);
             }
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), mission.max_vel[0][2]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), -mission.max_vel[0][2]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
             plt::title("velocity -z axis");
 
             // Plot Quad Acceleration
@@ -721,70 +736,82 @@ namespace SwarmPlanning {
             for (int qi = 0; qi < qn; qi++) {
                 plt::named_plot("agent" + std::to_string(qi), t, quad_state[qi][6]);
             }
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), mission.max_acc[0][0]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), -mission.max_acc[0][0]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
             plt::title("acceleration -x axis");
 
             plt::subplot(3, 2, 4);
             for (int qi = 0; qi < qn; qi++) {
                 plt::named_plot("agent" + std::to_string(qi), t, quad_state[qi][7]);
             }
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), mission.max_acc[0][1]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), -mission.max_acc[0][1]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
             plt::title("acceleration -y axis");
 
             plt::subplot(3, 2, 6);
             for (int qi = 0; qi < qn; qi++) {
                 plt::named_plot("agent" + std::to_string(qi), t, quad_state[qi][8]);
             }
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), mission.max_acc[0][2]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
+            std::fill(dynamic_limit.begin(), dynamic_limit.end(), -mission.max_acc[0][2]); //TODO: heterogeneous case
+            plt::plot(t, dynamic_limit, "r--");
             plt::title("acceleration -z axis");
 
             plt::legend();
             plt::show(false);
         }
 
-        void update_distance_between_agents() {
-            double max_dist_, min_dist_, dist;
-            max_dist.resize(t.size());
-            min_dist.resize(t.size());
+        void update_safety_margin_ratio() {
+            double max_ratio_, min_ratio_, ratio;
+            max_ratio.resize(t.size());
+            min_ratio.resize(t.size());
 
-            global_min_dist = SP_INFINITY;
+            safety_margin_ratio = SP_INFINITY;
             for (int i = 0; i < t.size(); i++) {
-                max_dist_ = 0;
-                min_dist_ = SP_INFINITY;
+                max_ratio_ = 0;
+                min_ratio_ = SP_INFINITY;
                 for (int qi = 0; qi < qn; qi++) {
                     for (int qj = qi + 1; qj < qn; qj++) {
-                        dist = sqrt(pow(quad_state[qi][0][i] - quad_state[qj][0][i], 2) +
-                                    pow(quad_state[qi][1][i] - quad_state[qj][1][i], 2) +
-                                    pow((quad_state[qi][2][i] - quad_state[qj][2][i]) / param.downwash, 2));
+                        ratio = sqrt(pow(quad_state[qi][0][i] - quad_state[qj][0][i], 2) +
+                                     pow(quad_state[qi][1][i] - quad_state[qj][1][i], 2) +
+                                     pow((quad_state[qi][2][i] - quad_state[qj][2][i]) / param.downwash, 2)) / (mission.quad_size[qi] + mission.quad_size[qj]);
 
-                        if (dist > max_dist_) {
-                            max_dist_ = dist;
+                        if (ratio > max_ratio_) {
+                            max_ratio_ = ratio;
                         }
-                        if (dist < min_dist_) {
-                            min_dist_ = dist;
+                        if (ratio < min_ratio_) {
+                            min_ratio_ = ratio;
                         }
-                        if (dist < global_min_dist) {
-                            global_min_dist = dist;
+                        if (ratio < safety_margin_ratio) {
+                            safety_margin_ratio = ratio;
                         }
                     }
                 }
-                max_dist[i] = max_dist_;
-                min_dist[i] = min_dist_;
+                max_ratio[i] = max_ratio_;
+                min_ratio[i] = min_ratio_;
             }
         }
 
-        void plot_distance_between_agents() {
+        void plot_safety_margin_ratio() {
             plt::figure(1);
             plt::figure_size(480, 270);
 
-            std::vector<double> collision_dist;
-            collision_dist.resize(t.size());
+            std::vector<double> collision_ratio;
+            collision_ratio.resize(t.size());
             for (int i = 0; i < t.size(); i++) {
-                collision_dist[i] = 2 * mission.quad_size[0]; //TODO: heterogeous case
+                collision_ratio[i] = 1;
             }
 
-            plt::plot(t, collision_dist, "r--");
-//            plt::plot(t, max_dist);
-            plt::plot(t, min_dist);
+            plt::plot(t, collision_ratio, "r--");
+//            plt::plot(t, max_ratio);
+            plt::plot(t, min_ratio);
 
-            plt::title("Ellipsoidal Distance between Quadrotor");
+            plt::title("Safety margin ratio between Quadrotors");
 
             plt::show(false);
         }
@@ -812,20 +839,20 @@ namespace SwarmPlanning {
 //        }
 //    }
 
-        void update_distance_between_agents_realtime(double current_time) {
-            int index = floor(current_time / dt);
-            double current_min_dist, alpha;
-
-            if (index + 1 >= t.size()) {
-                index = t.size() - 1;
-                current_min_dist = min_dist[index];
-            } else {
-                alpha = (current_time - index * dt) / dt;
-                current_min_dist = (1 - alpha) * min_dist[index] + alpha * min_dist[index+1];
-            }
-
-            msgs_minDist.position.x = current_min_dist;
-            msgs_minDist.position.y = 2 * mission.quad_size[0];
-        }
+//        void update_distance_between_agents_realtime(double current_time) {
+//            int index = floor(current_time / dt);
+//            double current_min_dist, alpha;
+//
+//            if (index + 1 >= t.size()) {
+//                index = t.size() - 1;
+//                current_min_dist = min_dist[index];
+//            } else {
+//                alpha = (current_time - index * dt) / dt;
+//                current_min_dist = (1 - alpha) * min_dist[index] + alpha * min_dist[index+1];
+//            }
+//
+//            msgs_minDist.position.x = current_min_dist;
+//            msgs_minDist.position.y = 2 * mission.quad_size[0];
+//        }
     };
 }

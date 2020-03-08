@@ -27,24 +27,12 @@ namespace SwarmPlanning {
             N = mission.qn; // the number of agents
             outdim = 3; // the number of outputs (x,y,z)
 
-            if (param.sequential) {
-                if (param.N_b > 0 && param.N_b < N / param.batch_size) {
-
-                } else {
-//                    param.N_b = N / param.batch_size; //TODO: Currently, N/batch_size should be integer
-                }
-            } else {
-                param.batch_size = N;
-                param.N_b = 1;
-            }
-
-            //N_b = std::ceil(static_cast<double>(N) / static_cast<double>(plan_batch_size));
+            setBatch(0);
         }
 
         bool update(bool log, SwarmPlanning::PlanResult* _planResult_ptr) {
             planResult_ptr = _planResult_ptr;
             M = planResult_ptr->T.size() - 1; // the number of segments
-            offset_dim = param.batch_size * M * (n + 1);
             offset_quad = M * (n + 1);
             offset_seg = n + 1;
 
@@ -81,14 +69,17 @@ namespace SwarmPlanning {
             }
             env.end();
 
-//            timer.reset();
-//            timeScale();
-//            timer.stop();
-//            ROS_INFO_STREAM("RBPPlanner: timeScale runtime=" << timer.elapsedSeconds());
-
+            if(param.time_scale) {
+                timer.reset();
+                timeScale();
+                timer.stop();
+                ROS_INFO_STREAM("RBPPlanner: timeScale runtime=" << timer.elapsedSeconds());
+            }
 
             generateROSMsg();
-            generateCoefCSV();
+            if(param.log){
+                generateCoefCSV();
+            }
             return true;
         }
 
@@ -97,7 +88,8 @@ namespace SwarmPlanning {
         Param param;
 
         SwarmPlanning::PlanResult* planResult_ptr;
-        int M, n, phi, N, outdim, offset_dim, offset_quad, offset_seg;
+        std::vector<std::vector<int>> batches;
+        int M, n, phi, N, outdim, offset_quad, offset_seg;
         IloNum count_x, count_eq, count_lq;
 
         // std::shared_ptr<Eigen::MatrixXd> Q_obj, Aeq_obj, Alq_obj, deq_obj, dlq_obj;
@@ -124,7 +116,7 @@ namespace SwarmPlanning {
 //            cplex.setParam(IloCplex::Param::TimeLimit, 0.04);
 
             // publish Initial trajectory
-            if(param.sequential && param.N_b == 0){
+            if(param.sequential && param.batch_iter == 0){
                 // Translate Bernstein basis to Polynomial coefficients
                 for (int k = 0; k < outdim; k++) {
                     for (int qi = 0; qi < N; qi++) {
@@ -147,13 +139,13 @@ namespace SwarmPlanning {
 
             for (int iter = 0; iter < param.iteration; iter++) {
                 total_cost = 0;
-                for (int gi = 0; gi < param.N_b; gi++) {
+                for (int l = 0; l < param.batch_iter; l++) {
                     timer.reset();
                     IloModel model(env);
                     IloNumVarArray var(env);
                     IloRangeArray con(env);
 
-                    populatebyrow(model, var, con, gi);
+                    populatebyrow(model, var, con, l);
                     cplex.extract(model);
                     if (log) {
                         std::string QPmodel_path = param.package_path + "/log/QPmodel.lp";
@@ -173,6 +165,8 @@ namespace SwarmPlanning {
                     cplex.getValues(vals, var);
 
                     // Translate Bernstein basis to Polynomial coefficients
+                    int offset_dim = batches[l].size() * M * (n + 1);
+                    int batch_max_iter = ceil((double)N / (double)param.batch_size);
                     for (int k = 0; k < outdim; k++) {
                         for (int qi = 0; qi < N; qi++) {
                             for (int m = 0; m < M; m++) {
@@ -181,20 +175,16 @@ namespace SwarmPlanning {
                                 timeMatrix(1.0 / (planResult_ptr->T[m+1] - planResult_ptr->T[m]), &tm);
                                 tm = basis * tm;
 
-                                if (qi >= gi * param.batch_size && qi < (gi + 1) * param.batch_size) {
+                                int bi = isQuadInBatch(qi, l);
+                                if (bi >= 0) {
                                     for (int i = 0; i < n + 1; i++) {
-                                        c = c +
-                                            vals[k * offset_dim + (qi - gi * param.batch_size) * offset_quad +
-                                                 m * offset_seg + i] *
-                                            tm.row(i);
+                                        c = c + vals[k * offset_dim + bi * offset_quad + m * offset_seg + i] * tm.row(i);
                                         if (param.sequential) {
-                                            dummy(qi * offset_quad + m * (n + 1) + i, k) =
-                                                    vals[k * offset_dim + (qi - gi * param.batch_size) * offset_quad +
-                                                         m * offset_seg + i];
+                                            dummy(qi * offset_quad + m * (n + 1) + i, k) = vals[k * offset_dim + bi * offset_quad + m * offset_seg + i];
                                         }
                                     }
                                     coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
-                                } else if (param.sequential && param.N_b < N / param.batch_size) {
+                                } else if (param.sequential && param.batch_iter < batch_max_iter) {
                                     for (int i = 0; i < n + 1; i++) {
                                         c = c + dummy(qi * offset_quad + m * offset_seg + i, k) * tm.row(i);
                                     }
@@ -205,8 +195,8 @@ namespace SwarmPlanning {
                         timer.stop();
                     }
                     if (param.sequential) {
-                        ROS_INFO_STREAM("RBPPlanner: QP runtime of batch " << gi << "=" << timer.elapsedSeconds());
-                        ROS_INFO_STREAM("RBPPlanner: QP cost of batch " << gi << "=" << cplex.getObjValue());
+                        ROS_INFO_STREAM("RBPPlanner: QP runtime of batch " << l << "=" << timer.elapsedSeconds());
+                        ROS_INFO_STREAM("RBPPlanner: QP cost of batch " << l << "=" << cplex.getObjValue());
                     }
                 }
                 if (param.iteration > 1)
@@ -324,7 +314,7 @@ namespace SwarmPlanning {
                         }
                     }
                     // yaw
-                    for(int i = 0; i < 7; i++){
+                    for(int i = 0; i < 8; i++){
                         coefCSV << "0,";
                     }
                     coefCSV << "\n";
@@ -558,15 +548,17 @@ namespace SwarmPlanning {
             }
         }
 
-        void populatebyrow(IloModel model, IloNumVarArray x, IloRangeArray c, int gi) {
+        void populatebyrow(IloModel model, IloNumVarArray x, IloRangeArray c, int l) {
+            int offset_dim = batches[l].size() * M * (n + 1);
             IloEnv env = model.getEnv();
             for (int k = 0; k < outdim; k++) {
-                for (int qi = gi * param.batch_size; qi < (gi + 1) * param.batch_size; qi++) {
+                for (int bi = 0; bi < batches[l].size(); bi++) {
                     for (int m = 0; m < M; m++) {
                         for (int i = 0; i < n + 1; i++) {
                             x.add(IloNumVar(env, -IloInfinity, IloInfinity));
 
-                            int row = k * offset_dim + (qi - gi * param.batch_size) * offset_quad + m * (n + 1) + i;
+                            int qi = batches[l][bi];
+                            int row = k * offset_dim + bi * offset_quad + m * (n + 1) + i;
                             std::string name;
                             if (k == 0) {
                                 name = "x_" + std::to_string(qi) + "_" + std::to_string(m) + "_" + std::to_string(i);
@@ -588,18 +580,19 @@ namespace SwarmPlanning {
             // Cost function
             IloNumExpr cost(env);
             for (int k = 0; k < outdim; k++) {
-                for (int qi = gi * param.batch_size; qi < (gi + 1) * param.batch_size; qi++) {
+                for (int bi = 0; bi < batches[l].size(); bi++) {
                     for (int m = 0; m < M; m++) {
+                        int qi = batches[l][bi];
                         Eigen::MatrixXd Q_p = build_Q_p(qi, m);
 
                         for (int i = 0; i < n + 1; i++) {
                             int row = qi * M * (n + 1) + m * (n + 1) + i;
-                            int row_idx = k * offset_dim + (qi - gi * param.batch_size) * offset_quad + m * (n + 1) + i;
+                            int row_idx = k * offset_dim + bi * offset_quad + m * (n + 1) + i;
 
                             for (int j = 0; j < n + 1; j++) {
                                 int col = qi * M * (n + 1) + m * (n + 1) + j;
                                 int col_idx =
-                                        k * offset_dim + (qi - gi * param.batch_size) * offset_quad + m * (n + 1) + j;
+                                        k * offset_dim + bi * offset_quad + m * (n + 1) + j;
 
                                 if (Q_p(i, j) != 0) {
                                     cost += Q_p(i, j) * x[row_idx] * x[col_idx];
@@ -613,38 +606,28 @@ namespace SwarmPlanning {
 
             // Equality Constraints
             for (int k = 0; k < outdim; k++) {
-                for (int qi = 0; qi < param.batch_size; qi++) {
+                for (int bi = 0; bi < batches[l].size(); bi++) {
                     for (int i = 0; i < 2 * phi + (M - 1) * phi; i++) {
                         IloNumExpr expr(env);
                         for (int j = 0; j < M * (n + 1); j++) {
                             if (Aeq_base(i, j) != 0) {
-                                expr += Aeq_base(i, j) * x[k * offset_dim + qi * offset_quad + j];
+                                expr += Aeq_base(i, j) * x[k * offset_dim + bi * offset_quad + j];
                             }
                         }
-                        c.add(expr == deq((gi * param.batch_size + qi) * (2 * phi + (M - 1) * phi) + i, k));
+                        int qi = batches[l][bi];
+                        c.add(expr == deq(qi * (2 * phi + (M - 1) * phi) + i, k));
                         expr.end();
                     }
                 }
             }
             count_eq = c.getSize();
-//        for(int qi = 0; qi < N; qi++){
-//            if(qi >= gi * plan_batch_size && qi < (gi+1) * plan_batch_size){
-//                continue;
-//            }
-//
-//            for(int j = 0; j < M*(n+1); j++){
-//                c.add(x[qi*M*(n+1) + j] == dummy(qi*M*(n+1) + j, k));
-//            }
-//        }
 
             // Inequality Constraints
             for (int k = 0; k < outdim; k++) {
-                for (int qi = 0; qi < N; qi++) {
-                    if (qi < gi * param.batch_size || qi >= (gi + 1) * param.batch_size) {
-                        continue;
-                    }
+                for (int bi = 0; bi < batches[l].size(); bi++) {
+                    int qi = batches[l][bi];
                     for (int j = 0; j < (n + 1) * M; j++) {
-                        int idx = k * offset_dim + (qi - gi * param.batch_size) * offset_quad + j;
+                        int idx = k * offset_dim + bi * offset_quad + j;
                         c.add(x[idx] <= dlq(2 * qi * offset_quad + j, k));
                         c.add(-x[idx] <= dlq((2 * qi + 1) * offset_quad + j, k));
                     }
@@ -654,14 +637,14 @@ namespace SwarmPlanning {
             int iter = 0;
             for (int qi = 0; qi < N; qi++) {
                 for (int qj = qi + 1; qj < N; qj++) {
-                    if ((qi < gi * param.batch_size || qi >= (gi + 1) * param.batch_size)
-                        && (qj < gi * param.batch_size || qj >= (gi + 1) * param.batch_size)) {
+                    int bi = isQuadInBatch(qi, l);
+                    int bj = isQuadInBatch(qj, l);
 
-                    } else if ((qi >= gi * param.batch_size && qi < (gi + 1) * param.batch_size)
-                               && (qj < gi * param.batch_size || qj >= (gi + 1) * param.batch_size)) {
+                    if (bi < 0 && bj < 0) {
+
+                    } else if (bi >= 0 && bj < 0) {
                         for (int j = 0; j < M * (n + 1); j++) {
-                            int idx = (qi - gi * param.batch_size) * offset_quad + j;
-
+                            int idx = bi * offset_quad + j;
                             c.add(dlq(offset_box + offset_quad * 2 * iter + j, 0) *
                                   (dummy(qj * offset_quad + j, 0) - x[0 * offset_dim + idx]) +
                                   dlq(offset_box + offset_quad * 2 * iter + j, 1) *
@@ -670,23 +653,21 @@ namespace SwarmPlanning {
                                   (dummy(qj * offset_quad + j, 2) - x[2 * offset_dim + idx])
                                   >= mission.quad_size[qi] + mission.quad_size[qj]);
                         }
-                    } else if ((qi < gi * param.batch_size || qi >= (gi + 1) * param.batch_size)
-                               && (qj >= gi * param.batch_size && qj < (gi + 1) * param.batch_size)) {
+                    } else if (bi < 0 && bj >= 0) {
                         for (int j = 0; j < M * (n + 1); j++) {
-                            int idx = (qj - gi * param.batch_size) * offset_quad + j;
-
+                            int jdx = bj * offset_quad + j;
                             c.add(dlq(offset_box + offset_quad * 2 * iter + j, 0) *
-                                  (x[0 * offset_dim + idx] - dummy(qi * offset_quad + j, 0)) +
+                                  (x[0 * offset_dim + jdx] - dummy(qi * offset_quad + j, 0)) +
                                   dlq(offset_box + offset_quad * 2 * iter + j, 1) *
-                                  (x[1 * offset_dim + idx] - dummy(qi * offset_quad + j, 1)) +
+                                  (x[1 * offset_dim + jdx] - dummy(qi * offset_quad + j, 1)) +
                                   dlq(offset_box + offset_quad * 2 * iter + j, 2) *
-                                  (x[2 * offset_dim + idx] - dummy(qi * offset_quad + j, 2))
+                                  (x[2 * offset_dim + jdx] - dummy(qi * offset_quad + j, 2))
                                   >= mission.quad_size[qi] + mission.quad_size[qj]);
                         }
                     } else {
                         for (int j = 0; j < M * (n + 1); j++) {
-                            int idx = (qi - gi * param.batch_size) * offset_quad + j;
-                            int jdx = (qj - gi * param.batch_size) * offset_quad + j;
+                            int idx = bi * offset_quad + j;
+                            int jdx = bj * offset_quad + j;
 
                             c.add(dlq(offset_box + offset_quad * 2 * iter + j, 0) *
                                   (x[0 * offset_dim + jdx] - x[0 * offset_dim + idx]) +
@@ -863,6 +844,40 @@ namespace SwarmPlanning {
             }
 
             return time_scale;
+        }
+
+        void setBatch(int alg){
+            int batch_max_iter = ceil((double)N / (double)param.batch_size);
+            if (param.sequential) {
+                int batch_max_iter = ceil((double)N / (double)param.batch_size);
+                if (param.batch_iter < 0 || param.batch_iter > batch_max_iter) {
+                    param.batch_iter = batch_max_iter;
+                }
+            } else {
+                param.batch_size = N;
+                param.batch_iter = 1;
+            }
+
+            batches.resize(batch_max_iter);
+
+            //default groups
+            if(alg == 0) {
+                for (int qi = 0; qi < N; qi++) {
+                    batches[qi / param.batch_size].emplace_back(qi);
+                }
+            }
+            else{
+                ROS_ERROR("RBPPlaner: invalid batch algorithm");
+            }
+        }
+
+        int isQuadInBatch(int qi, int l){
+            for(int bi = 0; bi < batches[l].size(); bi++){
+                if(qi == batches[l][bi]){
+                    return bi;
+                }
+            }
+            return -1;
         }
     };
 }

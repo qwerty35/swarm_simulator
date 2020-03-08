@@ -668,10 +668,10 @@ namespace libMultiRobotPlanning {
             if (m_quad_size[i] + m_quad_size[j] < m_grid_size * 0.5) {
                 return state1a.equalExceptTime(state2b) && state1b.equalExceptTime(state2a);
             }
-            else if(m_quad_size[i] + m_quad_size[j] < m_grid_size) {
-                return (state1a.equalExceptTime(state2b) || state2a.equalExceptTime(state1b)) &&
-                       !isParallel(state1a, state1b, state2a, state2b);
-            }
+//            else if(m_quad_size[i] + m_quad_size[j] < m_grid_size) {
+//                return (state1a.equalExceptTime(state2b) || state2a.equalExceptTime(state1b)) &&
+//                       !isParallel(state1a, state1b, state2a, state2b);
+//            }
             else{
                 Vector a(state2a - state1a);
                 Vector b(state2b - state1b);
