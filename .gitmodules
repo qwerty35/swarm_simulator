@@ -1,0 +1,3 @@
+[submodule "swarm_planner/third_party/AA-SIPP-m"]
+	path = swarm_planner/third_party/AA-SIPP-m
+	url = https://github.com/qwerty35/AA-SIPP-m.git

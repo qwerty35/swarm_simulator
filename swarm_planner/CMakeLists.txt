@@ -7,12 +7,18 @@ project(swarm_planner)
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-#set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release)
 
 #ECBS
 add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/ecbs)
 include_directories(${PROJECT_SOURCE_DIR}/third_party/ecbs/include)
+
+#SIPP
+add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/AA-SIPP-m)
+include_directories(${PROJECT_SOURCE_DIR}/third_party/AA-SIPP-m/include)
+link_directories(${PROJECT_SOURCE_DIR}/third_party/AA-SIPP-m)
+set(SIPP_LINK_LIBS libsipp.a)
 
 #BOOST14
 find_package(Boost 1.58 REQUIRED COMPONENTS program_options)
@@ -66,58 +72,73 @@ find_package(PythonLibs 2.7)
 find_package(Threads)
 
 #BUILD
-add_executable(random_map_generator src/random_map_generator.cpp)
-target_link_libraries(random_map_generator
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-)
+#add_executable(random_map_generator src/random_map_generator.cpp)
+#target_link_libraries(random_map_generator
+#  ${catkin_LIBRARIES}
+#  ${PCL_LIBRARIES}
+#)
+#
+#add_executable(swarm_traj_planner_rbp src/swarm_traj_planner_rbp.cpp)
+#target_include_directories(swarm_traj_planner_rbp PRIVATE ${PYTHON_INCLUDE_DIRS})
+#target_link_libraries(swarm_traj_planner_rbp
+#  ${catkin_LIBRARIES}
+#  ${OCTOMAP_INCLUDE_DIRS}
+#  ${SIPP_LINK_LIBS}
+#  ${PYTHON_LIBRARIES}
+#  m
+#  ilocplex
+#  cplex
+#  concert
+#  pthread
+#  dl
+#)
+#
+#add_executable(swarm_traj_planner_rbp_test_all src/swarm_traj_planner_rbp_test_all.cpp)
+#target_include_directories(swarm_traj_planner_rbp_test_all PRIVATE ${PYTHON_INCLUDE_DIRS})
+#target_link_libraries(swarm_traj_planner_rbp_test_all
+#  ${catkin_LIBRARIES}
+#  ${OCTOMAP_INCLUDE_DIRS}
+#  ${SIPP_LINK_LIBS}
+#  ${PYTHON_LIBRARIES}
+#  m
+#  ilocplex
+#  cplex
+#  concert
+#  pthread
+#  dl
+#)
+#
+#add_executable(swarm_traj_planner_scp src/swarm_traj_planner_scp.cpp)
+#target_include_directories(swarm_traj_planner_scp PRIVATE ${PYTHON_INCLUDE_DIRS})
+#target_link_libraries(swarm_traj_planner_scp
+#  ${catkin_LIBRARIES}
+#  ${PYTHON_LIBRARIES}
+#  m
+#  ilocplex
+#  cplex
+#  concert
+#  pthread
+#  dl
+#)
+#
+#add_executable(swarm_traj_planner_rbp_flat src/swarm_traj_planner_rbp_flat.cpp)
+#target_include_directories(swarm_traj_planner_rbp_flat PRIVATE ${PYTHON_INCLUDE_DIRS})
+#target_link_libraries(swarm_traj_planner_rbp_flat
+#  ${catkin_LIBRARIES}
+#  ${OCTOMAP_INCLUDE_DIRS}
+#  ${SIPP_LINK_LIBS}
+#  ${PYTHON_LIBRARIES}
+#  m
+#  ilocplex
+#  cplex
+#  concert
+#  pthread
+#  dl
+#)
 
-add_executable(swarm_traj_planner_rbp src/swarm_traj_planner_rbp.cpp)
-target_include_directories(swarm_traj_planner_rbp PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(swarm_traj_planner_rbp
-  ${catkin_LIBRARIES}
-  ${OCTOMAP_INCLUDE_DIRS}
-  ${SIPP_LINK_LIBS}
-  ${PYTHON_LIBRARIES}
-  m
-  ilocplex
-  cplex
-  concert
-  pthread
-  dl
-)
-
-add_executable(swarm_traj_planner_rbp_test_all src/swarm_traj_planner_rbp_test_all.cpp)
-target_include_directories(swarm_traj_planner_rbp_test_all PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(swarm_traj_planner_rbp_test_all
-  ${catkin_LIBRARIES}
-  ${OCTOMAP_INCLUDE_DIRS}
-  ${SIPP_LINK_LIBS}
-  ${PYTHON_LIBRARIES}
-  m
-  ilocplex
-  cplex
-  concert
-  pthread
-  dl
-)
-
-add_executable(swarm_traj_planner_scp src/swarm_traj_planner_scp.cpp)
-target_include_directories(swarm_traj_planner_scp PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(swarm_traj_planner_scp
-  ${catkin_LIBRARIES}
-  ${PYTHON_LIBRARIES}
-  m
-  ilocplex
-  cplex
-  concert
-  pthread
-  dl
-)
-
-add_executable(swarm_traj_planner_rbp_flat src/swarm_traj_planner_rbp_flat.cpp)
-target_include_directories(swarm_traj_planner_rbp_flat PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(swarm_traj_planner_rbp_flat
+add_executable(hetero_traj_planner_rbp src/hetero_traj_planner_rbp.cpp)
+target_include_directories(hetero_traj_planner_rbp PRIVATE ${PYTHON_INCLUDE_DIRS})
+target_link_libraries(hetero_traj_planner_rbp
   ${catkin_LIBRARIES}
   ${OCTOMAP_INCLUDE_DIRS}
   ${SIPP_LINK_LIBS}

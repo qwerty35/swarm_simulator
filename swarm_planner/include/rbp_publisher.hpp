@@ -21,9 +21,9 @@
 namespace plt = matplotlibcpp;
 
 // Submodules
-#include <rbp_planner.hpp>
-#include <rbp_corridor.hpp>
-#include <init_traj_planner.hpp>
+//#include <rbp_planner.hpp>
+//#include <rbp_corridor.hpp>
+//#include <init_traj_planner.hpp>
 #include <mission.hpp>
 #include <param.hpp>
 
@@ -41,28 +41,28 @@ namespace SwarmPlanning {
             qn = mission.qn;
             outdim = 3;
 
-            M = planResult.msgs_traj_info.data.size() - 2 - 1;
-            T.resize(M + 1);
-            for (int m = 0; m < M + 1; m++) {
-                T[m] = planResult.msgs_traj_info.data.at(m + 2);
+            T = planResult.T;
+            M.resize(qn);
+            for(int qi = 0; qi < qn; qi++){
+                M[qi] = T[qi].size() - 1;
             }
 
             dt = 0.1;
-            t.resize(floor(T.back() / dt));
+            t.resize(floor(T[0].back() / dt)); // All T[qi].back = makespan
             for (int i = 0; i < t.size(); i++) {
                 t[i] = i * dt;
             }
 
-            pva.resize(qn);
             coef.resize(qn);
             quad_state.resize(qn);
             currentState.resize(qn);
             for (int qi = 0; qi < qn; qi++) {
-                float rows = planResult.msgs_traj_coef[qi].layout.dim.at(0).size;
-                float cols = planResult.msgs_traj_coef[qi].layout.dim.at(1).size;
-                std::vector<double> data = planResult.msgs_traj_coef[qi].data;
-                coef[qi] = Eigen::Map<Eigen::MatrixXd>(data.data(), rows, cols);
-
+                if(planResult.state >= OPTIMIZATION) {
+                    float rows = planResult.msgs_traj_coef[qi].layout.dim.at(0).size;
+                    float cols = planResult.msgs_traj_coef[qi].layout.dim.at(1).size;
+                    std::vector<double> data = planResult.msgs_traj_coef[qi].data;
+                    coef[qi] = Eigen::Map<Eigen::MatrixXd>(data.data(), rows, cols);
+                }
                 currentState[qi].resize(outdim * param.phi);
                 quad_state[qi].resize(outdim * param.phi);
                 for (int i = 0; i < outdim * param.phi; i++) {
@@ -71,15 +71,17 @@ namespace SwarmPlanning {
             }
 
             pubs_traj_coef.resize(qn);
+            pubs_initTraj_vis.resize(qn);
             pubs_traj.resize(qn);
             pubs_relBox.resize(qn);
             for (int qi = 0; qi < qn; qi++) {
                 std::string mav_name = "/mav" + std::to_string(qi);
                 pubs_traj_coef[qi] = nh.advertise<std_msgs::Float64MultiArray>("/traj_coef" + mav_name, 1);
                 pubs_traj[qi] = nh.advertise<nav_msgs::Path>("/desired_trajectory" + mav_name, 1);
+                pubs_initTraj_vis[qi] = nh.advertise<nav_msgs::Path>("/initTraj" + mav_name, 1);
                 pubs_relBox[qi] = nh.advertise<visualization_msgs::MarkerArray>("/relative_box" + mav_name, 1);
             }
-            pub_traj_info = nh.advertise<std_msgs::Float64MultiArray>("/traj_info", 1);
+//            pub_traj_info = nh.advertise<std_msgs::Float64MultiArray>("/traj_info", 1);
             pub_initTraj = nh.advertise<visualization_msgs::MarkerArray>("/initTraj", 1);
             pub_obsBox = nh.advertise<visualization_msgs::MarkerArray>("/obstacle_box", 1);
             pub_feasibleBox = nh.advertise<visualization_msgs::MarkerArray>("/feasible_box", 1);
@@ -91,39 +93,63 @@ namespace SwarmPlanning {
         }
 
         void update(double current_time) {
-            update_traj(current_time);
-            update_initTraj();
-            update_obsBox(current_time);
-            update_relBox(current_time);
-            update_feasibleBox(current_time);
-            update_colBox();
+            if(planResult.state >= INITTRAJ){
+                update_initTraj(current_time);
+                update_colBox();
+            }
+            if(planResult.state >= SFC){
+                update_obsBox(current_time);
+            }
+            if(planResult.state >= RSFC){
+                update_relBox(current_time);
+            }
+            if(planResult.state >= OPTIMIZATION) {
+                update_traj(current_time);
+                update_feasibleBox(current_time);
+            }
 //            update_distance_between_agents_realtime(current_time);
         }
 
         void publish() {
-            for (int qi = 0; qi < qn; qi++) {
-                pubs_traj_coef[qi].publish(planResult.msgs_traj_coef[qi]);
-                pubs_traj[qi].publish(msgs_traj[qi]);
-                pubs_relBox[qi].publish(msgs_relBox[qi]);
+            if(planResult.state >= INITTRAJ){
+                pub_colBox.publish(msgs_colBox);
+                pub_initTraj.publish(msgs_initTraj);
+                for (int qi = 0; qi < qn; qi++) {
+                    pubs_initTraj_vis[qi].publish(msgs_initTraj_vis[qi]);
+                }
             }
-            pub_traj_info.publish(planResult.msgs_traj_info);
-            pub_initTraj.publish(msgs_initTraj);
-            pub_obsBox.publish(msgs_obsBox);
-            pub_feasibleBox.publish(msgs_feasibleBox);
-            pub_colBox.publish(msgs_colBox);
+            if(planResult.state >= SFC){
+                pub_obsBox.publish(msgs_obsBox);
+            }
+            if(planResult.state >= RSFC){
+                for (int qi = 0; qi < qn; qi++) {
+                    pubs_relBox[qi].publish(msgs_relBox[qi]);
+                }
+            }
+
+            if(planResult.state >= OPTIMIZATION) {
+                for (int qi = 0; qi < qn; qi++) {
+                    pubs_traj_coef[qi].publish(planResult.msgs_traj_coef[qi]);
+                    pubs_traj[qi].publish(msgs_traj[qi]);
+                }
+                pub_feasibleBox.publish(msgs_feasibleBox);
+            }
+//            pub_traj_info.publish(planResult.msgs_traj_info);
 //            pub_minDist.publish(msgs_minDist);
         }
 
         void plot(bool log) {
-            update_quad_state();
-            update_safety_margin_ratio();
+            if(planResult.state >= OPTIMIZATION) {
+                update_quad_state();
+                update_safety_margin_ratio();
 
-            if (log) {
-                plot_quad_dynamics();
-                plot_safety_margin_ratio();
+                if (log) {
+                    plot_quad_dynamics();
+                    plot_safety_margin_ratio();
+                }
+                ROS_INFO_STREAM("Global min_dist between agents: " << safety_margin_ratio);
+                ROS_INFO_STREAM("Total flight distance: " << trajectory_length_sum());
             }
-            ROS_INFO_STREAM("Global min_dist between agents: " << safety_margin_ratio);
-            ROS_INFO_STREAM("Total flight distance: " << trajectory_length_sum());
         }
 
 //    void plot_real_time(){
@@ -136,20 +162,22 @@ namespace SwarmPlanning {
         SwarmPlanning::Mission mission;
         SwarmPlanning::Param param;
 
-        int qn, M, outdim;
+        T_t T;
+        int qn, outdim;
         double safety_margin_ratio, dt;
         tf::TransformBroadcaster br;
-        std::vector<Eigen::MatrixXd> pva;
+        std::vector<int> M;
         std::vector<Eigen::MatrixXd> coef;
         std::vector<std::vector<double>> currentState;
-        std::vector<double> T, t, max_ratio, min_ratio;
+        std::vector<double> t, max_ratio, min_ratio;
         std::vector<std::vector<std::vector<double>>> quad_state;
 //    std::shared_ptr<plt::Plot> plot_min_dist_obj;
 
         // ROS publisher
-        ros::Publisher pub_traj_info;
+//        ros::Publisher pub_traj_info;
         std::vector<ros::Publisher> pubs_traj_coef;
         std::vector<ros::Publisher> pubs_traj;
+        std::vector<ros::Publisher> pubs_initTraj_vis;
         ros::Publisher pub_initTraj;
         ros::Publisher pub_obsBox;
         std::vector<ros::Publisher> pubs_relBox;
@@ -159,6 +187,7 @@ namespace SwarmPlanning {
 
         // ROS messages
         std::vector<nav_msgs::Path> msgs_traj;
+        std::vector<nav_msgs::Path> msgs_initTraj_vis;
         visualization_msgs::MarkerArray msgs_initTraj;
         visualization_msgs::MarkerArray msgs_obsBox;
         std::vector<visualization_msgs::MarkerArray> msgs_relBox;
@@ -166,27 +195,15 @@ namespace SwarmPlanning {
         visualization_msgs::MarkerArray msgs_colBox;
 //        geometry_msgs::Pose msgs_minDist;
 
-        void timeMatrix(double current_time, int &index, Eigen::MatrixXd &polyder) {
-            double tseg = 0;
-            double tcand;
-
-            // find segment start time tseg
-            for (int m = 0; m < M; m++) {
-                tcand = T[m];
-                if (tcand < current_time) {
-                    tseg = tcand;
-                    index = m;
-                } else {
-                    break;
-                }
-            }
-            tseg = current_time - tseg;
+        void timeMatrix(int qi, double current_time, int& segment_index, Eigen::MatrixXd &polyder) {
+            segment_index = planResult.findSegmentIdx(qi, current_time);
+            double t_ = current_time - T[qi][segment_index];
             polyder.resize(3, param.n + 1);
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < param.n + 1; j++) {
                     if (i <= j)
                         polyder(i, param.n - j) =
-                                ((i == 0) * 1 + (i == 1) * j + (i == 2) * j * (j - 1)) * pow(tseg, j - i);
+                                ((i == 0) * 1 + (i == 1) * j + (i == 2) * j * (j - 1)) * pow(t_, j - i);
                     else
                         polyder(i, param.n - j) = 0;
                 }
@@ -194,47 +211,47 @@ namespace SwarmPlanning {
         }
 
         void update_traj(double current_time) {
-            if (current_time > T.back()) {
-                return;
-            }
             for (int qi = 0; qi < qn; qi++) {
+                if (current_time > T[qi].back()) {
+                    continue;
+                }
+
                 int index = 0;
                 Eigen::MatrixXd polyder;
-                timeMatrix(current_time, index, polyder);
+                timeMatrix(qi, current_time, index, polyder);
 
-                pva[qi] = polyder * coef[qi].block((param.n + 1) * index, 0, (param.n + 1), 3);
+                Eigen::MatrixXd pva = polyder * coef[qi].block((param.n + 1) * index, 0, (param.n + 1), 3);
+                currentState[qi][0] = pva(0, 0); //x
+                currentState[qi][1] = pva(0, 1); //y
+                currentState[qi][2] = pva(0, 2); //z
+                currentState[qi][3] = pva(1, 0); //vx
+                currentState[qi][4] = pva(1, 1); //vy
+                currentState[qi][5] = pva(1, 2); //vz
+                currentState[qi][6] = pva(2, 0); //ax
+                currentState[qi][7] = pva(2, 1); //ay
+                currentState[qi][8] = pva(2, 2); //az
 
                 msgs_traj[qi].header.frame_id = "/world";
                 msgs_traj[qi].header.stamp.sec = current_time;
-
                 geometry_msgs::PoseStamped pos_des;
                 pos_des.header.frame_id = "/world";
-                pos_des.pose.position.x = pva[qi](0, 0);
-                pos_des.pose.position.y = pva[qi](0, 1);
-                pos_des.pose.position.z = pva[qi](0, 2);
+                pos_des.pose.position.x = currentState[qi][0];
+                pos_des.pose.position.y = currentState[qi][1];
+                pos_des.pose.position.z = currentState[qi][2];
                 msgs_traj[qi].poses.emplace_back(pos_des);
 
-                currentState[qi][0] = pva[qi](0, 0);
-                currentState[qi][1] = pva[qi](0, 1);
-                currentState[qi][2] = pva[qi](0, 2);
-                currentState[qi][3] = pva[qi](1, 0);
-                currentState[qi][4] = pva[qi](1, 1);
-                currentState[qi][5] = pva[qi](1, 2);
-                currentState[qi][6] = pva[qi](2, 0);
-                currentState[qi][7] = pva[qi](2, 1);
-                currentState[qi][8] = pva[qi](2, 2);
-
                 tf::Transform transform;
-                transform.setOrigin(tf::Vector3(pva[qi](0, 0), pva[qi](0, 1), pva[qi](0, 2)));
+                transform.setOrigin(tf::Vector3(currentState[qi][0], currentState[qi][1], currentState[qi][2]));
                 tf::Quaternion q;
-                q.setRPY(0, 0, atan2(pva[qi](1, 1), pva[qi](1, 0)));
+                q.setRPY(0, 0, atan2(currentState[qi][4], currentState[qi][3]));
                 transform.setRotation(q);
                 br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),
-                                                      "world", "/mav" + std::to_string(qi) + "/base_link"));
+                                 "world", "/mav" + std::to_string(qi) + "/base_link"));
             }
         }
 
-        void update_initTraj() {
+        void update_initTraj(double current_time) {
+            //update discrete initial trajectory
             visualization_msgs::MarkerArray mk_array;
             for (int qi = 0; qi < qn; qi++) {
                 for (int m = 0; m < planResult.initTraj[qi].size(); m++) {
@@ -269,6 +286,44 @@ namespace SwarmPlanning {
                 }
             }
             msgs_initTraj = mk_array;
+
+            //update initial trajectory with linear interpolation
+            double t_, t_seg, alpha;
+            if (current_time > T[0].back()) {
+                return;
+            }
+            msgs_initTraj_vis.resize(qn);
+            for (int qi = 0; qi < qn; qi++) {
+                msgs_initTraj_vis[qi].header.frame_id = "/world";
+                msgs_initTraj_vis[qi].header.stamp.sec = current_time;
+
+                int m = planResult.findSegmentIdx(qi, current_time);
+                t_ = current_time - T[qi][m];
+                t_seg = T[qi][m + 1] - T[qi][m];
+                alpha = t_/t_seg;
+
+                geometry_msgs::PoseStamped pose;
+                pose.header.frame_id = "/world";
+                pose.pose.position.x = (1-alpha) * planResult.initTraj[qi][m].x() + alpha * planResult.initTraj[qi][m+1].x();
+                pose.pose.position.y = (1-alpha) * planResult.initTraj[qi][m].y() + alpha * planResult.initTraj[qi][m+1].y();
+                pose.pose.position.z = (1-alpha) * planResult.initTraj[qi][m].z() + alpha * planResult.initTraj[qi][m+1].z();
+                msgs_initTraj_vis[qi].poses.emplace_back(pose);
+
+                if(planResult.state < OPTIMIZATION) {
+                    currentState[qi][0] = pose.pose.position.x;
+                    currentState[qi][1] = pose.pose.position.y;
+                    currentState[qi][2] = pose.pose.position.z;
+
+//                    tf::Transform transform;
+//                    transform.setOrigin(tf::Vector3(pva[qi](0, 0), pva[qi](0, 1), pva[qi](0, 2)));
+//                    tf::Quaternion q;
+//                    q.setRPY(0, 0, atan2(pva[qi](1, 1), pva[qi](1, 0)));
+//                    transform.setRotation(q);
+//                    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),
+//                                                          "world", "/mav" + std::to_string(qi) + "/base_link"));
+                }
+            }
+
         }
 
         void update_obsBox(double current_time) {
@@ -335,7 +390,7 @@ namespace SwarmPlanning {
                 for (int qj = qi + 1; qj < qn; qj++) {
                     int box_curr = 0;
                     while (box_curr < planResult.RSFC[qi][qj].size() &&
-                           planResult.RSFC[qi][qj][box_curr].second < current_time) {
+                           planResult.RSFC[qi][qj][box_curr].end_time < current_time) {
                         box_curr++;
                     }
                     if (box_curr >= planResult.RSFC[qi][qj].size()) {
@@ -359,9 +414,9 @@ namespace SwarmPlanning {
                     mk.pose.orientation.z = 0;
                     mk.pose.orientation.w = 1.0;
 
-                    mk.pose.position.x = pva[qi](0, 0);
-                    mk.pose.position.y = pva[qi](0, 1);
-                    mk.pose.position.z = pva[qi](0, 2);
+                    mk.pose.position.x = currentState[qi][0];
+                    mk.pose.position.y = currentState[qi][1];
+                    mk.pose.position.z = currentState[qi][2];
 
                     mk.scale.x = 2 * r;
                     mk.scale.y = 2 * r;
@@ -385,9 +440,9 @@ namespace SwarmPlanning {
                     mk.pose.orientation.z = 0;
                     mk.pose.orientation.w = 1.0;
 
-                    mk.pose.position.x = pva[qj](0, 0);
-                    mk.pose.position.y = pva[qj](0, 1);
-                    mk.pose.position.z = pva[qj](0, 2);
+                    mk.pose.position.x = currentState[qi][0];
+                    mk.pose.position.y = currentState[qi][1];
+                    mk.pose.position.z = currentState[qi][2];
 
 //                mk.scale.x = mission.quad_size[qj];
 //                mk.scale.y = mission.quad_size[qj];
@@ -420,19 +475,19 @@ namespace SwarmPlanning {
                     mk.scale.z = 40;
 
                     octomap::point3d qi_vector;
-                    qi_vector.x() = pva[qi](0, 0);
-                    qi_vector.y() = pva[qi](0, 1);
-                    qi_vector.z() = pva[qi](0, 2);
+                    qi_vector.x() = currentState[qi][0];
+                    qi_vector.y() = currentState[qi][1];
+                    qi_vector.z() = currentState[qi][2];
 
-                    octomap::point3d normal_vector = planResult.RSFC[qi][qj][box_curr].first;
+                    octomap::point3d normal_vector = planResult.RSFC[qi][qj][box_curr].normal_vector;
                     Eigen::Vector3d V3d_normal_vector(normal_vector.x(), normal_vector.y(), normal_vector.z());
 
                     double distance = r / normal_vector.norm() + mk.scale.z / 2;
 //                double distance = mission.quad_size[qi] / normal_vector.norm();
 
-                    mk.pose.position.x = pva[qi](0, 0) + normal_vector.normalized().x() * distance;
-                    mk.pose.position.y = pva[qi](0, 1) + normal_vector.normalized().y() * distance;
-                    mk.pose.position.z = pva[qi](0, 2) + normal_vector.normalized().z() * distance;
+                    mk.pose.position.x = currentState[qi][0] + normal_vector.normalized().x() * distance;
+                    mk.pose.position.y = currentState[qi][1] + normal_vector.normalized().y() * distance;
+                    mk.pose.position.z = currentState[qi][2] + normal_vector.normalized().z() * distance;
 
                     Eigen::Vector3d z_0 = Eigen::Vector3d::UnitZ();
                     Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors(z_0, V3d_normal_vector);
@@ -462,9 +517,9 @@ namespace SwarmPlanning {
                 for (int qi = 0; qi < qn; qi++) {
                     mk.type = visualization_msgs::Marker::SPHERE;
                     mk.id = qi;
-                    mk.pose.position.x = pva[qi](0, 0);
-                    mk.pose.position.y = pva[qi](0, 1);
-                    mk.pose.position.z = pva[qi](0, 2);
+                    mk.pose.position.x = currentState[qi][0];
+                    mk.pose.position.y = currentState[qi][1];
+                    mk.pose.position.z = currentState[qi][2];
 
                     mk.scale.x = 2 * mission.quad_size[qi];
                     mk.scale.y = 2 * mission.quad_size[qi];
@@ -498,24 +553,24 @@ namespace SwarmPlanning {
                     int box_curr = 0;
                     if (qi < qj) { // RSFC
                         while (box_curr < planResult.RSFC[qi][qj].size() &&
-                               planResult.RSFC[qi][qj][box_curr].second < current_time) {
+                               planResult.RSFC[qi][qj][box_curr].end_time < current_time) {
                             box_curr++;
                         }
                         if (box_curr >= planResult.RSFC[qi][qj].size()) {
                             box_curr = planResult.RSFC[qi][qj].size() - 1;
                         }
 
-                        normal_vector = planResult.RSFC[qi][qj][box_curr].first;
+                        normal_vector = planResult.RSFC[qi][qj][box_curr].normal_vector;
                     } else if (qi > qj) { // RSFC
                         while (box_curr < planResult.RSFC[qj][qi].size() &&
-                               planResult.RSFC[qj][qi][box_curr].second < current_time) {
+                               planResult.RSFC[qj][qi][box_curr].end_time < current_time) {
                             box_curr++;
                         }
                         if (box_curr >= planResult.RSFC[qj][qi].size()) {
                             box_curr = planResult.RSFC[qj][qi].size() - 1;
                         }
 
-                        normal_vector = -planResult.RSFC[qj][qi][box_curr].first;
+                        normal_vector = -planResult.RSFC[qj][qi][box_curr].normal_vector;
                     } else { // SFC
                         while (box_curr < planResult.SFC[qi].size() &&
                                planResult.SFC[qi][box_curr].second < current_time) {
@@ -580,9 +635,9 @@ namespace SwarmPlanning {
                     }
 
                     double distance = r / normal_vector.norm() - mk.scale.z / 2;
-                    mk.pose.position.x = pva[qi](0, 0) + normal_vector.normalized().x() * distance;
-                    mk.pose.position.y = pva[qi](0, 1) + normal_vector.normalized().y() * distance;
-                    mk.pose.position.z = pva[qi](0, 2) + normal_vector.normalized().z() * distance;
+                    mk.pose.position.x = currentState[qi][0] + normal_vector.normalized().x() * distance;
+                    mk.pose.position.y = currentState[qi][1] + normal_vector.normalized().y() * distance;
+                    mk.pose.position.z = currentState[qi][2] + normal_vector.normalized().z() * distance;
 
                     Eigen::Vector3d V3d_normal_vector(normal_vector.x(), normal_vector.y(), normal_vector.z());
                     Eigen::Vector3d z_0 = Eigen::Vector3d::UnitZ();
@@ -599,41 +654,6 @@ namespace SwarmPlanning {
             msgs_feasibleBox = mk_array;
         }
 
-
-        // obstacle-collision model
-//        void update_colBox() {
-//            visualization_msgs::MarkerArray mk_array;
-//            for (int qi = 0; qi < qn; qi++) {
-//                visualization_msgs::Marker mk;
-//                mk.header.frame_id = "world";
-//                mk.ns = "colBox";
-//                mk.type = visualization_msgs::Marker::CUBE;
-//                mk.action = visualization_msgs::Marker::ADD;
-//
-//                mk.pose.orientation.x = 0;
-//                mk.pose.orientation.y = 0;
-//                mk.pose.orientation.z = 0;
-//                mk.pose.orientation.w = 1.0;
-//
-//                mk.id = qi;
-//                mk.pose.position.x = pva[qi](0, 0);
-//                mk.pose.position.y = pva[qi](0, 1);
-//                mk.pose.position.z = pva[qi](0, 2);
-//
-//                mk.scale.x = 2 * mission.quad_size[qi];
-//                mk.scale.y = 2 * mission.quad_size[qi];
-//                mk.scale.z = 2 * mission.quad_size[qi] * param.downwash;
-//
-//                mk.color.a = 0.7;
-//                mk.color.r = param.color[qi][0];
-//                mk.color.g = param.color[qi][1];
-//                mk.color.b = param.color[qi][2];
-//
-//                mk_array.markers.emplace_back(mk);
-//            }
-//            msgs_colBox = mk_array;
-//        }
-
         void update_colBox() {
             visualization_msgs::MarkerArray mk_array;
             for (int qi = 0; qi < qn; qi++) {
@@ -649,9 +669,9 @@ namespace SwarmPlanning {
                 mk.pose.orientation.w = 1.0;
 
                 mk.id = qi;
-                mk.pose.position.x = pva[qi](0, 0);
-                mk.pose.position.y = pva[qi](0, 1);
-                mk.pose.position.z = pva[qi](0, 2);
+                mk.pose.position.x = currentState[qi][0];
+                mk.pose.position.y = currentState[qi][1];
+                mk.pose.position.z = currentState[qi][2];
 
                 mk.scale.x = 2 * mission.quad_size[qi];
                 mk.scale.y = 2 * mission.quad_size[qi];
@@ -672,7 +692,7 @@ namespace SwarmPlanning {
                 for (int j = 0; j < t.size(); j++) {
                     int index = 0;
                     Eigen::MatrixXd state, polyder;
-                    timeMatrix(t[j], index, polyder);
+                    timeMatrix(qi, t[j], index, polyder);
                     state = polyder * coef[qi].block((param.n + 1) * index, 0, (param.n + 1), 3);
 
                     for (int i = 0; i < outdim * param.phi; i++) {
@@ -815,44 +835,5 @@ namespace SwarmPlanning {
 
             plt::show(false);
         }
-
-//    void plot_distance_between_agents_realtime(){
-//        collision_dist.resize(t.size());
-//        for(int i = 0; i < t.size(); i++){
-//            collision_dist[i] = 2 * mission.quad_size[0]; //TODO: heterogeous case
-//        }
-//
-//        plt::figure(2);
-//        plt::title("Ellipsoidal Distance between Quadrotor");
-//        plt::figure_size(1280, 960);
-//        plt::ylim(0, 5);
-//        plt::named_plot("collision constraint", t, collision_dist);
-//        plot_min_dist_obj.reset(new plt::Plot());
-//        plt::axis("equal");
-//        plt::legend();
-//
-//        for(int index = 0; index < t.size(); index++) {
-//            std::vector<double> t_partial(t.begin(), t.begin() + index);
-//            std::vector<double> min_dist_partial(min_dist.begin(), min_dist.begin() + index);
-//            plot_min_dist_obj.get()->update(t_partial, min_dist_partial);
-//            plt::pause(0.001);
-//        }
-//    }
-
-//        void update_distance_between_agents_realtime(double current_time) {
-//            int index = floor(current_time / dt);
-//            double current_min_dist, alpha;
-//
-//            if (index + 1 >= t.size()) {
-//                index = t.size() - 1;
-//                current_min_dist = min_dist[index];
-//            } else {
-//                alpha = (current_time - index * dt) / dt;
-//                current_min_dist = (1 - alpha) * min_dist[index] + alpha * min_dist[index+1];
-//            }
-//
-//            msgs_minDist.position.x = current_min_dist;
-//            msgs_minDist.position.y = 2 * mission.quad_size[0];
-//        }
     };
 }

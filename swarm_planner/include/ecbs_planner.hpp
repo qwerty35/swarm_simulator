@@ -32,18 +32,21 @@ namespace SwarmPlanning {
             }
 
             // Update segment time T
+            planResult_ptr->T.resize(mission.qn);
             int cost = 0;
             int makespan = 0;
             for (const auto &s : solution) {
                 cost += s.cost;
                 makespan = std::max<int>(makespan, s.cost);
             }
-            for (int i = 0; i <= makespan + 2; i++) {
-                planResult_ptr->T.emplace_back(i * param.time_step);
+            for(int qi = 0; qi < mission.qn; qi++) {
+                for (int i = 0; i <= makespan + 2; i++) {
+                    planResult_ptr->T[qi].emplace_back(i * param.time_step);
+                }
             }
             if (log) {
                 ROS_INFO_STREAM("ECBSPlanner: M=" << planResult_ptr->T.size() - 1);
-                ROS_INFO_STREAM("ECBSPlanner: makespan=" << planResult_ptr->T.back());
+                ROS_INFO_STREAM("ECBSPlanner: makespan=" << planResult_ptr->T[0].back());
             }
 
             planResult_ptr->initTraj.resize(solution.size());

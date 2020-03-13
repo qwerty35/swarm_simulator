@@ -2,8 +2,9 @@
 
 #include <sp_const.hpp>
 #include <dynamicEDT3D/dynamicEDTOctomap.h>
-#include <param.hpp>
 #include <mission.hpp>
+#include <param.hpp>
+#include <plan_result.hpp>
 
 namespace SwarmPlanning {
     class InitTrajPlanner {

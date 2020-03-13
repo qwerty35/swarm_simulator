@@ -12,6 +12,7 @@
 #include <init_traj_planner.hpp>
 #include <mission.hpp>
 #include <param.hpp>
+#include <plan_result.hpp>
 
 ILOSTLBEGIN
 
@@ -32,13 +33,13 @@ namespace SwarmPlanning {
 
         bool update(bool log, SwarmPlanning::PlanResult* _planResult_ptr) {
             planResult_ptr = _planResult_ptr;
-            M = planResult_ptr->T.size() - 1; // the number of segments
-            offset_quad = M * (n + 1);
             offset_seg = n + 1;
 
+            M.resize(N);
             coef.resize(N);
             for (int qi = 0; qi < N; qi++) {
-                coef[qi] = Eigen::MatrixXd::Zero(offset_quad, outdim);
+                M[qi] = planResult_ptr->T[qi].size() - 1; // the number of segments
+                coef[qi] = Eigen::MatrixXd::Zero(M[qi] * offset_seg, outdim);
             }
 
             IloEnv env;
@@ -80,6 +81,8 @@ namespace SwarmPlanning {
             if(param.log){
                 generateCoefCSV();
             }
+
+            planResult_ptr->state = OPTIMIZATION;
             return true;
         }
 
@@ -89,19 +92,19 @@ namespace SwarmPlanning {
 
         SwarmPlanning::PlanResult* planResult_ptr;
         std::vector<std::vector<int>> batches;
-        int M, n, phi, N, outdim, offset_quad, offset_seg;
+        std::vector<int> M;
+        int n, phi, N, outdim, offset_seg;
         IloNum count_x, count_eq, count_lq;
 
         // std::shared_ptr<Eigen::MatrixXd> Q_obj, Aeq_obj, Alq_obj, deq_obj, dlq_obj;
-        Eigen::MatrixXd Q_base, Aeq_base, Alq, deq, dlq, basis;
-        Eigen::MatrixXd dummy;
-        std::vector<Eigen::MatrixXd> coef;
+        Eigen::MatrixXd Q_base, basis;
+        std::vector<Eigen::MatrixXd> Aeq_base, deq, dlq_box, dummy, coef;
 
         void buildConstMtx() {
             build_Q_base();
             build_Aeq_base();
             build_deq();
-            build_dlq();
+            build_dlq_box();
 
             if (param.sequential) {
                 build_dummy();
@@ -120,14 +123,14 @@ namespace SwarmPlanning {
                 // Translate Bernstein basis to Polynomial coefficients
                 for (int k = 0; k < outdim; k++) {
                     for (int qi = 0; qi < N; qi++) {
-                        for (int m = 0; m < M; m++) {
+                        for (int m = 0; m < M[qi]; m++) {
                             Eigen::MatrixXd c = Eigen::MatrixXd::Zero(1, n + 1);
                             Eigen::MatrixXd tm;
-                            timeMatrix(1.0 / (planResult_ptr->T[m+1] - planResult_ptr->T[m]), &tm);
+                            timeMatrix(1.0 / (planResult_ptr->T[qi][m+1] - planResult_ptr->T[qi][m]), &tm);
                             tm = basis * tm;
 
                             for (int i = 0; i < n + 1; i++) {
-                                c = c + dummy(qi * offset_quad + m * offset_seg + i, k) * tm.row(i);
+                                c = c + dummy[qi](m * offset_seg + i, k) * tm.row(i);
                             }
                             coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
                         }
@@ -165,28 +168,29 @@ namespace SwarmPlanning {
                     cplex.getValues(vals, var);
 
                     // Translate Bernstein basis to Polynomial coefficients
-                    int offset_dim = batches[l].size() * M * (n + 1);
+                    int offset_dim = getOffset_dim(l);
                     int batch_max_iter = ceil((double)N / (double)param.batch_size);
                     for (int k = 0; k < outdim; k++) {
                         for (int qi = 0; qi < N; qi++) {
-                            for (int m = 0; m < M; m++) {
+                            for (int m = 0; m < M[qi]; m++) {
                                 Eigen::MatrixXd c = Eigen::MatrixXd::Zero(1, n + 1);
                                 Eigen::MatrixXd tm;
-                                timeMatrix(1.0 / (planResult_ptr->T[m+1] - planResult_ptr->T[m]), &tm);
+                                timeMatrix(1.0 / (planResult_ptr->T[qi][m+1] - planResult_ptr->T[qi][m]), &tm);
                                 tm = basis * tm;
 
                                 int bi = isQuadInBatch(qi, l);
+                                int offset_quad = getOffset_quad(l, bi);
                                 if (bi >= 0) {
                                     for (int i = 0; i < n + 1; i++) {
-                                        c = c + vals[k * offset_dim + bi * offset_quad + m * offset_seg + i] * tm.row(i);
+                                        c = c + vals[k * offset_dim + offset_quad + m * offset_seg + i] * tm.row(i);
                                         if (param.sequential) {
-                                            dummy(qi * offset_quad + m * (n + 1) + i, k) = vals[k * offset_dim + bi * offset_quad + m * offset_seg + i];
+                                            dummy[qi](m * (n + 1) + i, k) = vals[k * offset_dim + offset_quad + m * offset_seg + i];
                                         }
                                     }
                                     coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
                                 } else if (param.sequential && param.batch_iter < batch_max_iter) {
                                     for (int i = 0; i < n + 1; i++) {
-                                        c = c + dummy(qi * offset_quad + m * offset_seg + i, k) * tm.row(i);
+                                        c = c + dummy[qi](m * offset_seg + i, k) * tm.row(i);
                                     }
                                     coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
                                 }
@@ -216,7 +220,7 @@ namespace SwarmPlanning {
             time_scale = 1;
             for (int qi = 0; qi < N; qi++) {
                 for (int k = 0; k < outdim; k++) {
-                    for (int m = 0; m < M; m++) {
+                    for (int m = 0; m < M[qi]; m++) {
                         derivative_segment(qi, k, m, &coef_der);
 
                         time_scale_tmp = scale_to_max_vel(qi, k, m, coef_der);
@@ -237,7 +241,7 @@ namespace SwarmPlanning {
                 for (int qi = 0; qi < N; qi++) {
                     // trajectory
                     for (int k = 0; k < outdim; k++) {
-                        for (int m = 0; m < M; m++) {
+                        for (int m = 0; m < M[qi]; m++) {
                             Eigen::MatrixXd tm;
                             timeMatrix(1.0 / time_scale, &tm);
 
@@ -254,29 +258,31 @@ namespace SwarmPlanning {
                     // RSFC
                     for (int qj = qi + 1; qj < N; qj++){
                         for (int ri = 0; ri < planResult_ptr->RSFC[qi][qj].size(); ri++){
-                            planResult_ptr->RSFC[qi][qj][ri].second *= time_scale;
+                            planResult_ptr->RSFC[qi][qj][ri].start_time *= time_scale;
+                            planResult_ptr->RSFC[qi][qj][ri].end_time *= time_scale;
                         }
                     }
-                }
-                // segment time
-                for (int m = 0; m < M + 1; m++) {
-                    planResult_ptr->T[m] *= time_scale;
+
+                    // segment time
+                    for (int m = 0; m < M[qi] + 1; m++) {
+                        planResult_ptr->T[qi][m] *= time_scale;
+                    }
                 }
             }
         }
 
         // generate ros message to transfer planning result
         void generateROSMsg() {
-            std::vector<double> traj_info;
-            traj_info.emplace_back(N);
-            traj_info.emplace_back(n);
-            traj_info.insert(traj_info.end(), planResult_ptr->T.begin(), planResult_ptr->T.end());
-            planResult_ptr->msgs_traj_info.data = traj_info;
+//            std::vector<double> traj_info;
+//            traj_info.emplace_back(N);
+//            traj_info.emplace_back(n);
+//            traj_info.insert(traj_info.end(), planResult_ptr->T.begin(), planResult_ptr->T.end());
+//            planResult_ptr->msgs_traj_info.data = traj_info;
 
             planResult_ptr->msgs_traj_coef.resize(N);
             for (int qi = 0; qi < N; qi++) {
                 std_msgs::MultiArrayDimension rows;
-                rows.size = M * (n + 1);
+                rows.size = M[qi] * (n + 1);
                 planResult_ptr->msgs_traj_coef[qi].layout.dim.emplace_back(rows);
 
                 std_msgs::MultiArrayDimension cols;
@@ -294,15 +300,15 @@ namespace SwarmPlanning {
         // n should be smaller than 7
         void generateCoefCSV(){
             if(n > 7){
-                ROS_WARN("RBPPlanner: n>8, do not make CSV file");
+                ROS_WARN("RBPPlanner: n>7, do not make CSV file");
                 return;
             }
             for(int qi = 0; qi < N; qi++) {
                 std::ofstream coefCSV;
                 coefCSV.open(param.package_path + "/log/coef" + std::to_string(qi + 1) + ".csv");
                 coefCSV << "duration,x^0,x^1,x^2,x^3,x^4,x^5,x^6,x^7,y^0,y^1,y^2,y^3,y^4,y^5,y^6,y^7,z^0,z^1,z^2,z^3,z^4,z^5,z^6,z^7,yaw^0,yaw^1,yaw^2,yaw^3,yaw^4,yaw^5,yaw^6,yaw^7\n";
-                for(int m = 0; m < M; m++) {
-                    coefCSV << planResult_ptr->T[m + 1] - planResult_ptr->T[m] << ",";
+                for(int m = 0; m < M[qi]; m++) {
+                    coefCSV << planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m] << ",";
                     // x,y,z
                     for (int k = 0; k < outdim; k++) {
                         for (int i = n; i >= 0; i--) {
@@ -347,17 +353,13 @@ namespace SwarmPlanning {
         }
 
         Eigen::MatrixXd build_Q_p(int qi, int m) {
-            return Q_base * pow(planResult_ptr->T[m+1] - planResult_ptr->T[m], -2 * phi + 1);
+            return Q_base * pow(planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m], -2 * phi + 1);
         }
 
         void build_Aeq_base() {
-            Aeq_base = Eigen::MatrixXd::Zero((2 * phi + (M - 1) * phi), M * (n + 1));
-            Eigen::MatrixXd A_waypoints = Eigen::MatrixXd::Zero(2 * phi, M * (n + 1));
-            Eigen::MatrixXd A_cont = Eigen::MatrixXd::Zero((M - 1) * phi, M * (n + 1));
+            // Build A_0, A_T
             Eigen::MatrixXd A_0 = Eigen::MatrixXd::Zero(n + 1, n + 1);
             Eigen::MatrixXd A_T = Eigen::MatrixXd::Zero(n + 1, n + 1);
-
-            // Build A_0, A_T
             if (phi == 3 && n == 5) {
                 A_0 << 1, 0, 0, 0, 0, 0,
                         -1, 1, 0, 0, 0, 0,
@@ -373,45 +375,51 @@ namespace SwarmPlanning {
                         0, 1, -4, 6, -4, 1,
                         -1, 5, -10, 10, -5, 1;
             } else {
-                ROS_ERROR("RBPPlanner: n should be 5"); //TODO: debug when n is not 5
+                ROS_ERROR("RBPPlanner: n should be 5"); //TODO: Compute A_0, A_T when n is not 5
             }
 
-            // Build A_waypoints
-            int nn = 1;
-            for (int i = 0; i < phi; i++) {
-                A_waypoints.block(i, 0, 1, n + 1) =
-                        pow(planResult_ptr->T[1] - planResult_ptr->T[0], -i) * nn * A_0.row(i);
-                A_waypoints.block(phi + i, (n + 1) * (M - 1), 1, n + 1) =
-                        pow(planResult_ptr->T[planResult_ptr->T.size() - 1] - planResult_ptr->T[planResult_ptr->T.size() - 2], -i) * nn * A_T.row(i);
-                nn = nn * (n - i);
-            }
+            Aeq_base.resize(N);
+            for(int qi = 0; qi < N; qi++) {
+                Aeq_base[qi] = Eigen::MatrixXd::Zero((2 * phi + (M[qi] - 1) * phi), M[qi] * (n + 1));
+                Eigen::MatrixXd A_waypoints = Eigen::MatrixXd::Zero(2 * phi, M[qi] * (n + 1));
+                Eigen::MatrixXd A_cont = Eigen::MatrixXd::Zero((M[qi] - 1) * phi, M[qi] * (n + 1));
 
-            // Build A_cont
-            for (int m = 1; m < M; m++) {
-                nn = 1;
-                for (int j = 0; j < phi; j++) {
-                    A_cont.block(phi * (m - 1) + j, (n + 1) * (m - 1), 1, n + 1) =
-                            pow(planResult_ptr->T[m] - planResult_ptr->T[m-1], -j) * nn * A_T.row(j);
-                    A_cont.block(phi * (m - 1) + j, (n + 1) * m, 1, n + 1) =
-                            -pow(planResult_ptr->T[m+1] - planResult_ptr->T[m], -j) * nn * A_0.row(j);
-                    nn = nn * (n - j);
+                // Build A_waypoints
+                int nn = 1;
+                for (int i = 0; i < phi; i++) {
+                    A_waypoints.block(i, 0, 1, n + 1) =
+                            pow(planResult_ptr->T[qi][1] - planResult_ptr->T[qi][0], -i) * nn * A_0.row(i);
+                    A_waypoints.block(phi + i, (n + 1) * (M[qi] - 1), 1, n + 1) =
+                            pow(planResult_ptr->T[qi][planResult_ptr->T[qi].size() - 1] -
+                                planResult_ptr->T[qi][planResult_ptr->T[qi].size() - 2], -i) * nn * A_T.row(i);
+                    nn = nn * (n - i);
                 }
+
+                // Build A_cont
+                for (int m = 1; m < M[qi]; m++) {
+                    nn = 1;
+                    for (int j = 0; j < phi; j++) {
+                        A_cont.block(phi * (m - 1) + j, (n + 1) * (m - 1), 1, n + 1) =
+                                pow(planResult_ptr->T[qi][m] - planResult_ptr->T[qi][m - 1], -j) * nn * A_T.row(j);
+                        A_cont.block(phi * (m - 1) + j, (n + 1) * m, 1, n + 1) =
+                                -pow(planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m], -j) * nn * A_0.row(j);
+                        nn = nn * (n - j);
+                    }
+                }
+
+                // Build Aeq_base
+                Aeq_base[qi] << A_waypoints,
+                                A_cont;
             }
-
-            // Build Aeq_base
-            Aeq_base << A_waypoints,
-                    A_cont;
-
         }
 
         // Equality constraints condition vector deq
         void build_deq() {
-//        deq_obj.reset(new Eigen::MatrixXd(N * (2*n + (M-1)*n), outdim));
-//        deq_obj->setZero();
-            deq = Eigen::MatrixXd::Zero(N * (2 * phi + (M - 1) * phi), outdim);
+            deq.resize(N);
             for (int qi = 0; qi < N; qi++) {
+                deq[qi] = Eigen::MatrixXd::Zero((2 * phi + (M[qi] - 1) * phi), outdim);
                 Eigen::MatrixXd d_waypoints = Eigen::MatrixXd::Zero(2 * phi, outdim);
-                Eigen::MatrixXd d_cont = Eigen::MatrixXd::Zero((M - 1) * phi, outdim);
+                Eigen::MatrixXd d_cont = Eigen::MatrixXd::Zero((M[qi] - 1) * phi, outdim);
                 for (int k = 0; k < outdim; k++) {
                     d_waypoints(0, k) = mission.startState[qi][k];
                     d_waypoints(1, k) = mission.startState[qi][k + 3];
@@ -422,143 +430,131 @@ namespace SwarmPlanning {
                 }
 
                 // Build deq
-                int deq_p_rows = d_waypoints.rows() + d_cont.rows();
-                int deq_p_cols = outdim;
-//            deq_obj->block(qi * deq_p_rows, 0, deq_p_rows, deq_p_cols) << d_waypoints,
-//                                                                          d_cont;
-                deq.block(qi * deq_p_rows, 0, deq_p_rows, deq_p_cols) << d_waypoints,
-                        d_cont;
+                deq[qi] << d_waypoints,
+                           d_cont;
             }
         }
 
         // Inequality constraints condition vector dlq
-        void build_dlq() {
-//        dlq_obj.reset(new Eigen::MatrixXd(N*2*(n+1)*M + N*(N-1)*(n+1)*M, outdim));
-//        dlq_obj->setZero();
-            dlq = Eigen::MatrixXd::Zero(N * 2 * (n + 1) * M + N * (N - 1) * (n + 1) * M, outdim);
-            Eigen::MatrixXd dlq_rel = Eigen::MatrixXd::Zero(N * (N - 1) * (n + 1) * M, outdim);
-            Eigen::MatrixXd dlq_box = Eigen::MatrixXd::Zero(N * 2 * (n + 1) * M, outdim);
-
+        void build_dlq_box() {
             // Build dlq_box
+            dlq_box.resize(N);
             for (int qi = 0; qi < N; qi++) {
-                Eigen::MatrixXd d_upper = Eigen::MatrixXd::Zero((n + 1) * M, outdim);
-                Eigen::MatrixXd d_lower = Eigen::MatrixXd::Zero((n + 1) * M, outdim);
+                dlq_box[qi] = Eigen::MatrixXd::Zero(2 * M[qi] * offset_seg, outdim);
+                Eigen::MatrixXd d_upper = Eigen::MatrixXd::Zero(M[qi] * offset_seg, outdim);
+                Eigen::MatrixXd d_lower = Eigen::MatrixXd::Zero(M[qi] * offset_seg, outdim);
 
                 int bi = 0;
-                for (int m = 0; m < M; m++) {
+                for (int m = 0; m < M[qi]; m++) {
                     // find box number
                     while (bi < planResult_ptr->SFC[qi].size() &&
-                           planResult_ptr->SFC[qi][bi].second < planResult_ptr->T[m + 1]) {
+                           planResult_ptr->SFC[qi][bi].second < planResult_ptr->T[qi][m + 1]) {
                         bi++;
                     }
 
-                    d_upper.block((n + 1) * m, 0, n + 1, 1) =
+                    d_upper.block(m * offset_seg, 0, n + 1, 1) =
                             Eigen::MatrixXd::Constant(n + 1, 1, planResult_ptr->SFC[qi][bi].first[3]);
-                    d_lower.block((n + 1) * m, 0, n + 1, 1) =
+                    d_lower.block(m * offset_seg, 0, n + 1, 1) =
                             Eigen::MatrixXd::Constant(n + 1, 1, -planResult_ptr->SFC[qi][bi].first[0]);
 
-                    d_upper.block((n + 1) * m, 1, n + 1, 1) =
+                    d_upper.block(m * offset_seg, 1, n + 1, 1) =
                             Eigen::MatrixXd::Constant(n + 1, 1, planResult_ptr->SFC[qi][bi].first[4]);
-                    d_lower.block((n + 1) * m, 1, n + 1, 1) =
+                    d_lower.block(m * offset_seg, 1, n + 1, 1) =
                             Eigen::MatrixXd::Constant(n + 1, 1, -planResult_ptr->SFC[qi][bi].first[1]);
 
-                    d_upper.block((n + 1) * m, 2, n + 1, 1) =
+                    d_upper.block(m * offset_seg, 2, n + 1, 1) =
                             Eigen::MatrixXd::Constant(n + 1, 1, planResult_ptr->SFC[qi][bi].first[5]);
-                    d_lower.block((n + 1) * m, 2, n + 1, 1) =
+                    d_lower.block(m * offset_seg, 2, n + 1, 1) =
                             Eigen::MatrixXd::Constant(n + 1, 1, -planResult_ptr->SFC[qi][bi].first[2]);
                 }
+                dlq_box[qi] << d_upper,
+                               d_lower;
+            }
+        }
 
-                int dlq_box_rows = d_upper.rows() + d_lower.rows();
-                dlq_box.block(qi * dlq_box_rows, 0, dlq_box_rows, outdim) << d_upper,
-                        d_lower;
+        Eigen::MatrixXd build_G(int qi, double start_time, double end_time) {
+            Eigen::MatrixXd G = Eigen::MatrixXd::Zero(n + 1, n + 1);
+
+            // build B, B_inv, C
+            Eigen::MatrixXd B = Eigen::MatrixXd::Zero(n + 1, n + 1);
+            Eigen::MatrixXd B_inv = Eigen::MatrixXd::Zero(n + 1, n + 1);
+            Eigen::MatrixXd C = Eigen::MatrixXd::Zero(n + 1, n + 1);
+            if (n == 5) {
+                B <<  1,   0,   0,  0,    0,   0,
+                     -5,   5,   0,  0,    0,   0,
+                     10, -20,  10,  0,    0,   0,
+                    -10,  30, -30,  10,   0,   0,
+                      5, -20,  30, -20,   5,   0,
+                     -1,   5, -10,  10,  -5,   1;
+
+                B_inv << 1,   0,   0,   0,   0,   0,
+                         1, 0.2,   0,   0,   0,   0,
+                         1, 0.4, 0.1,   0,   0,   0,
+                         1, 0.6, 0.3, 0.1,   0,   0,
+                         1, 0.8, 0.6, 0.4, 0.2,   0,
+                         1,   1,   1,   1,   1,   1;
+
+                C << 1,  1,  1,  1,  1,  1,
+                     0,  1,  2,  3,  4,  5,
+                     0,  0,  1,  3,  6, 10,
+                     0,  0,  0,  1,  4, 10,
+                     0,  0,  0,  0,  1,  5,
+                     0,  0,  0,  0,  0,  1;
+            } else {
+                ROS_ERROR("RBPPlanner: n should be 5"); //TODO: Compute B, B_inv when n is not 5
             }
 
-            // Build dlq_rel
-            int iter = 0;
-            for (int qi = 0; qi < N; qi++) {
-                for (int qj = qi + 1; qj < N; qj++) {
-                    Eigen::MatrixXd d_upper = Eigen::MatrixXd::Constant((n + 1) * M, outdim, 10000000);
-                    Eigen::MatrixXd d_lower = Eigen::MatrixXd::Constant((n + 1) * M, outdim, 10000000);
+            // build F
+            Eigen::MatrixXd F = Eigen::MatrixXd::Zero(n + 1, n + 1);
+            int m = planResult_ptr->findSegmentIdx(qi, start_time, end_time);
+            double alpha, beta, tau_i, tau_f;
+            tau_i = (start_time - planResult_ptr->T[qi][m])/(planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m]);
+            tau_f = (end_time - planResult_ptr->T[qi][m])/(planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m]);
+            alpha = tau_f - tau_i;
+            beta = tau_i;
 
-                    for (int m = 0; m < M; m++) {
-                        // Find box number
-                        int ri = 0;
-                        while (ri < planResult_ptr->RSFC[qi][qj].size() &&
-                               planResult_ptr->RSFC[qi][qj][ri].second < planResult_ptr->T[m + 1]) {
-                            ri++;
-                        }
-
-                        octomap::point3d normal_vector = planResult_ptr->RSFC[qi][qj][ri].first;
-                        d_upper.block((n + 1) * m, 0, n + 1, 1) =
-                                Eigen::MatrixXd::Constant(n + 1, 1, normal_vector.x());
-                        d_upper.block((n + 1) * m, 1, n + 1, 1) =
-                                Eigen::MatrixXd::Constant(n + 1, 1, normal_vector.y());
-                        d_upper.block((n + 1) * m, 2, n + 1, 1) =
-                                Eigen::MatrixXd::Constant(n + 1, 1, normal_vector.z());
-                    }
-                    int dlq_rel_rows = d_upper.rows() + d_lower.rows();
-                    dlq_rel.block(iter * dlq_rel_rows, 0, dlq_rel_rows, outdim) << d_upper,
-                            d_lower;
-                    iter++;
+            for(int i = 0; i < n + 1; i++){
+                for(int j = i; j < n + 1; j++){
+                    F(i,j) = C(i,j) * pow(alpha, i) * pow(beta, j-i);
                 }
             }
 
-            // Build dlq
-//        dlq_obj->block(0, 0, dlq_box.rows(), dlq_box.cols()) = dlq_box;
-//        dlq_obj->block(dlq_box.rows(), 0, dlq_rel.rows(), dlq_rel.cols()) = dlq_rel;
-            dlq << dlq_box,
-                    dlq_rel;
+            G = B_inv * F * B;
+            return G;
         }
 
         void build_dummy() {
-            dummy = Eigen::MatrixXd::Zero(N * offset_quad, outdim);
-
+            dummy.resize(N);
             for (int qi = 0; qi < N; qi++) {
-                int m = 0;
-                int idx = 0;
-                while (m < M) {
-                    if (idx >= planResult_ptr->initTraj[qi].size() - 1) {
-                        idx = planResult_ptr->initTraj[qi].size() - 1;
-                        for (int j = 0; j < n + 1; j++) {
-                            dummy(qi * offset_quad + m * (n + 1) + j, 0) = planResult_ptr->initTraj[qi][idx].x();
-                            dummy(qi * offset_quad + m * (n + 1) + j, 1) = planResult_ptr->initTraj[qi][idx].y();
-                            dummy(qi * offset_quad + m * (n + 1) + j, 2) = planResult_ptr->initTraj[qi][idx].z();
+                dummy[qi] = Eigen::MatrixXd::Zero(M[qi] * offset_seg, outdim);
+                for (int m = 0; m < M[qi]; m++) {
+                    for (int j = 0; j < n + 1; j++) {
+                        int a = 1;
+                        if (j < (n + 1) / 2) {
+                            a = 0;
                         }
-                        m++;
-                    } else {
-                        for (int j = 0; j < n + 1; j++) {
-                            int a = 1;
-                            if (j < (n + 1) / 2) {
-                                a = 0;
-                            }
-                            dummy(qi * offset_quad + m * (n + 1) + j, 0) =
-                                    (1 - a) * planResult_ptr->initTraj[qi][idx].x()
-                                    + a * planResult_ptr->initTraj[qi][idx + 1].x();
-                            dummy(qi * offset_quad + m * (n + 1) + j, 1) =
-                                    (1 - a) * planResult_ptr->initTraj[qi][idx].y()
-                                    + a * planResult_ptr->initTraj[qi][idx + 1].y();
-                            dummy(qi * offset_quad + m * (n + 1) + j, 2) =
-                                    (1 - a) * planResult_ptr->initTraj[qi][idx].z()
-                                    + a * planResult_ptr->initTraj[qi][idx + 1].z();
-                        }
-                        m++;
+                        dummy[qi](m * offset_seg + j, 0) = (1 - a) * planResult_ptr->initTraj[qi][m].x()
+                                                               + a * planResult_ptr->initTraj[qi][m + 1].x();
+                        dummy[qi](m * offset_seg + j, 1) = (1 - a) * planResult_ptr->initTraj[qi][m].y()
+                                                               + a * planResult_ptr->initTraj[qi][m + 1].y();
+                        dummy[qi](m * offset_seg + j, 2) = (1 - a) * planResult_ptr->initTraj[qi][m].z()
+                                                               + a * planResult_ptr->initTraj[qi][m + 1].z();
                     }
-                    idx++;
                 }
             }
         }
 
         void populatebyrow(IloModel model, IloNumVarArray x, IloRangeArray c, int l) {
-            int offset_dim = batches[l].size() * M * (n + 1);
+            int offset_dim = getOffset_dim(l);
             IloEnv env = model.getEnv();
             for (int k = 0; k < outdim; k++) {
                 for (int bi = 0; bi < batches[l].size(); bi++) {
-                    for (int m = 0; m < M; m++) {
+                    int qi = batches[l][bi];
+                    int offset_quad = getOffset_quad(l, bi);
+                    for (int m = 0; m < M[qi]; m++) {
                         for (int i = 0; i < n + 1; i++) {
                             x.add(IloNumVar(env, -IloInfinity, IloInfinity));
-
-                            int qi = batches[l][bi];
-                            int row = k * offset_dim + bi * offset_quad + m * (n + 1) + i;
+                            int row = k * offset_dim + offset_quad + m * offset_seg + i;
                             std::string name;
                             if (k == 0) {
                                 name = "x_" + std::to_string(qi) + "_" + std::to_string(m) + "_" + std::to_string(i);
@@ -581,21 +577,17 @@ namespace SwarmPlanning {
             IloNumExpr cost(env);
             for (int k = 0; k < outdim; k++) {
                 for (int bi = 0; bi < batches[l].size(); bi++) {
-                    for (int m = 0; m < M; m++) {
-                        int qi = batches[l][bi];
+                    int qi = batches[l][bi];
+                    int offset_quad = getOffset_quad(l, bi);
+                    for (int m = 0; m < M[qi]; m++) {
                         Eigen::MatrixXd Q_p = build_Q_p(qi, m);
 
                         for (int i = 0; i < n + 1; i++) {
-                            int row = qi * M * (n + 1) + m * (n + 1) + i;
-                            int row_idx = k * offset_dim + bi * offset_quad + m * (n + 1) + i;
-
+                            int row = k * offset_dim + offset_quad + m * offset_seg + i;
                             for (int j = 0; j < n + 1; j++) {
-                                int col = qi * M * (n + 1) + m * (n + 1) + j;
-                                int col_idx =
-                                        k * offset_dim + bi * offset_quad + m * (n + 1) + j;
-
+                                int col = k * offset_dim + offset_quad + m * offset_seg + j;
                                 if (Q_p(i, j) != 0) {
-                                    cost += Q_p(i, j) * x[row_idx] * x[col_idx];
+                                    cost += Q_p(i, j) * x[row] * x[col];
                                 }
                             }
                         }
@@ -607,15 +599,16 @@ namespace SwarmPlanning {
             // Equality Constraints
             for (int k = 0; k < outdim; k++) {
                 for (int bi = 0; bi < batches[l].size(); bi++) {
-                    for (int i = 0; i < 2 * phi + (M - 1) * phi; i++) {
+                    int qi = batches[l][bi];
+                    int offset_quad = getOffset_quad(l,bi);
+                    for (int i = 0; i < 2 * phi + (M[qi] - 1) * phi; i++) {
                         IloNumExpr expr(env);
-                        for (int j = 0; j < M * (n + 1); j++) {
-                            if (Aeq_base(i, j) != 0) {
-                                expr += Aeq_base(i, j) * x[k * offset_dim + bi * offset_quad + j];
+                        for (int j = 0; j < M[qi] * (n + 1); j++) {
+                            if (Aeq_base[qi](i, j) != 0) {
+                                expr += Aeq_base[qi](i, j) * x[k * offset_dim + offset_quad + j];
                             }
                         }
-                        int qi = batches[l][bi];
-                        c.add(expr == deq(qi * (2 * phi + (M - 1) * phi) + i, k));
+                        c.add(expr == deq[qi](i, k));
                         expr.end();
                     }
                 }
@@ -626,60 +619,82 @@ namespace SwarmPlanning {
             for (int k = 0; k < outdim; k++) {
                 for (int bi = 0; bi < batches[l].size(); bi++) {
                     int qi = batches[l][bi];
-                    for (int j = 0; j < (n + 1) * M; j++) {
-                        int idx = k * offset_dim + bi * offset_quad + j;
-                        c.add(x[idx] <= dlq(2 * qi * offset_quad + j, k));
-                        c.add(-x[idx] <= dlq((2 * qi + 1) * offset_quad + j, k));
+                    int offset_quad = getOffset_quad(l,bi);
+
+                    for(int m = 0; m < M[qi]; m++) {
+                        for (int j = 0; j < offset_seg; j++) {
+                            int idx = k * offset_dim + offset_quad + m * offset_seg + j;
+                            c.add(x[idx] <= dlq_box[qi](m * offset_seg + j, k));
+                            c.add(-x[idx] <= dlq_box[qi](M[qi] * offset_seg + m * offset_seg + j, k));
+                        }
                     }
                 }
             }
-            int offset_box = 2 * N * offset_quad;
-            int iter = 0;
             for (int qi = 0; qi < N; qi++) {
                 for (int qj = qi + 1; qj < N; qj++) {
                     int bi = isQuadInBatch(qi, l);
                     int bj = isQuadInBatch(qj, l);
+                    std::vector<double> T_ij = planResult_ptr->combineSegmentTimes(qi, qj);
+                    for(int m = 0; m < T_ij.size() - 1; m++) {
+                        Eigen::MatrixXd G_i = build_G(qi, T_ij[m], T_ij[m + 1]);
+                        Eigen::MatrixXd G_j = build_G(qj, T_ij[m], T_ij[m + 1]);
+                        double n_x,n_y,n_z;
+                        n_x = planResult_ptr->RSFC[qi][qj][m].normal_vector.x();
+                        n_y = planResult_ptr->RSFC[qi][qj][m].normal_vector.y();
+                        n_z = planResult_ptr->RSFC[qi][qj][m].normal_vector.z();
+                        int m_i, m_j, offset_quad_i, offset_quad_j;
+                        m_i = planResult_ptr->findSegmentIdx(qi, T_ij[m], T_ij[m + 1]);
+                        m_j = planResult_ptr->findSegmentIdx(qj, T_ij[m], T_ij[m + 1]);
 
-                    if (bi < 0 && bj < 0) {
+                        if (bi < 0 && bj < 0) {
 
-                    } else if (bi >= 0 && bj < 0) {
-                        for (int j = 0; j < M * (n + 1); j++) {
-                            int idx = bi * offset_quad + j;
-                            c.add(dlq(offset_box + offset_quad * 2 * iter + j, 0) *
-                                  (dummy(qj * offset_quad + j, 0) - x[0 * offset_dim + idx]) +
-                                  dlq(offset_box + offset_quad * 2 * iter + j, 1) *
-                                  (dummy(qj * offset_quad + j, 1) - x[1 * offset_dim + idx]) +
-                                  dlq(offset_box + offset_quad * 2 * iter + j, 2) *
-                                  (dummy(qj * offset_quad + j, 2) - x[2 * offset_dim + idx])
-                                  >= mission.quad_size[qi] + mission.quad_size[qj]);
-                        }
-                    } else if (bi < 0 && bj >= 0) {
-                        for (int j = 0; j < M * (n + 1); j++) {
-                            int jdx = bj * offset_quad + j;
-                            c.add(dlq(offset_box + offset_quad * 2 * iter + j, 0) *
-                                  (x[0 * offset_dim + jdx] - dummy(qi * offset_quad + j, 0)) +
-                                  dlq(offset_box + offset_quad * 2 * iter + j, 1) *
-                                  (x[1 * offset_dim + jdx] - dummy(qi * offset_quad + j, 1)) +
-                                  dlq(offset_box + offset_quad * 2 * iter + j, 2) *
-                                  (x[2 * offset_dim + jdx] - dummy(qi * offset_quad + j, 2))
-                                  >= mission.quad_size[qi] + mission.quad_size[qj]);
-                        }
-                    } else {
-                        for (int j = 0; j < M * (n + 1); j++) {
-                            int idx = bi * offset_quad + j;
-                            int jdx = bj * offset_quad + j;
+                        } else if (bi >= 0 && bj < 0) {
+                            for (int i = 0; i < n + 1; i++) {
+                                IloNumExpr expr(env);
+                                for(int j = 0; j < n + 1; j++) {
+                                    expr += G_j(i, j) * (n_x * dummy[qj](m_j * offset_seg + j, 0)
+                                                         + n_y * dummy[qj](m_j * offset_seg + j, 1)
+                                                         + n_z * dummy[qj](m_j * offset_seg + j, 2));
+                                    expr -= G_i(i, j) * (n_x * x[getIdx(l, bi, 0, m_i, j)]
+                                                         + n_y * x[getIdx(l, bi, 1, m_i, j)]
+                                                         + n_z * x[getIdx(l, bi, 2, m_i, j)]);
 
-                            c.add(dlq(offset_box + offset_quad * 2 * iter + j, 0) *
-                                  (x[0 * offset_dim + jdx] - x[0 * offset_dim + idx]) +
-                                  dlq(offset_box + offset_quad * 2 * iter + j, 1) *
-                                  (x[1 * offset_dim + jdx] - x[1 * offset_dim + idx]) +
-                                  dlq(offset_box + offset_quad * 2 * iter + j, 2) *
-                                  (x[2 * offset_dim + jdx] - x[2 * offset_dim + idx])
-                                  >= mission.quad_size[qi] + mission.quad_size[qj]);
+                                }
+                                c.add(expr >= mission.quad_size[qi] + mission.quad_size[qj]);
+                                expr.end();
+                            }
+                        } else if (bi < 0 && bj >= 0) {
+                            for (int i = 0; i < n + 1; i++) {
+                                IloNumExpr expr(env);
+                                for(int j = 0; j < n + 1; j++) {
+                                    expr += G_j(i, j) * (n_x * x[getIdx(l, bj, 0, m_j, j)]
+                                                         + n_y * x[getIdx(l, bj, 1, m_j, j)]
+                                                         + n_z * x[getIdx(l, bj, 2, m_j, j)]);
+                                    expr -= G_i(i, j) * (n_x * dummy[qi](m_i * offset_seg + j, 0)
+                                                         + n_y * dummy[qi](m_i * offset_seg + j, 1)
+                                                         + n_z * dummy[qi](m_i * offset_seg + j, 2));
+
+                                }
+                                c.add(expr >= mission.quad_size[qi] + mission.quad_size[qj]);
+                                expr.end();
+                            }
+                        } else {
+                            for (int i = 0; i < n + 1; i++) {
+                                IloNumExpr expr(env);
+                                for(int j = 0; j < n + 1; j++) {
+                                    expr += G_j(i, j) * (n_x * x[getIdx(l, bj, 0, m_j, j)]
+                                                         + n_y * x[getIdx(l, bj, 1, m_j, j)]
+                                                         + n_z * x[getIdx(l, bj, 2, m_j, j)]);
+                                    expr -= G_i(i, j) * (n_x * x[getIdx(l, bi, 0, m_i, j)]
+                                                         + n_y * x[getIdx(l, bi, 1, m_i, j)]
+                                                         + n_z * x[getIdx(l, bi, 2, m_i, j)]);
+
+                                }
+                                c.add(expr >= mission.quad_size[qi] + mission.quad_size[qj]);
+                                expr.end();
+                            }
                         }
                     }
-
-                    iter++;
                 }
             }
             model.add(c);
@@ -761,9 +776,9 @@ namespace SwarmPlanning {
             double vel_max = 0, t_max = 0;
             std::vector<double> ts = roots_derivative(2, coef_der);
             ts.emplace_back(0);
-            ts.emplace_back(planResult_ptr->T[m + 1] - planResult_ptr->T[m]);
+            ts.emplace_back(planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m]);
             for (auto t : ts) {
-                if (t < 0 || t > planResult_ptr->T[m + 1] - planResult_ptr->T[m]) {
+                if (t < 0 || t > planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m]) {
                     continue;
                 }
 
@@ -806,7 +821,7 @@ namespace SwarmPlanning {
             D = b * b - 4 * a * c;
             acc_max = 0;
 
-            std::vector<double> ts{0, planResult_ptr->T[m+1] - planResult_ptr->T[m]};
+            std::vector<double> ts{0, planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m]};
             if (D >= 0 && a != 0) {
                 ts.emplace_back((-b + sqrt(D)) / (2 * a));
                 ts.emplace_back((-b - sqrt(D)) / (2 * a));
@@ -816,7 +831,7 @@ namespace SwarmPlanning {
             }
 
             for (auto t : ts) {
-                if (t < 0 || t > planResult_ptr->T[m+1] - planResult_ptr->T[m]) {
+                if (t < 0 || t > planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m]) {
                     continue;
                 }
 
@@ -878,6 +893,32 @@ namespace SwarmPlanning {
                 }
             }
             return -1;
+        }
+
+        int getOffset_dim(int l){
+            int offset_dim = 0;
+            for(int bi = 0; bi < batches[l].size(); bi++){
+                int qi = batches[l][bi];
+                offset_dim += M[qi] * offset_seg;
+            }
+            return offset_dim;
+        }
+
+        int getOffset_quad(int l, int bi){
+            int offset_quad = 0;
+
+            for(int i = 0; i < bi; i++){
+                int qi = batches[l][i];
+                offset_quad += M[qi] * offset_seg;
+            }
+
+            return offset_quad;
+        }
+
+        int getIdx(int l, int bi, int k, int m, int j){
+            int offset_dim = getOffset_dim(l);
+            int offset_quad = getOffset_quad(l, bi);
+            return k * offset_dim + offset_quad + m * offset_seg + j;
         }
     };
 }

@@ -1,0 +1,149 @@
+<!-- 
+	PLAN_RBP_RANDOM_FOREST.LAUNCH
+	Multi-agent Trajectory Planning and Simulation using Relative Bernstein Polynomial
+        
+	Usage: At terminal
+               ``` 
+               roslaunch swarm_planner plan_rbp_random_forest.launch
+               ```
+
+	Jungwon Park
+	Lab for Autonomous Robotics Research
+	Seoul National Univ. 
+	wjstk335@gmail.com
+-->
+
+<launch>
+<!-- Arguments Start -->
+
+  <!-- Simulation -->
+  <arg name="runsim"                default="true"/>
+  <arg name="log"                   default="true"/>
+
+  <arg name="mission"               default="hetero_4agents_15.json"/>
+  <arg name="replay"                default="true"/> <!-- false: random forest, true: replay_map -->
+  <arg name="replay_map"            default="ICRA2020_64agents_presentation.bt"/> 
+
+  
+  <!-- Environment -->
+  <arg name="world_x_min"           default="-5"/>
+  <arg name="world_y_min"           default="-5"/>
+  <arg name="world_z_min"           default="0.3"/>
+  <arg name="world_x_max"           default="5"/>
+  <arg name="world_y_max"           default="5"/>
+  <arg name="world_z_max"           default="2.5"/>
+  <arg name="world_resolution"      default="0.1"/>
+
+  <!-- Obstacles -->
+  <arg name="obs_num"               default="20"/>
+  <arg name="obs_r_min"             default="0.3"/>
+  <arg name="obs_r_max"             default="0.3"/>
+  <arg name="obs_h_min"             default="0.0"/>
+  <arg name="obs_h_max"             default="2.5"/>
+  <arg name="obs_margin"            default="0.5"/>
+  
+  <!-- InitTrajPlanner Parameters -->
+  <arg name="ecbs_w"                default="1.3"/> <!-- ECBS only -->
+  <arg name="grid_xy_res"           default="0.5"/>
+  <arg name="grid_z_res"            default="1.0"/>
+  <arg name="grid_margin"           default="0.2"/>
+
+  <!-- Corridor Parameters-->
+  <arg name="box_xy_res"            default="0.1"/>
+  <arg name="box_z_res"             default="0.1"/>
+
+  <!-- RBPPlanner Parameters -->
+  <arg name="plan_time_scale"       default="true"/>
+  <arg name="plan_time_step"        default="1"/>
+
+  <arg name="plan_downwash"         default="2.0"/>
+  <arg name="plan_n"                default="5"/>
+  <arg name="plan_phi"              default="3"/>  
+
+  <arg name="plan_sequential"       default="true"/>
+  <arg name="plan_batch_size"       default="1"/>
+  <arg name="plan_batch_iter"       default="-1"/> <!-- -1: maximum batch_iter-->
+  <arg name="plan_iteration"        default="1"/>
+
+
+<!-- Arguments End -->
+
+<!-- Nodes Start -->
+  <node pkg="octomap_server" type="octomap_server_node" name="octomap_server" unless="$(arg replay)">
+    <remap from="cloud_in" to="/random_map_generator/all_map" />
+    <param name="resolution"                 value="$(arg world_resolution)" />
+    <param name="frame_id"                   value="world" type="string"/>
+    <param name="sensor_model/max_range"     value="5.0" />
+    <param name="height_map"                 value="false"/>
+    <param name="color/r"                    value="0.2" />
+    <param name="color/g"                    value="0.2" />
+    <param name="color/b"                    value="0.2" />
+    <param name="color/a"                    value="0.2" />
+  </node>
+
+  <node pkg="octomap_server" type="octomap_server_node" name="octomap_server" args="$(find swarm_planner)/worlds/$(arg replay_map)" if="$(arg replay)">
+    <param name="resolution"                 value="$(arg world_resolution)" />
+    <param name="frame_id"                   value="world" type="string"/>
+    <param name="sensor_model/max_range"     value="5.0" />
+    <param name="height_map"                 value="false"/>
+    <param name="color/r"                    value="0.2" />
+    <param name="color/g"                    value="0.2" />
+    <param name="color/b"                    value="0.2" />
+    <param name="color/a"                    value="0.2" />
+  </node>
+
+  <node pkg="swarm_planner" type="random_map_generator" name="random_map_generator" unless="$(arg replay)">
+    <param name="mission"                    value="$(find swarm_planner)/missions/$(arg mission)" />
+
+    <param name="world/x_min"                value="$(arg world_x_min)" />
+    <param name="world/y_min"                value="$(arg world_y_min)" />
+    <param name="world/z_min"                value="$(arg world_z_min)" />
+    <param name="world/x_max"                value="$(arg world_x_max)" />
+    <param name="world/y_max"                value="$(arg world_y_max)" />
+    <param name="world/z_max"                value="$(arg world_z_max)" />
+    <param name="world/resolution"           value="$(arg world_resolution)" />
+    
+    <param name="world/obs_num"              value="$(arg obs_num)" />
+    <param name="world/obs_r_min"            value="$(arg obs_r_min)" />
+    <param name="world/obs_r_max"            value="$(arg obs_r_max)" />
+    <param name="world/obs_h_min"            value="$(arg obs_h_min)" />
+    <param name="world/obs_h_max"            value="$(arg obs_h_max)" />
+    <param name="world/obs_margin"           value="$(arg obs_margin)" />
+  </node>
+
+  <node pkg="swarm_planner" type="hetero_traj_planner_rbp" name="hetero_traj_planner_rbp" output="screen">
+    <param name="log"                        value="$(arg log)" />
+    
+    <param name="mission"                    value="$(find swarm_planner)/missions/$(arg mission)" />
+    
+    <param name="world/x_min"                value="$(arg world_x_min)" />
+    <param name="world/y_min"                value="$(arg world_y_min)" />
+    <param name="world/z_min"                value="$(arg world_z_min)" />
+    <param name="world/x_max"                value="$(arg world_x_max)" />
+    <param name="world/y_max"                value="$(arg world_y_max)" />
+    <param name="world/z_max"                value="$(arg world_z_max)" />
+
+    <param name="ecbs/w"                     value="$(arg ecbs_w)" />
+    <param name="grid/xy_res"                value="$(arg grid_xy_res)" />
+    <param name="grid/z_res"                 value="$(arg grid_z_res)" />
+    <param name="grid/margin"                value="$(arg grid_margin)" />
+
+    <param name="box/xy_res"                 value="$(arg box_xy_res)" />
+    <param name="box/z_res"                  value="$(arg box_z_res)" />
+
+    <param name="plan/time_scale"            value="$(arg plan_time_scale)" />
+    <param name="plan/time_step"             value="$(arg plan_time_step)" />
+    <param name="plan/downwash"              value="$(arg plan_downwash)" />
+    <param name="plan/n"                     value="$(arg plan_n)" />
+    <param name="plan/phi"                   value="$(arg plan_phi)" />
+
+    <param name="plan/sequential"            value="$(arg plan_sequential)" />
+    <param name="plan/batch_size"            value="$(arg plan_batch_size)" />
+    <param name="plan/batch_iter"            value="$(arg plan_batch_iter)" />
+    <param name="plan/iteration"             value="$(arg plan_iteration)" />
+  </node>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find swarm_planner)/launch/rviz_config/config_hetero.rviz" if="$(arg runsim)"/>
+
+<!-- Nodes End -->
+</launch>
