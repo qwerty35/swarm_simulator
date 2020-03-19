@@ -17,6 +17,8 @@ namespace SwarmPlanning{
         double world_y_max;
         double world_z_max;
 
+        std::string initTraj_planner;
+        bool initTraj_equalizeM;
         double ecbs_w;
         double grid_xy_res;
         double grid_z_res;
@@ -27,13 +29,15 @@ namespace SwarmPlanning{
 
         bool time_scale;
         double time_step;
+
         double downwash; // downwash coefficient
-        int iteration;
+        int n; // degree of polynomial
+        int phi; // desired derivatives
+
         bool sequential;
         int batch_size; // the number of agents in a batch
         int batch_iter; // the number of batches
-        int n; // degree of polynomial
-        int phi; // desired derivatives
+        int iteration;
 
         std::vector<std::vector<double>> color;
 
@@ -51,10 +55,12 @@ namespace SwarmPlanning{
         nh.param<double>("world/y_max", world_y_max, 5);
         nh.param<double>("world/z_max", world_z_max, 2.5);
 
+        nh.param<std::string>("initTraj/planner", initTraj_planner, "SIPP");
+        nh.param<bool>("initTraj/equalizeM", initTraj_equalizeM, false);
+        nh.param<double>("ecbs/w", ecbs_w, 1.3);
         nh.param<double>("grid/xy_res", grid_xy_res, 0.3);
         nh.param<double>("grid/z_res", grid_z_res, 0.6);
         nh.param<double>("grid/margin", grid_margin, 0.2);
-        nh.param<double>("ecbs/w", ecbs_w, 1.3);
 
         nh.param<double>("box/xy_res", box_xy_res, 0.1);
         nh.param<double>("box/z_res", box_z_res, 0.1);

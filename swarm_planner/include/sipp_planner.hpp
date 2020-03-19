@@ -29,95 +29,93 @@ namespace SwarmPlanning {
                 planResult_ptr->initTraj.resize(mission.qn);
                 planResult_ptr->T.resize(mission.qn);
 
-                // update segment time T
-                for (size_t qi = 0; qi < mission.qn; qi++) {
-                    planResult_ptr->T[qi].emplace_back(0); // start point
-                    for (auto sec : sr.pathInfo[qi].sections) {
-                        planResult_ptr->T[qi].emplace_back((sec.g + 1) * param.time_step);
+                if(param.initTraj_equalizeM){
+                    std::vector<double> T;
+                    T.emplace_back(0); // start point
+                    for (size_t qi = 0; qi < mission.qn; qi++) {
+                        for (auto sec : sr.pathInfo[qi].sections) {
+                            T.emplace_back(sec.g + 1);
+                        }
                     }
-                    planResult_ptr->T[qi].emplace_back((sr.makespan + 2) * param.time_step); // goal point
-                }
-
-//                std::vector<double> ts_total;
-//                ts_total.emplace_back(0); // start point
-//                for (size_t qi = 0; qi < mission.qn; qi++) {
-//                    for (auto sec : sr.pathInfo[qi].sections) {
-//                        ts_total.emplace_back(sec.g + 1);
-//                    }
-//                }
-//                ts_total.emplace_back(sr.makespan + 2); // goal point
-//                std::sort(ts_total.begin(), ts_total.end());
-//                ts_total.erase(std::unique(ts_total.begin(), ts_total.end()), ts_total.end());
-//                int iter = 0;
-//                while (iter < ts_total.size() - 1) {
-//                    if (ts_total[iter + 1] - ts_total[iter] < SP_EPSILON) {
-//                        ts_total.erase(ts_total.begin() + iter + 1);
-//                    } else {
-//                        iter++;
-//                    }
-//                }
-
-                // feeling lucky version - do not linear interpolation
-                for (size_t qi = 0; qi < mission.qn; ++qi) {
-                    planResult_ptr->initTraj[qi].emplace_back(octomap::point3d(mission.startState[qi][0],
-                                                                               mission.startState[qi][1],
-                                                                               mission.startState[qi][2]));
-
-                    for (int iter = 0; iter < sr.pathInfo[qi].sections.size(); iter++) {
-                        Node sec = sr.pathInfo[qi].sections[iter];
-                        planResult_ptr->initTraj[qi].emplace_back(octomap::point3d(sec.i * param.grid_xy_res + grid_x_min,
-                                                                                   sec.j * param.grid_xy_res + grid_y_min,
-                                                                                      z));
+                    T.emplace_back(sr.makespan + 2); // goal point
+                    std::sort(T.begin(), T.end());
+                    T.erase(std::unique(T.begin(), T.end()), T.end());
+                    int iter = 0;
+                    while (iter < T.size() - 1) {
+                        if (T[iter + 1] - T[iter] < SP_EPSILON) {
+                            T.erase(T.begin() + iter + 1);
+                        } else {
+                            iter++;
+                        }
                     }
+                    // initTraj interpolation
+                    for (size_t qi = 0; qi < mission.qn; ++qi) {
+                        planResult_ptr->initTraj[qi].emplace_back(octomap::point3d(mission.startState[qi][0],
+                                                                                   mission.startState[qi][1],
+                                                                                   mission.startState[qi][2]));
 
-                    planResult_ptr->initTraj[qi].emplace_back(octomap::point3d(mission.goalState[qi][0],
-                                                                               mission.goalState[qi][1],
-                                                                               mission.goalState[qi][2]));
+                        int iter = 0;
+                        for (int idx = 1; idx < T.size() - 1; idx++) {
+                            while (iter < sr.pathInfo[qi].sections.size() &&
+                                   sr.pathInfo[qi].sections[iter].g + 1 <= T[idx]) {
+                                iter++;
+                            }
+
+                            if (iter >= sr.pathInfo[qi].sections.size()) {
+                                iter = sr.pathInfo[qi].sections.size() - 1;
+
+                                Node sec = sr.pathInfo[qi].sections[iter];
+                                planResult_ptr->initTraj[qi].emplace_back(
+                                        octomap::point3d(sec.i * param.grid_xy_res + grid_x_min,
+                                                         sec.j * param.grid_xy_res + grid_y_min,
+                                                         z));
+                            } else {
+                                Node sec1 = sr.pathInfo[qi].sections[iter - 1];
+                                Node sec2 = sr.pathInfo[qi].sections[iter];
+
+                                double x = sec1.i * (sec2.g + 1 - T[idx]) / (sec2.g - sec1.g) +
+                                           sec2.i * (T[idx] - sec1.g - 1) / (sec2.g - sec1.g);
+                                double y = sec1.j * (sec2.g + 1 - T[idx]) / (sec2.g - sec1.g) +
+                                           sec2.j * (T[idx] - sec1.g - 1) / (sec2.g - sec1.g);
+
+                                planResult_ptr->initTraj[qi].emplace_back(
+                                        octomap::point3d(x * param.grid_xy_res + grid_x_min,
+                                                         y * param.grid_xy_res + grid_y_min,
+                                                         z));
+                            }
+                        }
+
+                        planResult_ptr->initTraj[qi].emplace_back(octomap::point3d(mission.goalState[qi][0],
+                                                                   mission.goalState[qi][1],
+                                                                   mission.goalState[qi][2]));
+                    }
+                    for (int i = 0; i < T.size(); i++) {
+                        T[i] *= param.time_step;
+                    }
+                    for(int qi = 0; qi < mission.qn; qi++) {
+                        planResult_ptr->T[qi] = T;
+                    }
                 }
-
-//                // initTraj interpolation
-//                for (size_t qi = 0; qi < mission.qn; ++qi) {
-//                    initTraj[qi].emplace_back(octomap::point3d(mission.startState[qi][0],
-//                                                               mission.startState[qi][1],
-//                                                               mission.startState[qi][2]));
-//
-//                    int iter = 0;
-//                    for (int idx = 1; idx < ts_total.size() - 1; idx++) {
-//                        while (iter < sr.pathInfo[qi].sections.size() &&
-//                               sr.pathInfo[qi].sections[iter].g + 1 <= ts_total[idx]) {
-//                            iter++;
-//                        }
-//
-//                        if (iter >= sr.pathInfo[qi].sections.size()) {
-//                            iter = sr.pathInfo[qi].sections.size() - 1;
-//
-//                            Node sec = sr.pathInfo[qi].sections[iter];
-//                            initTraj[qi].emplace_back(octomap::point3d(sec.i * param.grid_xy_res + grid_x_min,
-//                                                                       sec.j * param.grid_xy_res + grid_y_min,
-//                                                                       z));
-//                        } else {
-//                            Node sec1 = sr.pathInfo[qi].sections[iter - 1];
-//                            Node sec2 = sr.pathInfo[qi].sections[iter];
-//
-//                            double x = sec1.i * (sec2.g + 1 - ts_total[idx]) / (sec2.g - sec1.g) +
-//                                       sec2.i * (ts_total[idx] - sec1.g - 1) / (sec2.g - sec1.g);
-//                            double y = sec1.j * (sec2.g + 1 - ts_total[idx]) / (sec2.g - sec1.g) +
-//                                       sec2.j * (ts_total[idx] - sec1.g - 1) / (sec2.g - sec1.g);
-//
-//                            initTraj[qi].emplace_back(octomap::point3d(x * param.grid_xy_res + grid_x_min,
-//                                                                       y * param.grid_xy_res + grid_y_min,
-//                                                                       z));
-//                        }
-//                    }
-//
-//                    initTraj[qi].emplace_back(octomap::point3d(mission.goalState[qi][0],
-//                                                               mission.goalState[qi][1],
-//                                                               mission.goalState[qi][2]));
-//                }
-//
-//                for (int i = 0; i < ts_total.size(); i++) {
-//                    ts_total[i] *= param.time_step;
-//                }
+                else { // feeling lucky version - do not linear interpolation
+                    for (size_t qi = 0; qi < mission.qn; ++qi) {
+                        planResult_ptr->T[qi].emplace_back(0); // start point
+                        planResult_ptr->initTraj[qi].emplace_back(octomap::point3d(mission.startState[qi][0],
+                                                                                   mission.startState[qi][1],
+                                                                                   mission.startState[qi][2]));
+                        for (int iter = 0; iter < sr.pathInfo[qi].sections.size(); iter++) {
+                            Node sec = sr.pathInfo[qi].sections[iter];
+                            planResult_ptr->T[qi].emplace_back((sec.g + 1) * param.time_step);
+                            planResult_ptr->initTraj[qi].emplace_back(
+                                    octomap::point3d(sec.i * param.grid_xy_res + grid_x_min,
+                                                     sec.j * param.grid_xy_res + grid_y_min,
+                                                     z));
+                        }
+                        planResult_ptr->T[qi].emplace_back((sr.makespan + 2) * param.time_step); // goal point
+                        planResult_ptr->initTraj[qi].emplace_back(octomap::point3d(mission.goalState[qi][0],
+                                                                                   mission.goalState[qi][1],
+                                                                                   mission.goalState[qi][2]));
+                    }
+                }
 
                 ROS_INFO("SIPPPlanner: SIPP complete!");
                 planResult_ptr->state = INITTRAJ;

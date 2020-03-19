@@ -13,10 +13,11 @@
 #include <timer.hpp>
 
 // Submodules
-#include <sipp_planner.hpp>
+#include <ecbs_planner.hpp>
 #include <rbp_corridor.hpp>
-#include <rbp_planner.hpp>
-#include <rbp_publisher.hpp>
+#include <sfc_corridor.hpp>
+#include <sfc_planner.hpp>
+#include <sfc_publisher.hpp>
 
 using namespace SwarmPlanning;
 
@@ -36,7 +37,7 @@ void octomapCallback(const octomap_msgs::Octomap& octomap_msg)
 
 int main(int argc, char* argv[]) {
     ROS_INFO("Swarm Trajectory Planner");
-    ros::init (argc, argv, "hetero_traj_planner_rbp");
+    ros::init (argc, argv, "swarm_traj_planner_sfc");
     ros::NodeHandle nh( "~" );
     ros::Subscriber octomap_sub = nh.subscribe( "/octomap_full", 1, octomapCallback );
 
@@ -57,9 +58,10 @@ int main(int argc, char* argv[]) {
     SwarmPlanning::PlanResult planResult;
     std::shared_ptr<DynamicEDTOctomap> distmap_obj;
     std::shared_ptr<InitTrajPlanner> initTrajPlanner_obj;
-    std::shared_ptr<RBPCorridor> corridor_obj;
-    std::shared_ptr<RBPPlanner> RBPPlanner_obj;
-    std::shared_ptr<RBPPublisher> RBPPublisher_obj;
+    std::shared_ptr<RBPCorridor> rbp_corridor_obj;
+    std::shared_ptr<SFCCorridor> sfc_corridor_obj;
+    std::shared_ptr<SFCPlanner> SFCPlanner_obj;
+    std::shared_ptr<SFCPublisher> SFCPublisher_obj;
 
     // Main Loop
     ros::Rate rate(20);
@@ -87,7 +89,7 @@ int main(int argc, char* argv[]) {
             // Step 1: Plan Initial Trajectory
             timer_step.reset();
             {
-                initTrajPlanner_obj.reset(new SIPPPlanner(distmap_obj, mission, param));
+                initTrajPlanner_obj.reset(new ECBSPlanner(distmap_obj, mission, param));
                 initTrajPlanner_obj.get()->update(param.log, &planResult);
             }
             timer_step.stop();
@@ -96,29 +98,32 @@ int main(int argc, char* argv[]) {
             // Step 2: Generate SFC, RSFC
             timer_step.reset();
             {
-                corridor_obj.reset(new RBPCorridor(distmap_obj, mission, param));
-                corridor_obj.get()->update(param.log, &planResult);
+                rbp_corridor_obj.reset(new RBPCorridor(distmap_obj, mission, param));
+                sfc_corridor_obj.reset(new SFCCorridor(distmap_obj, mission, param));
+                sfc_corridor_obj.get()->preprocess(&planResult);
+                rbp_corridor_obj.get()->update_SFC_only(param.log, &planResult);
             }
             timer_step.stop();
             ROS_INFO_STREAM("BoxGenerator runtime: " << timer_step.elapsedSeconds());
 
             // Step 3: Formulate QP problem and solving it to generate trajectory for quadrotor swarm
-            timer_step.reset();
-            {
-                RBPPlanner_obj.reset(new RBPPlanner(mission, param));
-                if (!RBPPlanner_obj.get()->update(param.log, &planResult)) {
-                    return -1;
+            for(int iter = 0; iter < param.iteration; iter++) {
+                timer_step.reset();
+                {
+                    sfc_corridor_obj.get()->update(param.log, &planResult);
+                    SFCPlanner_obj.reset(new SFCPlanner(mission, param));
+                    SFCPlanner_obj.get()->update(param.log, &planResult);
                 }
+                timer_step.stop();
+                ROS_INFO_STREAM("SwarmPlanner runtime: " << timer_step.elapsedSeconds());
             }
-            timer_step.stop();
-            ROS_INFO_STREAM("SwarmPlanner runtime: " << timer_step.elapsedSeconds());
-
+            
             timer_total.stop();
             ROS_INFO_STREAM("Overall runtime: " << timer_total.elapsedSeconds());
 
             // Plot Planning Result
-            RBPPublisher_obj.reset(new RBPPublisher(nh, planResult, mission, param));
-            RBPPublisher_obj->plot(param.log);
+            SFCPublisher_obj.reset(new SFCPublisher(nh, planResult, mission, param));
+            SFCPublisher_obj->plot(param.log);
 
             start_time = ros::Time::now().toSec();
             has_path = true;
@@ -126,8 +131,8 @@ int main(int argc, char* argv[]) {
         if(has_path) {
             // Publish Swarm Trajectory
             current_time = ros::Time::now().toSec() - start_time;
-            RBPPublisher_obj.get()->update(current_time);
-            RBPPublisher_obj.get()->publish();
+            SFCPublisher_obj.get()->update(current_time);
+            SFCPublisher_obj.get()->publish();
         }
         ros::spinOnce();
         rate.sleep();

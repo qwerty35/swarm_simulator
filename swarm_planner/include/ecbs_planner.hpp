@@ -71,6 +71,7 @@ namespace SwarmPlanning {
                                                                          mission.goalState[a][2]));
                 }
             }
+            planResult_ptr->state = INITTRAJ;
             return true;
         }
 

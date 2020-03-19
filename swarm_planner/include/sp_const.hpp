@@ -24,14 +24,21 @@ namespace SwarmPlanning {
         OPTIMIZATION,
     };
 
+    struct SFC_internal{
+        std::vector<double> box; // [x_min, y_min, z_min, x_max, y_max, z_max]
+        double start_time;
+        double end_time;
+    };
+
     struct RSFC_internal{
         octomap::point3d normal_vector;
+        double b;
         double start_time;
         double end_time;
     };
 
     typedef std::vector<std::vector<double>> T_t;
     typedef std::vector<std::vector<octomap::point3d>> initTraj_t;
-    typedef std::vector<std::vector<std::pair<std::vector<double>, double>>> SFC_t;
+    typedef std::vector<std::vector<SwarmPlanning::SFC_internal>> SFC_t;
     typedef std::vector<std::vector<std::vector<SwarmPlanning::RSFC_internal>>> RSFC_t;
 }

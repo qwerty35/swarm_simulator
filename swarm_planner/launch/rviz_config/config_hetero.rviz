@@ -21,7 +21,6 @@ Panels:
         - /MarkerArray5
         - /MarkerArray5/Namespaces1
         - /MarkerArray6
-        - /MarkerArray6/Namespaces1
       Splitter Ratio: 0.535377383
     Tree Height: 843
   - Class: rviz/Selection
@@ -292,7 +291,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: false
-      Marker Topic: /relative_box/mav1
+      Marker Topic: /relative_box/mav0
       Name: MarkerArray
       Namespaces:
         {}
@@ -315,13 +314,16 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /feasible_box
       Name: MarkerArray
       Namespaces:
-        {}
+        mav0: false
+        mav1: true
+        mav2: false
+        mav3: false
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /collision_model
@@ -354,7 +356,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 3.81097198e-06
+      Angle: 0
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
@@ -364,11 +366,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 82.9665146
+      Scale: 86.1276245
       Target Frame: world
       Value: TopDownOrtho (rviz)
-      X: 0.805677891
-      Y: 0.17884703
+      X: -0.143344909
+      Y: 0.147311702
     Saved: ~
 Window Geometry:
   Displays:

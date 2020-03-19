@@ -17,9 +17,9 @@
 ILOSTLBEGIN
 
 namespace SwarmPlanning {
-    class RBPPlanner {
+    class SFCPlanner {
     public:
-        RBPPlanner(Mission _mission,
+        SFCPlanner(Mission _mission,
                    Param _param)
                 : mission(std::move(_mission)),
                   param(std::move(_param)) {
@@ -27,8 +27,6 @@ namespace SwarmPlanning {
             phi = param.phi; // desired derivatives
             N = mission.qn; // the number of agents
             outdim = 3; // the number of outputs (x,y,z)
-
-            setBatch(0);
         }
 
         bool update(bool log, SwarmPlanning::PlanResult* _planResult_ptr) {
@@ -36,6 +34,7 @@ namespace SwarmPlanning {
             offset_seg = n + 1;
 
             M.resize(N);
+            planResult_ptr->coef.clear();
             planResult_ptr->coef.resize(N);
             for (int qi = 0; qi < N; qi++) {
                 M[qi] = planResult_ptr->T[qi].size() - 1; // the number of segments
@@ -49,23 +48,23 @@ namespace SwarmPlanning {
                 timer.reset();
                 buildConstMtx();
                 timer.stop();
-                ROS_INFO_STREAM("RBPPlanner: Constraint Matrix runtime=" << timer.elapsedSeconds());
+                ROS_INFO_STREAM("SFCPlanner: Constraint Matrix runtime=" << timer.elapsedSeconds());
 
                 // Solve QP
                 timer.reset();
                 solveQP(env, log);
                 timer.stop();
-                ROS_INFO_STREAM("RBPPlanner: QP runtime=" << timer.elapsedSeconds());
-                ROS_INFO_STREAM("RBPPlanner: x size=" << count_x);
-                ROS_INFO_STREAM("RBPPlanner: eq const size=" << count_eq);
-                ROS_INFO_STREAM("RBPPlanner: ineq const size=" << count_lq);
+                ROS_INFO_STREAM("SFCPlanner: QP runtime=" << timer.elapsedSeconds());
+                ROS_INFO_STREAM("SFCPlanner: x size=" << count_x);
+                ROS_INFO_STREAM("SFCPlanner: eq const size=" << count_eq);
+                ROS_INFO_STREAM("SFCPlanner: ineq const size=" << count_lq);
             }
             catch (IloException &e) {
-                ROS_ERROR_STREAM("RBPPlanner: CPLEX Concert exception caught: " << e);
+                ROS_ERROR_STREAM("SFCPlanner: CPLEX Concert exception caught: " << e);
                 return false;
             }
             catch (...) {
-                ROS_ERROR("RBPPlanner: CPLEX Unknown exception caught");
+                ROS_ERROR("SFCPlanner: CPLEX Unknown exception caught");
                 return false;
             }
             env.end();
@@ -74,7 +73,7 @@ namespace SwarmPlanning {
                 timer.reset();
                 timeScale();
                 timer.stop();
-                ROS_INFO_STREAM("RBPPlanner: timeScale runtime=" << timer.elapsedSeconds());
+                ROS_INFO_STREAM("SFCPlanner: timeScale runtime=" << timer.elapsedSeconds());
             }
 
             if(param.log){
@@ -97,17 +96,14 @@ namespace SwarmPlanning {
 
         // std::shared_ptr<Eigen::MatrixXd> Q_obj, Aeq_obj, Alq_obj, deq_obj, dlq_obj;
         Eigen::MatrixXd Q_base, basis;
-        std::vector<Eigen::MatrixXd> Aeq_base, deq, dlq_box, dummy;
+        std::vector<Eigen::MatrixXd> Aeq_base, deq, dlq_box;
+        std::vector<std_msgs::Float64MultiArray> msgs_traj_coef;
 
         void buildConstMtx() {
             build_Q_base();
             build_Aeq_base();
             build_deq();
             build_dlq_box();
-
-            if (param.sequential) {
-                build_dummy();
-            }
         }
 
         void solveQP(const IloEnv &env, bool log) {
@@ -117,95 +113,51 @@ namespace SwarmPlanning {
             IloCplex cplex(env);
 //            cplex.setParam(IloCplex::Param::TimeLimit, 0.04);
 
-            // publish dummy agents' trajectory
-            if(param.sequential && param.batch_iter == 0){
-                // Translate Bernstein basis to Polynomial coefficients
-                for (int k = 0; k < outdim; k++) {
-                    for (int qi = 0; qi < N; qi++) {
-                        for (int m = 0; m < M[qi]; m++) {
-                            Eigen::MatrixXd c = Eigen::MatrixXd::Zero(1, n + 1);
-                            Eigen::MatrixXd tm;
-                            timeMatrix(1.0 / (planResult_ptr->T[qi][m+1] - planResult_ptr->T[qi][m]), &tm);
-                            tm = basis * tm;
+            total_cost = 0;
+            for (int qi = 0; qi < N; qi++) {
+                timer.reset();
+                IloModel model(env);
+                IloNumVarArray var(env);
+                IloRangeArray con(env);
 
-                            for (int i = 0; i < n + 1; i++) {
-                                c = c + dummy[qi](m * offset_seg + i, k) * tm.row(i);
-                            }
-                            planResult_ptr->coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
+                populatebyrow(model, var, con, qi);
+                cplex.extract(model);
+                if (log) {
+                    std::string QPmodel_path = param.package_path + "/log/QPmodel.lp";
+                    cplex.exportModel(QPmodel_path.c_str());
+                } else {
+                    cplex.setOut(env.getNullStream());
+                }
+
+                // Optimize the problem and obtain solution.
+                if (!cplex.solve()) {
+                    ROS_ERROR("SFCPlanner: Failed to optimize QP");
+                    throw (-1);
+                }
+
+                IloNumArray vals(env);
+                total_cost += cplex.getObjValue();
+                cplex.getValues(vals, var);
+
+                // Translate Bernstein basis to Polynomial coefficients
+                int offset_dim = M[qi] * offset_seg;
+                for (int k = 0; k < outdim; k++) {
+                    for (int m = 0; m < M[qi]; m++) {
+                        Eigen::MatrixXd c = Eigen::MatrixXd::Zero(1, n + 1);
+                        Eigen::MatrixXd tm;
+                        timeMatrix(1.0 / (planResult_ptr->T[qi][m+1] - planResult_ptr->T[qi][m]), &tm);
+                        tm = basis * tm;
+
+                        for (int i = 0; i < n + 1; i++) {
+                            c = c + vals[k * offset_dim + m * offset_seg + i] * tm.row(i);
                         }
+                        planResult_ptr->coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
                     }
                     timer.stop();
                 }
-                return;
             }
 
-            for (int iter = 0; iter < param.iteration; iter++) {
-                total_cost = 0;
-                for (int l = 0; l < param.batch_iter; l++) {
-                    timer.reset();
-                    IloModel model(env);
-                    IloNumVarArray var(env);
-                    IloRangeArray con(env);
-
-                    populatebyrow(model, var, con, l);
-                    cplex.extract(model);
-                    if (log) {
-                        std::string QPmodel_path = param.package_path + "/log/QPmodel.lp";
-                        cplex.exportModel(QPmodel_path.c_str());
-                    } else {
-                        cplex.setOut(env.getNullStream());
-                    }
-
-                    // Optimize the problem and obtain solution.
-                    if (!cplex.solve()) {
-                        ROS_ERROR("RBPPlanner: Failed to optimize QP");
-                        throw (-1);
-                    }
-
-                    IloNumArray vals(env);
-                    total_cost += cplex.getObjValue();
-                    cplex.getValues(vals, var);
-
-                    // Translate Bernstein basis to Polynomial coefficients
-                    int offset_dim = getOffset_dim(l);
-                    int batch_max_iter = ceil((double)N / (double)param.batch_size);
-                    for (int k = 0; k < outdim; k++) {
-                        for (int qi = 0; qi < N; qi++) {
-                            for (int m = 0; m < M[qi]; m++) {
-                                Eigen::MatrixXd c = Eigen::MatrixXd::Zero(1, n + 1);
-                                Eigen::MatrixXd tm;
-                                timeMatrix(1.0 / (planResult_ptr->T[qi][m+1] - planResult_ptr->T[qi][m]), &tm);
-                                tm = basis * tm;
-
-                                int bi = isQuadInBatch(qi, l);
-                                int offset_quad = getOffset_quad(l, bi);
-                                if (bi >= 0) {
-                                    for (int i = 0; i < n + 1; i++) {
-                                        c = c + vals[k * offset_dim + offset_quad + m * offset_seg + i] * tm.row(i);
-                                        if (param.sequential) {
-                                            dummy[qi](m * offset_seg + i, k) = vals[k * offset_dim + offset_quad + m * offset_seg + i];
-                                        }
-                                    }
-                                    planResult_ptr->coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
-                                } else if (param.sequential && param.batch_iter < batch_max_iter) {
-                                    for (int i = 0; i < n + 1; i++) {
-                                        c = c + dummy[qi](m * offset_seg + i, k) * tm.row(i);
-                                    }
-                                    planResult_ptr->coef[qi].block(m * offset_seg, k, n + 1, 1) = c.transpose();
-                                }
-                            }
-                        }
-                        timer.stop();
-                    }
-                    if (param.sequential) {
-                        ROS_INFO_STREAM("RBPPlanner: QP runtime of batch " << l << "=" << timer.elapsedSeconds());
-                        ROS_INFO_STREAM("RBPPlanner: QP cost of batch " << l << "=" << cplex.getObjValue());
-                    }
-                }
-                if (param.iteration > 1)
-                    ROS_INFO_STREAM("RBPPlanner: QP iteration " << iter << " total_cost=" << total_cost);
-            }
-            ROS_INFO_STREAM("RBPPlanner: QP total cost=" << total_cost);
+            ROS_INFO_STREAM("SFCPlanner: QP total cost=" << total_cost);
         }
 
         // For all segment of trajectory, check maximum velocity and accelation, and scale the segment time
@@ -235,7 +187,7 @@ namespace SwarmPlanning {
                 }
             }
 
-            ROS_INFO_STREAM("RBPPlanner: Time scale=" << time_scale);
+            ROS_INFO_STREAM("SFCPlanner: Time scale=" << time_scale);
             if (time_scale != 1) {
                 for (int qi = 0; qi < N; qi++) {
                     // trajectory
@@ -275,7 +227,7 @@ namespace SwarmPlanning {
         // n should be smaller than 7
         void generateCoefCSV(){
             if(n > 7){
-                ROS_WARN("RBPPlanner: n>7, do not make CSV file");
+                ROS_WARN("SFCPlanner: n>7, do not make CSV file");
                 return;
             }
             for(int qi = 0; qi < N; qi++) {
@@ -323,7 +275,7 @@ namespace SwarmPlanning {
                         -5, 5, 0, 0, 0, 0,
                         1, 0, 0, 0, 0, 0;
             } else {
-                ROS_ERROR("RBPPlanner: n should be 5"); //TODO: debug when n is not 5
+                ROS_ERROR("SFCPlanner: n should be 5"); //TODO: debug when n is not 5
             }
         }
 
@@ -350,7 +302,7 @@ namespace SwarmPlanning {
                         0, 1, -4, 6, -4, 1,
                         -1, 5, -10, 10, -5, 1;
             } else {
-                ROS_ERROR("RBPPlanner: n should be 5"); //TODO: Compute A_0, A_T when n is not 5
+                ROS_ERROR("SFCPlanner: n should be 5"); //TODO: Compute A_0, A_T when n is not 5
             }
 
             Aeq_base.resize(N);
@@ -447,102 +399,26 @@ namespace SwarmPlanning {
             }
         }
 
-        Eigen::MatrixXd build_G(int qi, double start_time, double end_time) {
-            Eigen::MatrixXd G = Eigen::MatrixXd::Zero(n + 1, n + 1);
-
-            // build B, B_inv, C
-            Eigen::MatrixXd B = Eigen::MatrixXd::Zero(n + 1, n + 1);
-            Eigen::MatrixXd B_inv = Eigen::MatrixXd::Zero(n + 1, n + 1);
-            Eigen::MatrixXd C = Eigen::MatrixXd::Zero(n + 1, n + 1);
-            if (n == 5) {
-                B <<  1,   0,   0,  0,    0,   0,
-                     -5,   5,   0,  0,    0,   0,
-                     10, -20,  10,  0,    0,   0,
-                    -10,  30, -30,  10,   0,   0,
-                      5, -20,  30, -20,   5,   0,
-                     -1,   5, -10,  10,  -5,   1;
-
-                B_inv << 1,   0,   0,   0,   0,   0,
-                         1, 0.2,   0,   0,   0,   0,
-                         1, 0.4, 0.1,   0,   0,   0,
-                         1, 0.6, 0.3, 0.1,   0,   0,
-                         1, 0.8, 0.6, 0.4, 0.2,   0,
-                         1,   1,   1,   1,   1,   1;
-
-                C << 1,  1,  1,  1,  1,  1,
-                     0,  1,  2,  3,  4,  5,
-                     0,  0,  1,  3,  6, 10,
-                     0,  0,  0,  1,  4, 10,
-                     0,  0,  0,  0,  1,  5,
-                     0,  0,  0,  0,  0,  1;
-            } else {
-                ROS_ERROR("RBPPlanner: n should be 5"); //TODO: Compute B, B_inv when n is not 5
-            }
-
-            // build F
-            Eigen::MatrixXd F = Eigen::MatrixXd::Zero(n + 1, n + 1);
-            int m = planResult_ptr->findSegmentIdx(qi, start_time, end_time);
-            double alpha, beta, tau_i, tau_f;
-            tau_i = (start_time - planResult_ptr->T[qi][m])/(planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m]);
-            tau_f = (end_time - planResult_ptr->T[qi][m])/(planResult_ptr->T[qi][m + 1] - planResult_ptr->T[qi][m]);
-            alpha = tau_f - tau_i;
-            beta = tau_i;
-
-            for(int i = 0; i < n + 1; i++){
-                for(int j = i; j < n + 1; j++){
-                    F(i,j) = C(i,j) * pow(alpha, i) * pow(beta, j-i);
-                }
-            }
-
-            G = B_inv * F * B;
-            return G;
-        }
-
-        void build_dummy() {
-            dummy.resize(N);
-            for (int qi = 0; qi < N; qi++) {
-                dummy[qi] = Eigen::MatrixXd::Zero(M[qi] * offset_seg, outdim);
-                for (int m = 0; m < M[qi]; m++) {
-                    for (int j = 0; j < n + 1; j++) {
-                        int a = 1;
-                        if (j < (n + 1) / 2) {
-                            a = 0;
-                        }
-                        dummy[qi](m * offset_seg + j, 0) = (1 - a) * planResult_ptr->initTraj[qi][m].x()
-                                                               + a * planResult_ptr->initTraj[qi][m + 1].x();
-                        dummy[qi](m * offset_seg + j, 1) = (1 - a) * planResult_ptr->initTraj[qi][m].y()
-                                                               + a * planResult_ptr->initTraj[qi][m + 1].y();
-                        dummy[qi](m * offset_seg + j, 2) = (1 - a) * planResult_ptr->initTraj[qi][m].z()
-                                                               + a * planResult_ptr->initTraj[qi][m + 1].z();
-                    }
-                }
-            }
-        }
-
-        void populatebyrow(IloModel model, IloNumVarArray x, IloRangeArray c, int l) {
-            int offset_dim = getOffset_dim(l);
+        void populatebyrow(IloModel model, IloNumVarArray x, IloRangeArray c, int qi) {
+            int offset_dim = M[qi] * offset_seg;
             IloEnv env = model.getEnv();
             for (int k = 0; k < outdim; k++) {
-                for (int bi = 0; bi < batches[l].size(); bi++) {
-                    int qi = batches[l][bi];
-                    int offset_quad = getOffset_quad(l, bi);
-                    for (int m = 0; m < M[qi]; m++) {
-                        for (int i = 0; i < n + 1; i++) {
-                            x.add(IloNumVar(env, -IloInfinity, IloInfinity));
-                            int row = k * offset_dim + offset_quad + m * offset_seg + i;
-                            std::string name;
-                            if (k == 0) {
-                                name = "x_" + std::to_string(qi) + "_" + std::to_string(m) + "_" + std::to_string(i);
-                            } else if (k == 1) {
-                                name = "y_" + std::to_string(qi) + "_" + std::to_string(m) + "_" + std::to_string(i);
-                            } else if (k == 2) {
-                                name = "z_" + std::to_string(qi) + "_" + std::to_string(m) + "_" + std::to_string(i);
-                            } else {
-                                ROS_ERROR("RBPPlanner: Invalid outdim");
-                            }
-
-                            x[row].setName(name.c_str());
+                for (int m = 0; m < M[qi]; m++) {
+                    for (int i = 0; i < n + 1; i++) {
+                        x.add(IloNumVar(env, -IloInfinity, IloInfinity));
+                        int row = k * offset_dim + m * offset_seg + i;
+                        std::string name;
+                        if (k == 0) {
+                            name = "x_" + std::to_string(qi) + "_" + std::to_string(m) + "_" + std::to_string(i);
+                        } else if (k == 1) {
+                            name = "y_" + std::to_string(qi) + "_" + std::to_string(m) + "_" + std::to_string(i);
+                        } else if (k == 2) {
+                            name = "z_" + std::to_string(qi) + "_" + std::to_string(m) + "_" + std::to_string(i);
+                        } else {
+                            ROS_ERROR("SFCPlanner: Invalid outdim");
                         }
+
+                        x[row].setName(name.c_str());
                     }
                 }
             }
@@ -551,19 +427,15 @@ namespace SwarmPlanning {
             // Cost function
             IloNumExpr cost(env);
             for (int k = 0; k < outdim; k++) {
-                for (int bi = 0; bi < batches[l].size(); bi++) {
-                    int qi = batches[l][bi];
-                    int offset_quad = getOffset_quad(l, bi);
-                    for (int m = 0; m < M[qi]; m++) {
-                        Eigen::MatrixXd Q_p = build_Q_p(qi, m);
+                for (int m = 0; m < M[qi]; m++) {
+                    Eigen::MatrixXd Q_p = build_Q_p(qi, m);
 
-                        for (int i = 0; i < n + 1; i++) {
-                            int row = k * offset_dim + offset_quad + m * offset_seg + i;
-                            for (int j = 0; j < n + 1; j++) {
-                                int col = k * offset_dim + offset_quad + m * offset_seg + j;
-                                if (Q_p(i, j) != 0) {
-                                    cost += Q_p(i, j) * x[row] * x[col];
-                                }
+                    for (int i = 0; i < n + 1; i++) {
+                        int row = k * offset_dim + m * offset_seg + i;
+                        for (int j = 0; j < n + 1; j++) {
+                            int col = k * offset_dim + m * offset_seg + j;
+                            if (Q_p(i, j) != 0) {
+                                cost += Q_p(i, j) * x[row] * x[col];
                             }
                         }
                     }
@@ -573,106 +445,50 @@ namespace SwarmPlanning {
 
             // Equality Constraints
             for (int k = 0; k < outdim; k++) {
-                for (int bi = 0; bi < batches[l].size(); bi++) {
-                    int qi = batches[l][bi];
-                    int offset_quad = getOffset_quad(l,bi);
-                    for (int i = 0; i < 2 * phi + (M[qi] - 1) * phi; i++) {
-                        IloNumExpr expr(env);
-                        for (int j = 0; j < M[qi] * (n + 1); j++) {
-                            if (Aeq_base[qi](i, j) != 0) {
-                                expr += Aeq_base[qi](i, j) * x[k * offset_dim + offset_quad + j];
-                            }
+                for (int i = 0; i < 2 * phi + (M[qi] - 1) * phi; i++) {
+                    IloNumExpr expr(env);
+                    for (int j = 0; j < M[qi] * (n + 1); j++) {
+                        if (Aeq_base[qi](i, j) != 0) {
+                            expr += Aeq_base[qi](i, j) * x[k * offset_dim + j];
                         }
-                        c.add(expr == deq[qi](i, k));
-                        expr.end();
                     }
+                    c.add(expr == deq[qi](i, k));
+                    expr.end();
                 }
             }
             count_eq = c.getSize();
 
             // Inequality Constraints
             for (int k = 0; k < outdim; k++) {
-                for (int bi = 0; bi < batches[l].size(); bi++) {
-                    int qi = batches[l][bi];
-                    int offset_quad = getOffset_quad(l,bi);
-
-                    for(int m = 0; m < M[qi]; m++) {
-                        for (int j = 0; j < offset_seg; j++) {
-                            int idx = k * offset_dim + offset_quad + m * offset_seg + j;
-                            c.add(x[idx] <= dlq_box[qi](m * offset_seg + j, k));
-                            c.add(-x[idx] <= dlq_box[qi](M[qi] * offset_seg + m * offset_seg + j, k));
-                        }
+                for(int m = 0; m < M[qi]; m++) {
+                    for (int j = 0; j < offset_seg; j++) {
+                        int idx = k * offset_dim + m * offset_seg + j;
+                        c.add(x[idx] <= dlq_box[qi](m * offset_seg + j, k));
+                        c.add(-x[idx] <= dlq_box[qi](M[qi] * offset_seg + m * offset_seg + j, k));
                     }
                 }
             }
-            for (int qi = 0; qi < N; qi++) {
-                for (int qj = qi + 1; qj < N; qj++) {
-                    int bi = isQuadInBatch(qi, l);
-                    int bj = isQuadInBatch(qj, l);
-                    std::vector<double> T_ij = planResult_ptr->combineSegmentTimes(qi, qj);
-                    for(int m = 0; m < T_ij.size() - 1; m++) {
-                        Eigen::MatrixXd G_i = build_G(qi, T_ij[m], T_ij[m + 1]);
-                        Eigen::MatrixXd G_j = build_G(qj, T_ij[m], T_ij[m + 1]);
-                        double n_x,n_y,n_z;
-                        n_x = planResult_ptr->RSFC[qi][qj][m].normal_vector.x();
-                        n_y = planResult_ptr->RSFC[qi][qj][m].normal_vector.y();
-                        n_z = planResult_ptr->RSFC[qi][qj][m].normal_vector.z();
-                        int m_i, m_j, offset_quad_i, offset_quad_j;
-                        m_i = planResult_ptr->findSegmentIdx(qi, T_ij[m], T_ij[m + 1]);
-                        m_j = planResult_ptr->findSegmentIdx(qj, T_ij[m], T_ij[m + 1]);
+            for (int qj = 0; qj < N; qj++) {
+                if(qi == qj){
+                    continue;
+                }
+                for(int m = 0; m < planResult_ptr->T[qi].size() - 1; m++) {
+                    octomap::point3d a = planResult_ptr->RSFC[qj][qi][m].normal_vector;
+                    double b = planResult_ptr->RSFC[qj][qi][m].b;
+                    octomap::point3d r(a.x() * mission.quad_size[qi],
+                                       a.y() * mission.quad_size[qi],
+                                       a.z() * mission.quad_size[qi] * param.downwash);
 
-                        if (bi < 0 && bj < 0) {
-
-                        } else if (bi >= 0 && bj < 0) {
-                            for (int i = 0; i < n + 1; i++) {
-                                IloNumExpr expr(env);
-                                for(int j = 0; j < n + 1; j++) {
-                                    expr += G_j(i, j) * (n_x * dummy[qj](m_j * offset_seg + j, 0)
-                                                         + n_y * dummy[qj](m_j * offset_seg + j, 1)
-                                                         + n_z * dummy[qj](m_j * offset_seg + j, 2));
-                                    expr -= G_i(i, j) * (n_x * x[getIdx(l, bi, 0, m_i, j)]
-                                                         + n_y * x[getIdx(l, bi, 1, m_i, j)]
-                                                         + n_z * x[getIdx(l, bi, 2, m_i, j)]);
-
-                                }
-                                c.add(expr >= mission.quad_size[qi] + mission.quad_size[qj]);
-                                expr.end();
-                            }
-                        } else if (bi < 0 && bj >= 0) {
-                            for (int i = 0; i < n + 1; i++) {
-                                IloNumExpr expr(env);
-                                for(int j = 0; j < n + 1; j++) {
-                                    expr += G_j(i, j) * (n_x * x[getIdx(l, bj, 0, m_j, j)]
-                                                         + n_y * x[getIdx(l, bj, 1, m_j, j)]
-                                                         + n_z * x[getIdx(l, bj, 2, m_j, j)]);
-                                    expr -= G_i(i, j) * (n_x * dummy[qi](m_i * offset_seg + j, 0)
-                                                         + n_y * dummy[qi](m_i * offset_seg + j, 1)
-                                                         + n_z * dummy[qi](m_i * offset_seg + j, 2));
-
-                                }
-                                c.add(expr >= mission.quad_size[qi] + mission.quad_size[qj]);
-                                expr.end();
-                            }
-                        } else {
-                            for (int i = 0; i < n + 1; i++) {
-                                IloNumExpr expr(env);
-                                for(int j = 0; j < n + 1; j++) {
-                                    expr += G_j(i, j) * (n_x * x[getIdx(l, bj, 0, m_j, j)]
-                                                         + n_y * x[getIdx(l, bj, 1, m_j, j)]
-                                                         + n_z * x[getIdx(l, bj, 2, m_j, j)]);
-                                    expr -= G_i(i, j) * (n_x * x[getIdx(l, bi, 0, m_i, j)]
-                                                         + n_y * x[getIdx(l, bi, 1, m_i, j)]
-                                                         + n_z * x[getIdx(l, bi, 2, m_i, j)]);
-
-                                }
-                                c.add(expr >= mission.quad_size[qi] + mission.quad_size[qj]);
-                                expr.end();
-                            }
-                        }
+                    for (int j = 0; j < n + 1; j++) {
+                        IloNumExpr expr(env);
+                        expr += a.x() * x[getIdx(qi, 0, m, j)] +
+                                a.y() * x[getIdx(qi, 1, m, j)] +
+                                a.z() * x[getIdx(qi, 2, m, j)];
+                        c.add(expr >= b + r.norm());
+                        expr.end();
                     }
                 }
             }
-
             model.add(c);
             count_lq = c.getSize() - count_eq;
         }
@@ -837,64 +653,9 @@ namespace SwarmPlanning {
             return time_scale;
         }
 
-        void setBatch(int alg){
-            int batch_max_iter = ceil((double)N / (double)param.batch_size);
-            if (param.sequential) {
-                int batch_max_iter = ceil((double)N / (double)param.batch_size);
-                if (param.batch_iter < 0 || param.batch_iter > batch_max_iter) {
-                    param.batch_iter = batch_max_iter;
-                }
-            } else {
-                param.batch_size = N;
-                param.batch_iter = 1;
-            }
-
-            batches.resize(batch_max_iter);
-
-            //default groups
-            if(alg == 0) {
-                for (int qi = 0; qi < N; qi++) {
-                    batches[qi / param.batch_size].emplace_back(qi);
-                }
-            }
-            else{
-                ROS_ERROR("RBPPlaner: invalid batch algorithm");
-            }
-        }
-
-        int isQuadInBatch(int qi, int l){
-            for(int bi = 0; bi < batches[l].size(); bi++){
-                if(qi == batches[l][bi]){
-                    return bi;
-                }
-            }
-            return -1;
-        }
-
-        int getOffset_dim(int l){
-            int offset_dim = 0;
-            for(int bi = 0; bi < batches[l].size(); bi++){
-                int qi = batches[l][bi];
-                offset_dim += M[qi] * offset_seg;
-            }
-            return offset_dim;
-        }
-
-        int getOffset_quad(int l, int bi){
-            int offset_quad = 0;
-
-            for(int i = 0; i < bi; i++){
-                int qi = batches[l][i];
-                offset_quad += M[qi] * offset_seg;
-            }
-
-            return offset_quad;
-        }
-
-        int getIdx(int l, int bi, int k, int m, int j){
-            int offset_dim = getOffset_dim(l);
-            int offset_quad = getOffset_quad(l, bi);
-            return k * offset_dim + offset_quad + m * offset_seg + j;
+        int getIdx(int qi, int k, int m, int j){
+            int offset_dim = M[qi] * offset_seg;
+            return k * offset_dim + m * offset_seg + j;
         }
     };
 }

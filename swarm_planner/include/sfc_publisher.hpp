@@ -25,9 +25,9 @@ namespace plt = matplotlibcpp;
 #include <param.hpp>
 
 namespace SwarmPlanning {
-    class RBPPublisher {
+    class SFCPublisher {
     public:
-        RBPPublisher(ros::NodeHandle _nh,
+        SFCPublisher(ros::NodeHandle _nh,
                      SwarmPlanning::PlanResult _planResult,
                      SwarmPlanning::Mission _mission,
                      SwarmPlanning::Param _param)
@@ -96,12 +96,11 @@ namespace SwarmPlanning {
                 update_obsBox(current_time);
             }
             if(planResult.state >= RSFC){
-                update_relBox(current_time);
-
+                update_relBox_sfc(current_time);
             }
             if(planResult.state >= OPTIMIZATION) {
                 update_traj(current_time);
-                update_feasibleBox(current_time);
+                update_feasibleBox_sfc(current_time);
             }
 //            update_distance_between_agents_realtime(current_time);
         }
@@ -371,10 +370,13 @@ namespace SwarmPlanning {
             msgs_obsBox = mk_array;
         }
 
-        void update_relBox(double current_time) {
+        void update_relBox_sfc(double current_time) {
             for (int qi = 0; qi < qn; qi++) {
                 visualization_msgs::MarkerArray mk_array;
-                for (int qj = qi + 1; qj < qn; qj++) {
+                for (int qj = 0; qj < qn; qj++) {
+                    if(qi == qj){
+                        continue;
+                    }
                     int box_curr = 0;
                     while (box_curr < planResult.RSFC[qi][qj].size() &&
                            planResult.RSFC[qi][qj][box_curr].end_time < current_time) {
@@ -405,9 +407,9 @@ namespace SwarmPlanning {
                     mk.pose.position.y = currentState[qi][1];
                     mk.pose.position.z = currentState[qi][2];
 
-                    mk.scale.x = 2 * r;
-                    mk.scale.y = 2 * r;
-                    mk.scale.z = 2 * h;
+                    mk.scale.x = 0.1;
+                    mk.scale.y = 0.1;
+                    mk.scale.z = 0.1;
 
                     mk.color.a = 0.5;
                     mk.color.r = 1.0;
@@ -457,24 +459,34 @@ namespace SwarmPlanning {
                     mk.color.g = 1.0;
                     mk.color.b = 0.0;
 
-                    mk.scale.x = 40;
-                    mk.scale.y = 40;
-                    mk.scale.z = 40;
-
-                    octomap::point3d qi_vector;
-                    qi_vector.x() = currentState[qi][0];
-                    qi_vector.y() = currentState[qi][1];
-                    qi_vector.z() = currentState[qi][2];
+                    double box_size = 40;
+                    mk.scale.x = box_size;
+                    mk.scale.y = box_size;
+                    mk.scale.z = box_size;
 
                     octomap::point3d normal_vector = planResult.RSFC[qi][qj][box_curr].normal_vector;
+                    octomap::point3d radius(normal_vector.x() * mission.quad_size[qi],
+                                            normal_vector.y() * mission.quad_size[qi],
+                                            normal_vector.z() * mission.quad_size[qi] * param.downwash);
+                    double b = planResult.RSFC[qi][qj][box_curr].b + radius.norm();
                     Eigen::Vector3d V3d_normal_vector(normal_vector.x(), normal_vector.y(), normal_vector.z());
-
-                    double distance = r / normal_vector.norm() + mk.scale.z / 2;
-//                double distance = mission.quad_size[qi] / normal_vector.norm();
-
-                    mk.pose.position.x = currentState[qi][0] + normal_vector.normalized().x() * distance;
-                    mk.pose.position.y = currentState[qi][1] + normal_vector.normalized().y() * distance;
-                    mk.pose.position.z = currentState[qi][2] + normal_vector.normalized().z() * distance;
+                    double distance = box_size / 2;
+                    octomap::point3d p;
+                    if(abs(normal_vector.x()) >= abs(normal_vector.y()) && abs(normal_vector.x()) >= abs(normal_vector.z())){
+                        p = octomap::point3d(b/normal_vector.x(), 0, 0);
+                    }
+                    else if(abs(normal_vector.y()) >= abs(normal_vector.x()) && abs(normal_vector.y()) >= abs(normal_vector.z())){
+                        p = octomap::point3d(0, b/normal_vector.y(), 0);
+                    }
+                    else if(abs(normal_vector.z()) >= abs(normal_vector.x()) && abs(normal_vector.z()) >= abs(normal_vector.y())){
+                        p = octomap::point3d(0, 0, b/normal_vector.z());
+                    }
+                    else{
+                        ROS_ERROR("????");
+                    }
+                    mk.pose.position.x = p.x() + normal_vector.x() * distance;
+                    mk.pose.position.y = p.y() + normal_vector.y() * distance;
+                    mk.pose.position.z = p.z() + normal_vector.z() * distance;
 
                     Eigen::Vector3d z_0 = Eigen::Vector3d::UnitZ();
                     Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors(z_0, V3d_normal_vector);
@@ -490,7 +502,7 @@ namespace SwarmPlanning {
             }
         }
 
-        void update_feasibleBox(double current_time) {
+        void update_feasibleBox_sfc(double current_time) {
             visualization_msgs::MarkerArray mk_array;
             for (int qj = 0; qj < qn; qj++) {
                 // current position
@@ -529,26 +541,18 @@ namespace SwarmPlanning {
                     mk.color.g = param.color[qi][1];
                     mk.color.b = param.color[qi][2];
 
-                    mk.scale.x = 40;
-                    mk.scale.y = 40;
-                    mk.scale.z = 40;
+                    int box_size = 40;
+                    mk.scale.x = box_size;
+                    mk.scale.y = box_size;
+                    mk.scale.z = box_size;
 
                     double r = mission.quad_size[qi];
                     double h = r * param.downwash;
 
                     octomap::point3d normal_vector;
+                    double b;
                     int box_curr = 0;
-                    if (qi < qj) { // RSFC
-                        while (box_curr < planResult.RSFC[qi][qj].size() &&
-                               planResult.RSFC[qi][qj][box_curr].end_time < current_time) {
-                            box_curr++;
-                        }
-                        if (box_curr >= planResult.RSFC[qi][qj].size()) {
-                            box_curr = planResult.RSFC[qi][qj].size() - 1;
-                        }
-
-                        normal_vector = planResult.RSFC[qi][qj][box_curr].normal_vector;
-                    } else if (qi > qj) { // RSFC
+                    if (qi != qj) { // RSFC
                         while (box_curr < planResult.RSFC[qj][qi].size() &&
                                planResult.RSFC[qj][qi][box_curr].end_time < current_time) {
                             box_curr++;
@@ -557,7 +561,8 @@ namespace SwarmPlanning {
                             box_curr = planResult.RSFC[qj][qi].size() - 1;
                         }
 
-                        normal_vector = -planResult.RSFC[qj][qi][box_curr].normal_vector;
+                        normal_vector = planResult.RSFC[qj][qi][box_curr].normal_vector;
+                        b = planResult.RSFC[qj][qi][box_curr].b;
                     } else { // SFC
                         while (box_curr < planResult.SFC[qi].size() &&
                                planResult.SFC[qi][box_curr].end_time < current_time) {
@@ -621,10 +626,23 @@ namespace SwarmPlanning {
                         continue;
                     }
 
-                    double distance = r / normal_vector.norm() - mk.scale.z / 2;
-                    mk.pose.position.x = currentState[qi][0] + normal_vector.normalized().x() * distance;
-                    mk.pose.position.y = currentState[qi][1] + normal_vector.normalized().y() * distance;
-                    mk.pose.position.z = currentState[qi][2] + normal_vector.normalized().z() * distance;
+                    double distance = box_size / 2;
+                    octomap::point3d p;
+                    if(abs(normal_vector.x()) >= abs(normal_vector.y()) && abs(normal_vector.x()) >= abs(normal_vector.z())){
+                        p = octomap::point3d(b/normal_vector.x(), 0, 0);
+                    }
+                    else if(abs(normal_vector.y()) >= abs(normal_vector.x()) && abs(normal_vector.y()) >= abs(normal_vector.z())){
+                        p = octomap::point3d(0, b/normal_vector.y(), 0);
+                    }
+                    else if(abs(normal_vector.z()) >= abs(normal_vector.x()) && abs(normal_vector.z()) >= abs(normal_vector.y())){
+                        p = octomap::point3d(0, 0, b/normal_vector.z());
+                    }
+                    else{
+                        ROS_ERROR("????");
+                    }
+                    mk.pose.position.x = p.x() + normal_vector.x() * distance;
+                    mk.pose.position.y = p.y() + normal_vector.y() * distance;
+                    mk.pose.position.z = p.z() + normal_vector.z() * distance;
 
                     Eigen::Vector3d V3d_normal_vector(normal_vector.x(), normal_vector.y(), normal_vector.z());
                     Eigen::Vector3d z_0 = Eigen::Vector3d::UnitZ();

@@ -9,11 +9,11 @@
 #include <timer.hpp>
 
 namespace SwarmPlanning {
-    class Corridor {
+    class RBPCorridor {
     public:
-        Corridor(std::shared_ptr<DynamicEDTOctomap> _distmap_obj,
-                 Mission _mission,
-                 Param _param)
+        RBPCorridor(std::shared_ptr<DynamicEDTOctomap> _distmap_obj,
+                    Mission _mission,
+                    Param _param)
                 : distmap_obj(std::move(_distmap_obj)),
                   mission(std::move(_mission)),
                   param(std::move(_param)) {
@@ -27,6 +27,16 @@ namespace SwarmPlanning {
             planResult_ptr = _planResult_ptr;
             makespan = planResult_ptr->T[0].back();
             return updateObsBox() && updateRelBox();
+        }
+
+        bool update_SFC_only(bool _log, SwarmPlanning::PlanResult* _planResult_ptr) {
+            if(_planResult_ptr->state != INITTRAJ){
+                return false;
+            }
+            log = _log;
+            planResult_ptr = _planResult_ptr;
+            makespan = planResult_ptr->T[0].back();
+            return updateObsBox();
         }
 
 //        bool update_flat_box(bool _log, SwarmPlanning::PlanResult* _planResult_ptr) {
@@ -170,6 +180,7 @@ namespace SwarmPlanning {
                     y_next = state_next.y();
                     z_next = state_next.z();
 
+                    // skip box generation when the current line segment is included in previously generated box
                     if (isPointInBox(octomap::point3d(x_next, y_next, z_next), box_prev)) {
                         continue;
                     }
@@ -183,15 +194,16 @@ namespace SwarmPlanning {
                     box.emplace_back(round(std::max(z, z_next) / param.box_z_res) * param.box_z_res);
 
                     if (isObstacleInBox(box, mission.quad_size[qi])) {
-                        ROS_ERROR("Corridor: Invalid initial trajectory. Obstacle invades initial trajectory.");
-                        ROS_ERROR_STREAM("Corridor: x " << x << ", y " << y << ", z " << z);
+                        ROS_ERROR("RBPCorridor: Invalid initial trajectory. Obstacle invades initial trajectory.");
+                        ROS_ERROR_STREAM("RBPCorridor: x " << x << ", y " << y << ", z " << z);
 
                         bool debug =isObstacleInBox(box, mission.quad_size[qi]);
                         return false;
                     }
                     expand_box(box, mission.quad_size[qi]);
 
-                    planResult_ptr->SFC[qi].emplace_back(std::make_pair(box, -1));
+                    SFC_internal sfc_internal = {box, -1, -1};
+                    planResult_ptr->SFC[qi].emplace_back(sfc_internal);
 
                     box_prev = box;
                 }
@@ -203,7 +215,7 @@ namespace SwarmPlanning {
 
                 for (int i = 0; i < box_max; i++) {
                     for (int j = 0; j < path_max; j++) {
-                        if (isPointInBox(planResult_ptr->initTraj[qi][j], planResult_ptr->SFC[qi][i].first)) {
+                        if (isPointInBox(planResult_ptr->initTraj[qi][j], planResult_ptr->SFC[qi][i].box)) {
                             if (j == 0) {
                                 box_log(i, j) = 1;
                             } else {
@@ -228,8 +240,8 @@ namespace SwarmPlanning {
                                && box_log(box_iter + 1, path_iter + count) > 0) {
                             count++;
                         }
-                        int obs_index = path_iter + count / 2;
-                        planResult_ptr->SFC[qi][box_iter].second = planResult_ptr->T[qi][obs_index];
+                        int m = path_iter + count / 2;
+                        planResult_ptr->SFC[qi][box_iter].end_time = planResult_ptr->T[qi][m];
 
                         path_iter = path_iter + count / 2;
                         box_iter++;
@@ -238,11 +250,16 @@ namespace SwarmPlanning {
                         path_iter--;
                     }
                 }
-                planResult_ptr->SFC[qi][box_max - 1].second = makespan;
+                planResult_ptr->SFC[qi][box_max - 1].end_time = makespan;
+
+                planResult_ptr->SFC[qi][0].start_time = 0;
+                for(int bi = 1; bi < planResult_ptr->SFC[qi].size(); bi++){
+                    planResult_ptr->SFC[qi][bi].start_time = planResult_ptr->SFC[qi][bi].end_time;
+                }
             }
 
             timer.stop();
-            ROS_INFO_STREAM("Corridor: SFC runtime=" << timer.elapsedSeconds());
+            ROS_INFO_STREAM("RBPCorridor: SFC runtime=" << timer.elapsedSeconds());
             planResult_ptr->state = SFC;
             return true;
         }
@@ -280,7 +297,7 @@ namespace SwarmPlanning {
 //                    box.emplace_back(round(std::max(z, z_next) / param.box_z_res) * param.box_z_res);
 //
 //                    if (isObstacleInBox(box, mission.quad_size[qi])) {
-//                        ROS_ERROR("Corridor: Invalid initial trajectory. Obstacle invades initial trajectory.");
+//                        ROS_ERROR("RBPCorridor: Invalid initial trajectory. Obstacle invades initial trajectory.");
 //                        return false;
 //                    }
 //                    expand_box(box, mission.quad_size[qi]);
@@ -336,7 +353,7 @@ namespace SwarmPlanning {
 //            }
 //
 //            timer.stop();
-//            ROS_INFO_STREAM("Corridor: SFC runtime=" << timer.elapsedSeconds());
+//            ROS_INFO_STREAM("RBPCorridor: SFC runtime=" << timer.elapsedSeconds());
 //            return true;
 //        }
 
@@ -350,7 +367,7 @@ namespace SwarmPlanning {
                     std::vector<double> T_ij = planResult_ptr->combineSegmentTimes(qi, qj);
 
                     octomap::point3d pi_i_0, pi_i_1, pi_j_0, pi_j_1, n_min;
-                    double t0, t1;
+                    double t0, t1, b;
                     for(int i = 0; i < T_ij.size() - 1; i++) {
                         t0 = T_ij[i];
                         t1 = T_ij[i + 1];
@@ -359,20 +376,18 @@ namespace SwarmPlanning {
                         pi_j_0 = planResult_ptr->initTraj_interpolation(qj, t0);
                         pi_j_1 = planResult_ptr->initTraj_interpolation(qj, t1);
                         n_min= getRSFCbetweenLines(pi_i_0, pi_i_1, pi_j_0, pi_j_1);
-
-                        RSFC_internal rsfc_internal = {n_min, t0, t1};
+                        b = mission.quad_size[qi] + mission.quad_size[qj];
+                        RSFC_internal rsfc_internal = {n_min, b, t0, t1};
                         planResult_ptr->RSFC[qi][qj].emplace_back(rsfc_internal);
                     }
                 }
             }
 
             timer.stop();
-            ROS_INFO_STREAM("Corridor: RSFC runtime=" << timer.elapsedSeconds());
+            ROS_INFO_STREAM("RBPCorridor: RSFC runtime=" << timer.elapsedSeconds());
             planResult_ptr->state = RSFC;
             return true;
         }
-
-
 
         octomap::point3d getRSFCbetweenLines(octomap::point3d pi_i_0, octomap::point3d pi_i_1,
                                              octomap::point3d pi_j_0, octomap::point3d pi_j_1){
@@ -410,7 +425,7 @@ namespace SwarmPlanning {
 
             m.z() = m.z() / param.downwash;
             if (m.norm() == 0) {
-                ROS_ERROR("Corridor: initial trajectories are collided with each other");
+                ROS_ERROR("RBPCorridor: initial trajectories are collided with each other");
             }
             return m;
         }
@@ -451,7 +466,7 @@ namespace SwarmPlanning {
 //
 //
 //                    if (isObstacleInBox(box, mission.quad_size[qi])) {
-//                        ROS_ERROR("Corridor: Invalid initial trajectory, obstacle invades initial trajectory.");
+//                        ROS_ERROR("RBPCorridor: Invalid initial trajectory, obstacle invades initial trajectory.");
 //                        return false;
 //                    }
 //                    expand_box(box, mission.quad_size[qi]);
@@ -507,7 +522,7 @@ namespace SwarmPlanning {
 //            }
 //
 //            timer.stop();
-//            ROS_INFO_STREAM("Corridor: SFC runtime=" << timer.elapsedSeconds());
+//            ROS_INFO_STREAM("RBPCorridor: SFC runtime=" << timer.elapsedSeconds());
 //            return true;
 //        }
 //
@@ -592,7 +607,7 @@ namespace SwarmPlanning {
 //                            int sector_opp = 6 - 1 - sector_next;
 //
 //                            if (sector_log.col(iter).maxCoeff(&sector_curr) <= 0) {
-//                                ROS_ERROR("Corridor: Invalid initial trajectory, there is missing link");
+//                                ROS_ERROR("RBPCorridor: Invalid initial trajectory, there is missing link");
 //                                std::cout << sector_log << std::endl;
 //                                return false;
 //                            } else if (sector_curr == sector_opp) {
@@ -605,7 +620,7 @@ namespace SwarmPlanning {
 //                                    }
 //                                }
 //                                if (!flag) {
-//                                    ROS_ERROR("Corridor: Invalid Path, jumping through quadrotor");
+//                                    ROS_ERROR("RBPCorridor: Invalid Path, jumping through quadrotor");
 //                                    std::cout << sector_log << std::endl;
 //                                    return false;
 //                                }
@@ -637,7 +652,7 @@ namespace SwarmPlanning {
 //            }
 //
 //            timer.stop();
-//            ROS_INFO_STREAM("Corridor: RSFC runtime=" << timer.elapsedSeconds());
+//            ROS_INFO_STREAM("RBPCorridor: RSFC runtime=" << timer.elapsedSeconds());
 //        }
 
         octomap::point3d sec2normVec(int sector) {
@@ -658,7 +673,7 @@ namespace SwarmPlanning {
                     n.z() = sgn / param.downwash;
                     break;
                 default:
-                    ROS_ERROR("Corridor: Invalid sector number.");
+                    ROS_ERROR("RBPCorridor: Invalid sector number.");
                     break;
             }
 
@@ -785,7 +800,7 @@ namespace SwarmPlanning {
 //            }
 //
 //            timer.stop();
-//            ROS_INFO_STREAM("Corridor: segment time runtime: " << timer.elapsedSeconds());
+//            ROS_INFO_STREAM("RBPCorridor: segment time runtime: " << timer.elapsedSeconds());
 //            return true;
 //        }
     };

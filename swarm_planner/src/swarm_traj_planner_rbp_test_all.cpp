@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
     // Submodules
     std::shared_ptr<DynamicEDTOctomap> distmap_obj;
     std::shared_ptr<InitTrajPlanner> initTrajPlanner_obj;
-    std::shared_ptr<Corridor> corridor_obj;
+    std::shared_ptr<RBPCorridor> corridor_obj;
     std::shared_ptr<RBPPlanner> RBPPlanner_obj;
 
     // Main Loop
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
         // Step 2: Generate SFC, RSFC
         timer_step.reset();
         {
-            corridor_obj.reset(new Corridor(distmap_obj, mission, param));
+            corridor_obj.reset(new RBPCorridor(distmap_obj, mission, param));
             if (!corridor_obj.get()->update(param.log, &planResult)) {
                 return -1;
             }

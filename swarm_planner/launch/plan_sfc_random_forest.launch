@@ -1,10 +1,10 @@
 <!-- 
-	PLAN_RBP_RANDOM_FOREST.LAUNCH
-	Multi-agent Trajectory Planning and Simulation using Relative Bernstein Polynomial
+	PLAN_SFC_RANDOM_FOREST.LAUNCH
+	Multi-agent Trajectory Planning and Simulation using Safe Flight Corridor only
         
 	Usage: At terminal
                ``` 
-               roslaunch swarm_planner plan_rbp_random_forest.launch
+               roslaunch swarm_planner plan_sfc_random_forest.launch
                ```
 
 	Jungwon Park
@@ -18,9 +18,9 @@
 
   <!-- Simulation -->
   <arg name="runsim"                default="true"/>
-  <arg name="log"                   default="true"/>
+  <arg name="log"                   default="false"/>
 
-  <arg name="mission"               default="hetero_4agents_15.json"/>
+  <arg name="mission"               default="mission_4agents_15.json"/>
   <arg name="replay"                default="true"/> <!-- false: random forest, true: replay_map -->
   <arg name="replay_map"            default="ICRA2020_64agents_presentation.bt"/> 
 
@@ -31,7 +31,7 @@
   <arg name="world_z_min"           default="0.3"/>
   <arg name="world_x_max"           default="5"/>
   <arg name="world_y_max"           default="5"/>
-  <arg name="world_z_max"           default="2.5"/>
+  <arg name="world_z_max"           default="1.3"/>
   <arg name="world_resolution"      default="0.1"/>
 
   <!-- Obstacles -->
@@ -43,8 +43,8 @@
   <arg name="obs_margin"            default="0.5"/>
   
   <!-- InitTrajPlanner Parameters -->
-  <arg name="initTraj_planner"      default="SIPP"/> <!-- ECBS, SIPP -->
-  <arg name="initTraj_equalizeM"    default="false"/>
+  <arg name="initTraj_planner"      default="ECBS"/> <!-- ECBS, SIPP -->
+  <arg name="initTraj_equalizeM"    default="true"/>
   <arg name="ecbs_w"                default="1.3"/> <!-- ECBS only -->
   <arg name="grid_xy_res"           default="0.5"/>
   <arg name="grid_z_res"            default="1.0"/>
@@ -63,9 +63,9 @@
   <arg name="plan_phi"              default="3"/>  
 
   <arg name="plan_sequential"       default="true"/>
-  <arg name="plan_batch_size"       default="1"/>
+  <arg name="plan_batch_size"       default="4"/>
   <arg name="plan_batch_iter"       default="-1"/> <!-- -1: maximum batch_iter-->
-  <arg name="plan_iteration"        default="1"/>
+  <arg name="plan_iteration"        default="6"/>
 
 
 <!-- Arguments End -->
@@ -113,7 +113,7 @@
     <param name="world/obs_margin"           value="$(arg obs_margin)" />
   </node>
 
-  <node pkg="swarm_planner" type="hetero_traj_planner_rbp" name="hetero_traj_planner_rbp" output="screen">
+  <node pkg="swarm_planner" type="swarm_traj_planner_sfc" name="swarm_traj_planner_sfc" output="screen">
     <param name="log"                        value="$(arg log)" />
     
     <param name="mission"                    value="$(find swarm_planner)/missions/$(arg mission)" />
