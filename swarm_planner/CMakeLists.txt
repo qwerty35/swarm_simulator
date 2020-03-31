@@ -17,8 +17,18 @@ include_directories(${PROJECT_SOURCE_DIR}/third_party/ecbs/include)
 #SIPP
 add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/AA-SIPP-m)
 include_directories(${PROJECT_SOURCE_DIR}/third_party/AA-SIPP-m/include)
-link_directories(${PROJECT_SOURCE_DIR}/third_party/AA-SIPP-m)
-set(SIPP_LINK_LIBS libsipp.a)
+set( SIPP_SOURCE_FILES
+  third_party/AA-SIPP-m/src/tinyxml2.cpp
+  third_party/AA-SIPP-m/src/xmlLogger.cpp
+  third_party/AA-SIPP-m/src/mission.cpp
+  third_party/AA-SIPP-m/src/map.cpp
+  third_party/AA-SIPP-m/src/task.cpp
+  third_party/AA-SIPP-m/src/config.cpp
+  third_party/AA-SIPP-m/src/dynamicobstacles.cpp
+  third_party/AA-SIPP-m/src/aa_sipp.cpp
+  third_party/AA-SIPP-m/src/constraints.cpp
+)
+
 
 #BOOST14
 find_package(Boost 1.58 REQUIRED COMPONENTS program_options)
@@ -83,7 +93,6 @@ target_include_directories(swarm_traj_planner_rbp PRIVATE ${PYTHON_INCLUDE_DIRS}
 target_link_libraries(swarm_traj_planner_rbp
   ${catkin_LIBRARIES}
   ${OCTOMAP_INCLUDE_DIRS}
-  ${SIPP_LINK_LIBS}
   ${PYTHON_LIBRARIES}
   m
   ilocplex
@@ -98,7 +107,6 @@ target_include_directories(swarm_traj_planner_rbp_test_all PRIVATE ${PYTHON_INCL
 target_link_libraries(swarm_traj_planner_rbp_test_all
   ${catkin_LIBRARIES}
   ${OCTOMAP_INCLUDE_DIRS}
-  ${SIPP_LINK_LIBS}
   ${PYTHON_LIBRARIES}
   m
   ilocplex
@@ -126,7 +134,6 @@ target_link_libraries(swarm_traj_planner_scp
 #target_link_libraries(swarm_traj_planner_rbp_flat
 #  ${catkin_LIBRARIES}
 #  ${OCTOMAP_INCLUDE_DIRS}
-#  ${SIPP_LINK_LIBS}
 #  ${PYTHON_LIBRARIES}
 #  m
 #  ilocplex
@@ -136,7 +143,10 @@ target_link_libraries(swarm_traj_planner_scp
 #  dl
 #)
 
-add_executable(hetero_traj_planner_rbp src/hetero_traj_planner_rbp.cpp)
+add_executable(hetero_traj_planner_rbp
+  src/hetero_traj_planner_rbp.cpp
+  ${SIPP_SOURCE_FILES}
+)
 target_include_directories(hetero_traj_planner_rbp PRIVATE ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(hetero_traj_planner_rbp
   ${catkin_LIBRARIES}
@@ -156,7 +166,6 @@ target_include_directories(swarm_traj_planner_sfc PRIVATE ${PYTHON_INCLUDE_DIRS}
 target_link_libraries(swarm_traj_planner_sfc
   ${catkin_LIBRARIES}
   ${OCTOMAP_INCLUDE_DIRS}
-  ${SIPP_LINK_LIBS}
   ${PYTHON_LIBRARIES}
   m
   ilocplex

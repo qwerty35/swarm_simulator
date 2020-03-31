@@ -123,7 +123,7 @@ Visualization Manager:
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
-      Color: 255; 191; 0
+      Color: 128; 255; 0
       Enabled: true
       Head Diameter: 0.300000012
       Head Length: 0.200000003
@@ -146,7 +146,7 @@ Visualization Manager:
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
-      Color: 128; 255; 0
+      Color: 0; 255; 255
       Enabled: true
       Head Diameter: 0.300000012
       Head Length: 0.200000003
@@ -169,7 +169,7 @@ Visualization Manager:
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
-      Color: 0; 255; 64
+      Color: 128; 0; 255
       Enabled: true
       Head Diameter: 0.300000012
       Head Length: 0.200000003
@@ -193,7 +193,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Path
       Color: 0; 255; 255
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.300000012
       Head Length: 0.200000003
       Length: 0.300000012
@@ -209,14 +209,14 @@ Visualization Manager:
       Radius: 0.0299999993
       Shaft Diameter: 0.100000001
       Shaft Length: 0.100000001
-      Topic: /desired_trajectory/mav32
+      Topic: /desired_trajectory/mav0
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 0; 64; 255
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.300000012
       Head Length: 0.200000003
       Length: 0.300000012
@@ -232,14 +232,14 @@ Visualization Manager:
       Radius: 0.0299999993
       Shaft Diameter: 0.100000001
       Shaft Length: 0.100000001
-      Topic: /desired_trajectory/mav40
+      Topic: /desired_trajectory/mav1
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 128; 0; 255
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.300000012
       Head Length: 0.200000003
       Length: 0.300000012
@@ -255,14 +255,14 @@ Visualization Manager:
       Radius: 0.0299999993
       Shaft Diameter: 0.100000001
       Shaft Length: 0.100000001
-      Topic: /desired_trajectory/mav48
+      Topic: /desired_trajectory/mav2
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 0; 191
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.300000012
       Head Length: 0.200000003
       Length: 0.300000012
@@ -278,9 +278,9 @@ Visualization Manager:
       Radius: 0.0299999993
       Shaft Diameter: 0.100000001
       Shaft Length: 0.100000001
-      Topic: /desired_trajectory/mav56
+      Topic: /desired_trajectory/mav3
       Unreliable: false
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /occupied_cells_vis_array
@@ -319,9 +319,9 @@ Visualization Manager:
       Name: MarkerArray
       Namespaces:
         mav0: false
-        mav1: true
+        mav1: false
         mav2: false
-        mav3: false
+        mav3: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -366,11 +366,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 86.1276245
+      Scale: 95.0738678
       Target Frame: world
       Value: TopDownOrtho (rviz)
-      X: -0.143344909
-      Y: 0.147311702
+      X: 0.157964498
+      Y: 0.12996158
     Saved: ~
 Window Geometry:
   Displays:

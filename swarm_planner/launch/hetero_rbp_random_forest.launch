@@ -18,7 +18,7 @@
 
   <!-- Simulation -->
   <arg name="runsim"                default="true"/>
-  <arg name="log"                   default="true"/>
+  <arg name="log"                   default="false"/>
 
   <arg name="mission"               default="hetero_4agents_15.json"/>
   <arg name="replay"                default="true"/> <!-- false: random forest, true: replay_map -->
@@ -43,19 +43,19 @@
   <arg name="obs_margin"            default="0.5"/>
   
   <!-- InitTrajPlanner Parameters -->
-  <arg name="initTraj_planner"      default="SIPP"/> <!-- ECBS, SIPP -->
-  <arg name="initTraj_equalizeM"    default="false"/>
-  <arg name="ecbs_w"                default="1.3"/> <!-- ECBS only -->
+  <arg name="initTraj_planner"      default="SIPP"/> <!-- SIPP -->
+  <arg name="initTraj_equalizeM"    default="true"/>
+  <arg name="ecbs_w"                default="1.3"/> <!-- do not need -->
   <arg name="grid_xy_res"           default="0.5"/>
   <arg name="grid_z_res"            default="1.0"/>
-  <arg name="grid_margin"           default="0.2"/>
+  <arg name="grid_margin"           default="0.2"/> <!-- do not need -->
 
   <!-- Corridor Parameters-->
   <arg name="box_xy_res"            default="0.1"/>
   <arg name="box_z_res"             default="0.1"/>
 
   <!-- RBPPlanner Parameters -->
-  <arg name="plan_time_scale"       default="true"/>
+  <arg name="plan_time_scale"       default="false"/>
   <arg name="plan_time_step"        default="1"/>
 
   <arg name="plan_downwash"         default="2.0"/>
@@ -63,7 +63,7 @@
   <arg name="plan_phi"              default="3"/>  
 
   <arg name="plan_sequential"       default="true"/>
-  <arg name="plan_batch_size"       default="1"/>
+  <arg name="plan_batch_size"       default="4"/>
   <arg name="plan_batch_iter"       default="-1"/> <!-- -1: maximum batch_iter-->
   <arg name="plan_iteration"        default="1"/>
 

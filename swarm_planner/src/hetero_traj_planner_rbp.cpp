@@ -87,6 +87,8 @@ int main(int argc, char* argv[]) {
             // Step 1: Plan Initial Trajectory
             timer_step.reset();
             {
+//                SIPPPlanner asdf(distmap_obj, mission, param);
+//                asdf.update(param.log, &planResult);
                 initTrajPlanner_obj.reset(new SIPPPlanner(distmap_obj, mission, param));
                 initTrajPlanner_obj.get()->update(param.log, &planResult);
             }

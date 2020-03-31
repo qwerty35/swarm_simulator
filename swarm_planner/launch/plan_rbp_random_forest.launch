@@ -18,7 +18,7 @@
 
   <!-- Simulation -->
   <arg name="runsim"                default="true"/>
-  <arg name="log"                   default="true"/>
+  <arg name="log"                   default="false"/>
 
   <arg name="mission"               default="mission_4agents_15.json"/>
   <arg name="replay"                default="true"/> <!-- false: random forest, true: replay_map -->
@@ -143,7 +143,7 @@
     <param name="plan/iteration"             value="$(arg plan_iteration)" />
   </node>
 
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find swarm_planner)/launch/rviz_config/config_64agents.rviz" if="$(arg runsim)"/>
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find swarm_planner)/launch/rviz_config/config_hetero.rviz" if="$(arg runsim)"/>
 
 <!-- Nodes End -->
 </launch>

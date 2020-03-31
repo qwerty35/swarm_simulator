@@ -13,7 +13,6 @@ namespace SwarmPlanning {
                     const SwarmPlanning::Mission &_mission,
                     const SwarmPlanning::Param &_param)
                 : InitTrajPlanner(_distmap_obj, _mission, _param) {
-            z = 1;
             setConfig();
         }
 
@@ -68,7 +67,7 @@ namespace SwarmPlanning {
                                 planResult_ptr->initTraj[qi].emplace_back(
                                         octomap::point3d(sec.i * param.grid_xy_res + grid_x_min,
                                                          sec.j * param.grid_xy_res + grid_y_min,
-                                                         z));
+                                                         sec.k * param.grid_z_res + grid_z_min));
                             } else {
                                 Node sec1 = sr.pathInfo[qi].sections[iter - 1];
                                 Node sec2 = sr.pathInfo[qi].sections[iter];
@@ -77,17 +76,19 @@ namespace SwarmPlanning {
                                            sec2.i * (T[idx] - sec1.g - 1) / (sec2.g - sec1.g);
                                 double y = sec1.j * (sec2.g + 1 - T[idx]) / (sec2.g - sec1.g) +
                                            sec2.j * (T[idx] - sec1.g - 1) / (sec2.g - sec1.g);
+                                double z = sec1.k * (sec2.g + 1 - T[idx]) / (sec2.g - sec1.g) +
+                                           sec2.k * (T[idx] - sec1.g - 1) / (sec2.g - sec1.g);
 
                                 planResult_ptr->initTraj[qi].emplace_back(
                                         octomap::point3d(x * param.grid_xy_res + grid_x_min,
                                                          y * param.grid_xy_res + grid_y_min,
-                                                         z));
+                                                         z * param.grid_z_res + grid_z_min));
                             }
                         }
 
                         planResult_ptr->initTraj[qi].emplace_back(octomap::point3d(mission.goalState[qi][0],
-                                                                   mission.goalState[qi][1],
-                                                                   mission.goalState[qi][2]));
+                                                                                   mission.goalState[qi][1],
+                                                                                   mission.goalState[qi][2]));
                     }
                     for (int i = 0; i < T.size(); i++) {
                         T[i] *= param.time_step;
@@ -108,7 +109,7 @@ namespace SwarmPlanning {
                             planResult_ptr->initTraj[qi].emplace_back(
                                     octomap::point3d(sec.i * param.grid_xy_res + grid_x_min,
                                                      sec.j * param.grid_xy_res + grid_y_min,
-                                                     z));
+                                                     sec.k * param.grid_z_res + grid_z_min));
                         }
                         planResult_ptr->T[qi].emplace_back((sr.makespan + 2) * param.time_step); // goal point
                         planResult_ptr->initTraj[qi].emplace_back(octomap::point3d(mission.goalState[qi][0],
@@ -118,6 +119,9 @@ namespace SwarmPlanning {
                 }
 
                 ROS_INFO("SIPPPlanner: SIPP complete!");
+                if(param.log){
+                    ROS_INFO_STREAM("SIPPPlanner: makespan=" << sr.makespan);
+                }
                 planResult_ptr->state = INITTRAJ;
                 return true;
             } else {
@@ -127,7 +131,6 @@ namespace SwarmPlanning {
         }
 
     private:
-        double z;
         SIPP::Mission sipp_mission;
 
         void setConfig() {
@@ -147,12 +150,16 @@ namespace SwarmPlanning {
         }
 
         bool setEnvironment() {
-            Map map;
-            map.width = dimx;
-            map.height = dimy;
+            SIPP::Map map;
+            map.dimx = dimx;
+            map.dimy = dimy;
+            map.dimz = dimz;
             map.Grid.resize(dimx);
             for (int i = 0; i < dimx; i++) {
                 map.Grid[i].resize(dimy);
+                for(int j = 0; j < dimy; j++){
+                    map.Grid[i][j].resize(dimz);
+                }
             }
 
             double r = 0;
@@ -162,17 +169,21 @@ namespace SwarmPlanning {
                 }
             }
 
-            int x, y;
+            int x, y, z;
+            double grid_margin = sqrt(pow(param.grid_xy_res/2, 2) + pow(r, 2)) - r; //for random forest case
             for (double i = grid_x_min; i <= grid_x_max; i += param.grid_xy_res) {
                 for (double j = grid_y_min; j <= grid_y_max; j += param.grid_xy_res) {
-                    octomap::point3d cur_point(i, j, z);
-                    float dist = distmap_obj.get()->getDistance(cur_point);
-                    assert(dist >= 0);
+                    for(double k = grid_z_min; k <= grid_z_max; k += param.grid_z_res) {
+                        octomap::point3d cur_point(i, j, k);
+                        float dist = distmap_obj.get()->getDistance(cur_point);
+                        assert(dist >= 0);
 
-                    if (dist < r + param.grid_margin) {
-                        x = round((i - grid_x_min) / param.grid_xy_res);
-                        y = round((j - grid_y_min) / param.grid_xy_res);
-                        map.Grid[x][y] = 1;
+                        if (dist < r + grid_margin + SP_EPSILON) {
+                            x = round((i - grid_x_min) / param.grid_xy_res);
+                            y = round((j - grid_y_min) / param.grid_xy_res);
+                            z = round((k - grid_z_min) / param.grid_z_res);
+                            map.Grid[x][y][z] = 1;
+                        }
                     }
                 }
             }
@@ -184,19 +195,18 @@ namespace SwarmPlanning {
             for (int qi = 0; qi < mission.qn; qi++) {
                 xig = round((mission.startState[qi][0] - grid_x_min) / param.grid_xy_res);
                 yig = round((mission.startState[qi][1] - grid_y_min) / param.grid_xy_res);
+                zig = round((mission.startState[qi][2] - grid_z_min) / param.grid_xy_res);
                 xfg = round((mission.goalState[qi][0] - grid_x_min) / param.grid_xy_res);
                 yfg = round((mission.goalState[qi][1] - grid_y_min) / param.grid_xy_res);
-
-                if (mission.startState[qi][2] != z || mission.goalState[qi][2] != z) {
-                    ROS_WARN("SIPPPlanner : SIPP supports only 2D case, z is fixed to 1"); //TODO: SIPP 2D to 3D
-                    continue;
-                }
+                zfg = round((mission.goalState[qi][2] - grid_z_min) / param.grid_z_res);
 
                 Agent agent;
                 agent.start_i = xig;
                 agent.start_j = yig;
+                agent.start_k = zig;
                 agent.goal_i = xfg;
                 agent.goal_j = yfg;
+                agent.goal_k = zfg;
                 agent.id = std::to_string(qi);
                 agent.size = mission.quad_size[qi] / param.grid_xy_res;
                 agent.mspeed = mission.quad_speed[qi] / param.grid_xy_res;

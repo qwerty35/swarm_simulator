@@ -77,7 +77,11 @@ namespace SwarmPlanning {
                         IloNumVarArray var(env);
                         IloRangeArray con(env);
 
+//                        Timer timer1;
                         populatebyrow(model, var, con, qi, qj, m);
+//                        timer1.stop();
+//                        ROS_INFO_STREAM("populatebyrow: " << timer1.elapsedSeconds());
+
                         cplex.extract(model);
                         if (param.log) {
                             std::string QPmodel_path = param.package_path + "/log/SFC_QPmodel.lp";
@@ -87,11 +91,14 @@ namespace SwarmPlanning {
                             cplex.setWarning(env.getNullStream());
                         }
 
+//                        Timer timer2;
                         // Optimize the problem and obtain solution.
                         if (!cplex.solve()) {
                             ROS_ERROR("SFCCorridor: Failed to optimize QP");
                             throw (-1);
                         }
+//                        timer2.stop();
+//                        ROS_INFO_STREAM("solve: " << timer2.elapsedSeconds());
 
                         IloNumArray vals(env);
                         cplex.getValues(vals, var);
@@ -145,13 +152,11 @@ namespace SwarmPlanning {
                     double alpha = (double)i / (double)(N_samples - 1);
                     t = (1 - alpha) * planResult_ptr->T[qi][m] + alpha * planResult_ptr->T[qi][m+1];
 
-                    Eigen::MatrixXd state_i = planResult_ptr->currentState(param, qi, t);
-                    octomap::point3d sample_i(state_i(0, 0), state_i(0, 1), state_i(0, 2));
+                    octomap::point3d sample_i = planResult_ptr->currentPosition(param, qi, t);
                     samples_x.emplace_back(sample_i);
                     samples_y.emplace_back(-1);
 
-                    Eigen::MatrixXd state_j = planResult_ptr->currentState(param, qj, t);
-                    octomap::point3d sample_j(state_j(0, 0), state_j(0, 1), state_j(0, 2));
+                    octomap::point3d sample_j = planResult_ptr->currentPosition(param, qj, t);
                     samples_x.emplace_back(sample_j);
                     samples_y.emplace_back(1);
                 }

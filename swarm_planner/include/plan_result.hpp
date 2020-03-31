@@ -102,5 +102,25 @@ namespace SwarmPlanning {
             currentState = polyder * coef[qi].block(m * (param.n + 1), 0, (param.n + 1), 3);
             return currentState;
         }
+
+        octomap::point3d currentPosition(const Param& param, int qi, double current_time){
+            if(state < OPTIMIZATION){
+                ROS_ERROR("PlanResult: There is no trajectory coefficients");
+            }
+
+            int m = findSegmentIdx(qi, current_time);
+            double t = current_time - T[qi][m];
+
+            double x = 0, y = 0, z = 0, t_pow;
+            for(int j = 0; j < param.n + 1; j++) {
+                t_pow = pow(t, param.n - j);
+                x += coef[qi](m * (param.n + 1) + j, 0) * t_pow;
+                y += coef[qi](m * (param.n + 1) + j, 1) * t_pow;
+                z += coef[qi](m * (param.n + 1) + j, 2) * t_pow;
+            }
+
+            return octomap::point3d(x, y, z);
+        }
+
     };
 }

@@ -575,7 +575,7 @@ namespace SwarmPlanning {
                 }
 
                 double vel = 0;
-                for (int i = 0; i < n - 1; i++) {
+                for (int i = 0; i < n; i++) {
                     vel += coef_der(1, i) * pow(t, n - 1 - i);
                 }
                 vel = abs(vel);
@@ -591,7 +591,7 @@ namespace SwarmPlanning {
                 time_scale *= scale_update_rate;
 
                 double vel = 0;
-                for (int i = 0; i < n - 1; i++) {
+                for (int i = 0; i < n; i++) {
                     vel += coef_der(1, i) * pow(1 / time_scale, n - i) * pow(t_max, n - 1 - i);
                 }
                 vel_max = abs(vel);
