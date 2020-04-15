@@ -30,7 +30,7 @@ namespace SwarmPlanning{
         bool time_scale;
         double time_step;
 
-        double downwash; // downwash coefficient
+//        double downwash; // downwash coefficient
         int n; // degree of polynomial
         int phi; // desired derivatives
 
@@ -67,7 +67,7 @@ namespace SwarmPlanning{
 
         nh.param<bool>("plan/time_scale", time_scale, true);
         nh.param<double>("plan/time_step", time_step, 1);
-        nh.param<double>("plan/downwash", downwash, 2.0);
+//        nh.param<double>("plan/downwash", downwash, 2.0);
         nh.param<int>("plan/n", n, 5);
         nh.param<int>("plan/phi", phi, 3);
         nh.param<bool>("plan/sequential", sequential, false);

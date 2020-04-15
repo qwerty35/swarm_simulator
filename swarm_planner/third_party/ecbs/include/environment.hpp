@@ -647,11 +647,11 @@ namespace libMultiRobotPlanning {
                    con.end();
         }
 
-        bool isParallel(const State &state1a, const State &state1b, const State &state2a, const State &state2b) {
-            return (state1b.x - state1a.x) == (state2b.x - state2a.x) &&
-                   (state1b.y - state1a.y) == (state2b.y - state2a.y) &&
-                   (state1b.z - state1a.z) == (state2b.z - state2a.z);
-        }
+//        bool isParallel(const State &state1a, const State &state1b, const State &state2a, const State &state2b) {
+//            return (state1b.x - state1a.x) == (state2b.x - state2a.x) &&
+//                   (state1b.y - state1a.y) == (state2b.y - state2a.y) &&
+//                   (state1b.z - state1a.z) == (state2b.z - state2a.z);
+//        }
 
         bool isVertexConflict(int i, int j, const State &state1, const State &state2) {
             if (m_quad_size[i] + m_quad_size[j] < m_grid_size) {

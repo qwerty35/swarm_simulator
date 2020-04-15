@@ -635,7 +635,7 @@ namespace SwarmPlanning {
                                                          + n_z * x[getIdx(l, bi, 2, m_i, j)]);
 
                                 }
-                                c.add(expr >= mission.quad_size[qi] + mission.quad_size[qj]);
+                                c.add(expr >= planResult_ptr->RSFC[qi][qj][m].d);
                                 expr.end();
                             }
                         } else if (bi < 0 && bj >= 0) {
@@ -650,7 +650,7 @@ namespace SwarmPlanning {
                                                          + n_z * dummy[qi](m_i * offset_seg + j, 2));
 
                                 }
-                                c.add(expr >= mission.quad_size[qi] + mission.quad_size[qj]);
+                                c.add(expr >= planResult_ptr->RSFC[qi][qj][m].d);
                                 expr.end();
                             }
                         } else {
@@ -665,7 +665,7 @@ namespace SwarmPlanning {
                                                          + n_z * x[getIdx(l, bi, 2, m_i, j)]);
 
                                 }
-                                c.add(expr >= mission.quad_size[qi] + mission.quad_size[qj]);
+                                c.add(expr >= planResult_ptr->RSFC[qi][qj][m].d);
                                 expr.end();
                             }
                         }

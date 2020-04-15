@@ -162,10 +162,11 @@ namespace SwarmPlanning {
                 }
             }
 
+            //generate grid with maximum size quadrotor TODO: different grid for different size?
             double r = 0;
             for (int qi = 0; qi < mission.qn; qi++) {
-                if (r < mission.quad_size[qi]) {
-                    r = mission.quad_size[qi];
+                if (r < mission.quad_collision_model[qi][qi].r) {
+                    r = mission.quad_collision_model[qi][qi].r;
                 }
             }
 
@@ -208,7 +209,16 @@ namespace SwarmPlanning {
                 agent.goal_j = yfg;
                 agent.goal_k = zfg;
                 agent.id = std::to_string(qi);
-                agent.size = mission.quad_size[qi] / param.grid_xy_res;
+                agent.agent_id = qi;
+                agent.collision_models.resize(mission.qn);
+                for(int qj = 0; qj < mission.qn; qj++){
+                    if(qj == qi)
+                        continue;
+                    agent.collision_models[qj] = CollisionModel(mission.quad_collision_model[qi][qj].r / param.grid_xy_res,
+                                                                mission.quad_collision_model[qi][qj].a / param.grid_z_res,
+                                                                mission.quad_collision_model[qi][qj].b / param.grid_z_res); //TODO: fix this
+                }
+                agent.size = mission.quad_collision_model[qi][qi].r / param.grid_xy_res;
                 agent.mspeed = mission.quad_speed[qi] / param.grid_xy_res;
 
                 task.agents.emplace_back(agent);

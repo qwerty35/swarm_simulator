@@ -18,19 +18,19 @@
 
   <!-- Simulation -->
   <arg name="runsim"                default="true"/>
-  <arg name="log"                   default="false"/>
+  <arg name="log"                   default="true"/>
 
-  <arg name="mission"               default="hetero_4agents_15.json"/>
+  <arg name="mission"               default="hetero_2agents_15.json"/>
   <arg name="replay"                default="true"/> <!-- false: random forest, true: replay_map -->
-  <arg name="replay_map"            default="ICRA2020_64agents_presentation.bt"/> 
+  <arg name="replay_map"            default="empty.bt"/> 
 
   
   <!-- Environment -->
   <arg name="world_x_min"           default="-5"/>
-  <arg name="world_y_min"           default="-5"/>
+  <arg name="world_y_min"           default="-0.3"/>
   <arg name="world_z_min"           default="0.3"/>
   <arg name="world_x_max"           default="5"/>
-  <arg name="world_y_max"           default="5"/>
+  <arg name="world_y_max"           default="0.3"/>
   <arg name="world_z_max"           default="2.5"/>
   <arg name="world_resolution"      default="0.1"/>
 
@@ -47,7 +47,7 @@
   <arg name="initTraj_equalizeM"    default="true"/>
   <arg name="ecbs_w"                default="1.3"/> <!-- do not need -->
   <arg name="grid_xy_res"           default="0.5"/>
-  <arg name="grid_z_res"            default="1.0"/>
+  <arg name="grid_z_res"            default="0.5"/>
   <arg name="grid_margin"           default="0.2"/> <!-- do not need -->
 
   <!-- Corridor Parameters-->

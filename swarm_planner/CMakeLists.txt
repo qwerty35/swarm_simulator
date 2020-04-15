@@ -7,8 +7,8 @@ project(swarm_planner)
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
-#set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release)
 
 #ECBS
 add_subdirectory(${PROJECT_SOURCE_DIR}/third_party/ecbs)
@@ -82,52 +82,52 @@ find_package(PythonLibs 2.7)
 find_package(Threads)
 
 #BUILD
-add_executable(random_map_generator src/random_map_generator.cpp)
-target_link_libraries(random_map_generator
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-)
-
-add_executable(swarm_traj_planner_rbp src/swarm_traj_planner_rbp.cpp)
-target_include_directories(swarm_traj_planner_rbp PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(swarm_traj_planner_rbp
-  ${catkin_LIBRARIES}
-  ${OCTOMAP_INCLUDE_DIRS}
-  ${PYTHON_LIBRARIES}
-  m
-  ilocplex
-  cplex
-  concert
-  pthread
-  dl
-)
-
-add_executable(swarm_traj_planner_rbp_test_all src/swarm_traj_planner_rbp_test_all.cpp)
-target_include_directories(swarm_traj_planner_rbp_test_all PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(swarm_traj_planner_rbp_test_all
-  ${catkin_LIBRARIES}
-  ${OCTOMAP_INCLUDE_DIRS}
-  ${PYTHON_LIBRARIES}
-  m
-  ilocplex
-  cplex
-  concert
-  pthread
-  dl
-)
-
-add_executable(swarm_traj_planner_scp src/swarm_traj_planner_scp.cpp)
-target_include_directories(swarm_traj_planner_scp PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(swarm_traj_planner_scp
-  ${catkin_LIBRARIES}
-  ${PYTHON_LIBRARIES}
-  m
-  ilocplex
-  cplex
-  concert
-  pthread
-  dl
-)
+#add_executable(random_map_generator src/random_map_generator.cpp)
+#target_link_libraries(random_map_generator
+#  ${catkin_LIBRARIES}
+#  ${PCL_LIBRARIES}
+#)
+#
+#add_executable(swarm_traj_planner_rbp src/swarm_traj_planner_rbp.cpp)
+#target_include_directories(swarm_traj_planner_rbp PRIVATE ${PYTHON_INCLUDE_DIRS})
+#target_link_libraries(swarm_traj_planner_rbp
+#  ${catkin_LIBRARIES}
+#  ${OCTOMAP_INCLUDE_DIRS}
+#  ${PYTHON_LIBRARIES}
+#  m
+#  ilocplex
+#  cplex
+#  concert
+#  pthread
+#  dl
+#)
+#
+#add_executable(swarm_traj_planner_rbp_test_all src/swarm_traj_planner_rbp_test_all.cpp)
+#target_include_directories(swarm_traj_planner_rbp_test_all PRIVATE ${PYTHON_INCLUDE_DIRS})
+#target_link_libraries(swarm_traj_planner_rbp_test_all
+#  ${catkin_LIBRARIES}
+#  ${OCTOMAP_INCLUDE_DIRS}
+#  ${PYTHON_LIBRARIES}
+#  m
+#  ilocplex
+#  cplex
+#  concert
+#  pthread
+#  dl
+#)
+#
+#add_executable(swarm_traj_planner_scp src/swarm_traj_planner_scp.cpp)
+#target_include_directories(swarm_traj_planner_scp PRIVATE ${PYTHON_INCLUDE_DIRS})
+#target_link_libraries(swarm_traj_planner_scp
+#  ${catkin_LIBRARIES}
+#  ${PYTHON_LIBRARIES}
+#  m
+#  ilocplex
+#  cplex
+#  concert
+#  pthread
+#  dl
+#)
 
 #add_executable(swarm_traj_planner_rbp_flat src/swarm_traj_planner_rbp_flat.cpp)
 #target_include_directories(swarm_traj_planner_rbp_flat PRIVATE ${PYTHON_INCLUDE_DIRS})
@@ -161,16 +161,16 @@ target_link_libraries(hetero_traj_planner_rbp
   dl
 )
 
-add_executable(swarm_traj_planner_sfc src/swarm_traj_planner_sfc.cpp)
-target_include_directories(swarm_traj_planner_sfc PRIVATE ${PYTHON_INCLUDE_DIRS})
-target_link_libraries(swarm_traj_planner_sfc
-  ${catkin_LIBRARIES}
-  ${OCTOMAP_INCLUDE_DIRS}
-  ${PYTHON_LIBRARIES}
-  m
-  ilocplex
-  cplex
-  concert
-  pthread
-  dl
-)
+#add_executable(swarm_traj_planner_sfc src/swarm_traj_planner_sfc.cpp)
+#target_include_directories(swarm_traj_planner_sfc PRIVATE ${PYTHON_INCLUDE_DIRS})
+#target_link_libraries(swarm_traj_planner_sfc
+#  ${catkin_LIBRARIES}
+#  ${OCTOMAP_INCLUDE_DIRS}
+#  ${PYTHON_LIBRARIES}
+#  m
+#  ilocplex
+#  cplex
+#  concert
+#  pthread
+#  dl
+#)

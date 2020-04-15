@@ -12,7 +12,10 @@ namespace SwarmPlanning {
     public:
         int qn; // the number of quadrotors
         std::vector<std::vector<double>> startState, goalState, max_vel, max_acc;
-        std::vector<double> quad_size, quad_speed;
+//        std::vector<double> quad_size;
+        std::vector<double> quad_speed;
+        std::vector<std::vector<CollisionModel_internal>> quad_collision_model;
+        std::vector<int> quad_priority;
 
         bool setMission(const ros::NodeHandle &nh);
         void applyNoise(double max_noise);
@@ -36,14 +39,20 @@ namespace SwarmPlanning {
 
         startState.resize(qn);
         goalState.resize(qn);
-        quad_size.resize(qn);
+//        quad_size.resize(qn);
+        quad_collision_model.resize(qn);
+        for(int qi = 0; qi < qn; qi++){
+            quad_collision_model[qi].resize(qn);
+        }
+        quad_priority.resize(qn);
         quad_speed.resize(qn);
         max_vel.resize(qn);
         max_acc.resize(qn);
 
-        for(SizeType qi = 0; qi < agents.Size(); qi++){
+        for(SizeType qi = 0; qi < qn; qi++){
             // name
             std::string name = agents[qi].GetObject()["name"].GetString();
+            Value::MemberIterator quadrotor = document["quadrotors"].FindMember(name.c_str());
 
             // start
             std::vector<double> state(9, 0);
@@ -61,15 +70,22 @@ namespace SwarmPlanning {
             }
             goalState[qi] = state;
 
-            // radius
-            quad_size[qi] = agents[qi].GetObject()["radius"].GetDouble();
+            // priority
+            quad_priority[qi] = quadrotor->value.GetObject()["priority"].GetInt();
+
+//            // radius
+//            quad_size[qi] = agents[qi].GetObject()["radius"].GetDouble();
+
+            // size
+            const Value& size = quadrotor->value.GetObject()["size"];
+            quad_collision_model[qi][qi] = CollisionModel_internal(size[0].GetDouble(), size[1].GetDouble(), size[2].GetDouble());
 
             // speed
-            quad_speed[qi] = agents[qi].GetObject()["speed"].GetDouble();
+//            quad_speed[qi] = agents[qi].GetObject()["speed"].GetDouble();
+            quad_speed[qi] = quadrotor->value.GetObject()["speed"].GetDouble();
 
             // maximum velocity, acceleration
             std::vector<double> dynamic_limit(3, 0);
-            Value::MemberIterator quadrotor = document["quadrotors"].FindMember(name.c_str());
             const Value& maxVel = quadrotor->value.GetObject()["max_vel"];
             for(SizeType i = 0; i < maxVel.Size(); i++){
                 dynamic_limit[i] = maxVel[i].GetDouble();
@@ -82,6 +98,33 @@ namespace SwarmPlanning {
                 dynamic_limit[i] = maxAcc[i].GetDouble();
             }
             max_acc[qi] = dynamic_limit;
+        }
+
+        //collision_model
+        for(int qi = 0; qi < qn; qi++) {
+            for(int qj = qi + 1; qj < qn; qj++) {
+                quad_collision_model[qi][qj].r = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
+                quad_collision_model[qj][qi].r = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
+                if(quad_priority[qi] < quad_priority[qj]){
+                    quad_collision_model[qi][qj].a = quad_collision_model[qi][qi].b + quad_collision_model[qj][qj].a;
+                    quad_collision_model[qj][qi].a = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
+                    quad_collision_model[qi][qj].b = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
+                    quad_collision_model[qj][qi].b = quad_collision_model[qi][qi].b + quad_collision_model[qj][qj].a;
+
+                }
+                else if(quad_priority[qi] > quad_priority[qj]){
+                    quad_collision_model[qi][qj].a = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
+                    quad_collision_model[qj][qi].a = quad_collision_model[qi][qi].a + quad_collision_model[qj][qj].b;
+                    quad_collision_model[qi][qj].b = quad_collision_model[qi][qi].a + quad_collision_model[qj][qj].b;
+                    quad_collision_model[qj][qi].b = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
+                }
+                else{
+                    quad_collision_model[qi][qj].a = quad_collision_model[qi][qi].b + quad_collision_model[qj][qj].a;
+                    quad_collision_model[qj][qi].a = quad_collision_model[qi][qi].a + quad_collision_model[qj][qj].b;
+                    quad_collision_model[qi][qj].b = quad_collision_model[qi][qi].a + quad_collision_model[qj][qj].b;
+                    quad_collision_model[qj][qi].b = quad_collision_model[qi][qi].b + quad_collision_model[qj][qj].a;
+                }
+            }
         }
 
         return true;

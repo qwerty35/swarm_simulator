@@ -193,14 +193,14 @@ namespace SwarmPlanning {
                     box.emplace_back(round(std::max(y, y_next) / param.box_xy_res) * param.box_xy_res);
                     box.emplace_back(round(std::max(z, z_next) / param.box_z_res) * param.box_z_res);
 
-                    if (isObstacleInBox(box, mission.quad_size[qi])) {
+                    if (isObstacleInBox(box, mission.quad_collision_model[qi][qi].r)) {
                         ROS_ERROR("RBPCorridor: Invalid initial trajectory. Obstacle invades initial trajectory.");
                         ROS_ERROR_STREAM("RBPCorridor: x " << x << ", y " << y << ", z " << z);
 
-                        bool debug =isObstacleInBox(box, mission.quad_size[qi]);
+                        bool debug =isObstacleInBox(box, mission.quad_collision_model[qi][qi].r);
                         return false;
                     }
-                    expand_box(box, mission.quad_size[qi]);
+                    expand_box(box, mission.quad_collision_model[qi][qi].r);
 
                     SFC_internal sfc_internal = {box, -1, -1};
                     planResult_ptr->SFC[qi].emplace_back(sfc_internal);
@@ -375,9 +375,7 @@ namespace SwarmPlanning {
                         pi_i_1 = planResult_ptr->initTraj_interpolation(qi, t1);
                         pi_j_0 = planResult_ptr->initTraj_interpolation(qj, t0);
                         pi_j_1 = planResult_ptr->initTraj_interpolation(qj, t1);
-                        n_min= getRSFCbetweenLines(pi_i_0, pi_i_1, pi_j_0, pi_j_1);
-                        b = mission.quad_size[qi] + mission.quad_size[qj];
-                        RSFC_internal rsfc_internal = {n_min, b, t0, t1};
+                        RSFC_internal rsfc_internal = getRSFCbetweenLines(qi, qj, pi_i_0, pi_i_1, pi_j_0, pi_j_1, t0, t1);
                         planResult_ptr->RSFC[qi][qj].emplace_back(rsfc_internal);
                     }
                 }
@@ -389,45 +387,66 @@ namespace SwarmPlanning {
             return true;
         }
 
-        octomap::point3d getRSFCbetweenLines(octomap::point3d pi_i_0, octomap::point3d pi_i_1,
-                                             octomap::point3d pi_j_0, octomap::point3d pi_j_1){
-            octomap::point3d a, b, c, n, m;
+        RSFC_internal getRSFCbetweenLines(int qi, int qj,
+                                          octomap::point3d pi_i_0, octomap::point3d pi_i_1,
+                                          octomap::point3d pi_j_0, octomap::point3d pi_j_1,
+                                          double t0, double t1){
+            octomap::point3d a, b, c, n_line, pi_min, n_min;
             double dist, dist_min;
             a = pi_j_0 - pi_i_0;
             b = pi_j_1 - pi_i_1;
 
-            // Coordinate transformation
-            a.z() = a.z() / param.downwash;
-            b.z() = b.z() / param.downwash;
-
             // get closest point of L from origin
             if (a == b) {
-                m = a;
+                pi_min = a;
             } else {
-                m = a;
+                pi_min = a;
                 dist_min = a.norm();
 
                 dist = b.norm();
                 if (dist_min > dist) {
-                    m = b;
+                    pi_min = b;
                     dist_min = dist;
                 }
 
-                n = b - a;
-                n.normalize();
-                c = a - n * a.dot(n);
+                n_line = (b - a).normalized();
+                c = a - n_line * a.dot(n_line);
                 dist = c.norm();
                 if ((c - a).dot(c - b) < 0 && dist_min > dist) {
-                    m = c;
+                    pi_min = c;
                 }
             }
-            m.normalize();
-
-            m.z() = m.z() / param.downwash;
-            if (m.norm() == 0) {
+            n_min = pi_min.normalized();
+            if (n_min.norm() == 0) {
                 ROS_ERROR("RBPCorridor: initial trajectories are collided with each other");
             }
-            return m;
+
+            double quad_r, quad_a, quad_b, d = 0;
+            quad_r = mission.quad_collision_model[qi][qj].r;
+            quad_a = mission.quad_collision_model[qi][qj].a;
+            quad_b = mission.quad_collision_model[qi][qj].b;
+
+            std::vector<octomap::point3d> boundary_points;
+            boundary_points.resize(8);
+            boundary_points[0] = octomap::point3d(quad_r, quad_r, quad_a);
+            boundary_points[1] = octomap::point3d(-quad_r, quad_r, quad_a);
+            boundary_points[2] = octomap::point3d(quad_r, -quad_r, quad_a);
+            boundary_points[3] = octomap::point3d(-quad_r, -quad_r, quad_a);
+            boundary_points[4] = octomap::point3d(quad_r, quad_r, -quad_b);
+            boundary_points[5] = octomap::point3d(-quad_r, quad_r, -quad_b);
+            boundary_points[6] = octomap::point3d(quad_r, -quad_r, -quad_b);
+            boundary_points[7] = octomap::point3d(-quad_r, -quad_r, -quad_b);
+
+            double d_cand;
+            for(int idx = 0; idx < 8; idx++){
+                d_cand = boundary_points[idx].dot(n_min);
+                if(d < d_cand){
+                    d = d_cand;
+                }
+            }
+
+            RSFC_internal rsfc_internal = {n_min, d, t0, t1};
+            return rsfc_internal;
         }
 
 //        bool updateFlatObsBox() {
@@ -655,30 +674,30 @@ namespace SwarmPlanning {
 //            ROS_INFO_STREAM("RBPCorridor: RSFC runtime=" << timer.elapsedSeconds());
 //        }
 
-        octomap::point3d sec2normVec(int sector) {
-            octomap::point3d n;
-            n.x() = 0;
-            n.y() = 0;
-            n.z() = 0;
-            int sgn = (sector > 0) - (sector < 0);
-
-            switch (abs(sector)) {
-                case 1:
-                    n.x() = sgn;
-                    break;
-                case 2:
-                    n.y() = sgn;
-                    break;
-                case 3:
-                    n.z() = sgn / param.downwash;
-                    break;
-                default:
-                    ROS_ERROR("RBPCorridor: Invalid sector number.");
-                    break;
-            }
-
-            return n;
-        }
+//        octomap::point3d sec2normVec(int sector) {
+//            octomap::point3d n;
+//            n.x() = 0;
+//            n.y() = 0;
+//            n.z() = 0;
+//            int sgn = (sector > 0) - (sector < 0);
+//
+//            switch (abs(sector)) {
+//                case 1:
+//                    n.x() = sgn;
+//                    break;
+//                case 2:
+//                    n.y() = sgn;
+//                    break;
+//                case 3:
+//                    n.z() = sgn / param.downwash;
+//                    break;
+//                default:
+//                    ROS_ERROR("RBPCorridor: Invalid sector number.");
+//                    break;
+//            }
+//
+//            return n;
+//        }
 //
 //        bool updateTs() {
 //            Timer timer;

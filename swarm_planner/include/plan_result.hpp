@@ -35,6 +35,34 @@ namespace SwarmPlanning {
             return -1;
         }
 
+        int findRSFCIdx(int qi, int qj, double current_time){
+            if(state < PlanningState::RSFC){
+                ROS_ERROR("PlanResult: RSFC is not planned yet.");
+                return -1;
+            }
+
+            int rsfc_index = 0;
+            while (rsfc_index < RSFC[qi][qj].size() && RSFC[qi][qj][rsfc_index].end_time < current_time) {
+                rsfc_index++;
+            }
+            if (rsfc_index >= RSFC[qi][qj].size()) {
+                rsfc_index = RSFC[qi][qj].size() - 1;
+            }
+
+            return rsfc_index;
+        }
+
+        int findSFCIdx(int qi, double current_time){
+            int sfc_index = 0;
+            while (sfc_index < SFC[qi].size() && SFC[qi][sfc_index].end_time < current_time) {
+                sfc_index++;
+            }
+            if (sfc_index >= SFC[qi].size()) {
+                sfc_index = SFC[qi].size() - 1;
+            }
+            return sfc_index;
+        }
+
         // Combine two segment times T[qi], T[qj]
         // e.g. T[qi] = [0, 1, 5], T[qj] = [0,2,4,5]
         //      T_ij = [0,1,2,4,5]
@@ -105,21 +133,23 @@ namespace SwarmPlanning {
 
         octomap::point3d currentPosition(const Param& param, int qi, double current_time){
             if(state < OPTIMIZATION){
-                ROS_ERROR("PlanResult: There is no trajectory coefficients");
+                octomap::point3d p = initTraj_interpolation(qi, current_time);
+                return p;
             }
+            else {
+                int m = findSegmentIdx(qi, current_time);
+                double t = current_time - T[qi][m];
 
-            int m = findSegmentIdx(qi, current_time);
-            double t = current_time - T[qi][m];
+                double x = 0, y = 0, z = 0, t_pow;
+                for (int j = 0; j < param.n + 1; j++) {
+                    t_pow = pow(t, param.n - j);
+                    x += coef[qi](m * (param.n + 1) + j, 0) * t_pow;
+                    y += coef[qi](m * (param.n + 1) + j, 1) * t_pow;
+                    z += coef[qi](m * (param.n + 1) + j, 2) * t_pow;
+                }
 
-            double x = 0, y = 0, z = 0, t_pow;
-            for(int j = 0; j < param.n + 1; j++) {
-                t_pow = pow(t, param.n - j);
-                x += coef[qi](m * (param.n + 1) + j, 0) * t_pow;
-                y += coef[qi](m * (param.n + 1) + j, 1) * t_pow;
-                z += coef[qi](m * (param.n + 1) + j, 2) * t_pow;
+                return octomap::point3d(x, y, z);
             }
-
-            return octomap::point3d(x, y, z);
         }
 
     };

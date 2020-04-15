@@ -24,6 +24,13 @@ namespace SwarmPlanning {
         OPTIMIZATION,
     };
 
+    struct CollisionModel_internal {
+        CollisionModel_internal(double _r = -1, double _a = -1, double _b = -1): r(_r), a(_a), b(_b) {};
+        double r;
+        double a;
+        double b;
+    };
+
     struct SFC_internal{
         std::vector<double> box; // [x_min, y_min, z_min, x_max, y_max, z_max]
         double start_time;
@@ -32,7 +39,7 @@ namespace SwarmPlanning {
 
     struct RSFC_internal{
         octomap::point3d normal_vector;
-        double b;
+        double d;
         double start_time;
         double end_time;
     };

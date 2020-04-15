@@ -63,7 +63,9 @@ namespace SwarmPlanning {
                     quad_state[qi][i].resize(t.size());
                 }
             }
-            generateROSMsg();
+            if(planResult.state >= OPTIMIZATION) {
+                generateROSMsg();
+            }
 
             pubs_traj_coef.resize(qn);
             pubs_initTraj_vis.resize(qn);
@@ -97,13 +99,11 @@ namespace SwarmPlanning {
             }
             if(planResult.state >= RSFC){
                 update_relBox(current_time);
-
             }
             if(planResult.state >= OPTIMIZATION) {
                 update_traj(current_time);
                 update_feasibleBox(current_time);
             }
-//            update_distance_between_agents_realtime(current_time);
         }
 
         void publish() {
@@ -135,22 +135,19 @@ namespace SwarmPlanning {
         }
 
         void plot(bool log) {
-            if(planResult.state >= OPTIMIZATION) {
-                update_quad_state();
-                update_safety_margin_ratio();
+            update_quad_state();
+            update_safety_margin_ratio();
 
-                if (log) {
+            if(log) {
+                plot_safety_margin_ratio();
+                if(planResult.state >= OPTIMIZATION) {
                     plot_quad_dynamics();
-                    plot_safety_margin_ratio();
                 }
-                ROS_INFO_STREAM("Global min_dist between agents: " << safety_margin_ratio);
-                ROS_INFO_STREAM("Total flight distance: " << trajectory_length_sum());
             }
-        }
 
-//    void plot_real_time(){
-//        plot_distance_between_agents_realtime();
-//    }
+            ROS_INFO_STREAM("Global minimum safety margin ratio: " << safety_margin_ratio);
+            ROS_INFO_STREAM("Total flight distance: " << trajectory_length_sum());
+        }
 
     private:
         ros::NodeHandle nh;
@@ -343,7 +340,7 @@ namespace SwarmPlanning {
                     std::vector<double> obstacle_box = planResult.SFC[qi][bi].box;
 
                     {
-                        double margin = mission.quad_size[qi];
+                        double margin = mission.quad_collision_model[qi][qi].r;
                         obstacle_box[0] -= margin;
                         obstacle_box[1] -= margin;
                         obstacle_box[2] -= margin;
@@ -389,10 +386,11 @@ namespace SwarmPlanning {
                     mk.ns = "mav" + std::to_string(qj);
 
                     // inter-collision model
-                    double r = mission.quad_size[qi] + mission.quad_size[qj];
-                    double h = r * param.downwash;
+                    double r = mission.quad_collision_model[qi][qj].r;
+                    double a = mission.quad_collision_model[qi][qj].a;
+                    double b = mission.quad_collision_model[qi][qj].b;
 
-                    mk.type = visualization_msgs::Marker::SPHERE;
+                    mk.type = visualization_msgs::Marker::CUBE;
                     mk.action = visualization_msgs::Marker::ADD;
                     mk.id = 0;
 
@@ -403,11 +401,11 @@ namespace SwarmPlanning {
 
                     mk.pose.position.x = currentState[qi][0];
                     mk.pose.position.y = currentState[qi][1];
-                    mk.pose.position.z = currentState[qi][2];
+                    mk.pose.position.z = currentState[qi][2] + (a - b)/2;
 
                     mk.scale.x = 2 * r;
                     mk.scale.y = 2 * r;
-                    mk.scale.z = 2 * h;
+                    mk.scale.z = a + b;
 
                     mk.color.a = 0.5;
                     mk.color.r = 1.0;
@@ -457,9 +455,10 @@ namespace SwarmPlanning {
                     mk.color.g = 1.0;
                     mk.color.b = 0.0;
 
-                    mk.scale.x = 40;
-                    mk.scale.y = 40;
-                    mk.scale.z = 40;
+                    double box_scale = 40;
+                    mk.scale.x = box_scale;
+                    mk.scale.y = box_scale;
+                    mk.scale.z = box_scale;
 
                     octomap::point3d qi_vector;
                     qi_vector.x() = currentState[qi][0];
@@ -467,9 +466,10 @@ namespace SwarmPlanning {
                     qi_vector.z() = currentState[qi][2];
 
                     octomap::point3d normal_vector = planResult.RSFC[qi][qj][box_curr].normal_vector;
+                    double distance = planResult.RSFC[qi][qj][box_curr].d + box_scale / 2;
                     Eigen::Vector3d V3d_normal_vector(normal_vector.x(), normal_vector.y(), normal_vector.z());
 
-                    double distance = r / normal_vector.norm() + mk.scale.z / 2;
+//                    double distance = r / normal_vector.norm() + mk.scale.z / 2;
 //                double distance = mission.quad_size[qi] / normal_vector.norm();
 
                     mk.pose.position.x = currentState[qi][0] + normal_vector.normalized().x() * distance;
@@ -502,16 +502,30 @@ namespace SwarmPlanning {
 
                 // inter-collision model
                 for (int qi = 0; qi < qn; qi++) {
-                    mk.type = visualization_msgs::Marker::SPHERE;
                     mk.id = qi;
-                    mk.pose.position.x = currentState[qi][0];
-                    mk.pose.position.y = currentState[qi][1];
-                    mk.pose.position.z = currentState[qi][2];
 
-                    mk.scale.x = 2 * mission.quad_size[qi];
-                    mk.scale.y = 2 * mission.quad_size[qi];
-                    mk.scale.z = 2 * mission.quad_size[qi] * param.downwash;
-
+                    double r, a, b;
+                    r = mission.quad_collision_model[qi][qj].r;
+                    a = mission.quad_collision_model[qi][qj].a;
+                    b = mission.quad_collision_model[qi][qj].b;
+                    if(qi == qj){
+                        mk.type = visualization_msgs::Marker::SPHERE;
+                        mk.pose.position.x = currentState[qi][0];
+                        mk.pose.position.y = currentState[qi][1];
+                        mk.pose.position.z = currentState[qi][2];
+                        mk.scale.x = 0.1;
+                        mk.scale.y = 0.1;
+                        mk.scale.z = 0.1;
+                    }
+                    else {
+                        mk.type = visualization_msgs::Marker::CUBE;
+                        mk.pose.position.x = currentState[qi][0];
+                        mk.pose.position.y = currentState[qi][1];
+                        mk.pose.position.z = currentState[qi][2] + (a - b) / 2;
+                        mk.scale.x = 2 * r;
+                        mk.scale.y = 2 * r;
+                        mk.scale.z = a + b;
+                    }
                     mk.color.a = 0.5;
                     mk.color.r = param.color[qi][0];
                     mk.color.g = param.color[qi][1];
@@ -529,54 +543,26 @@ namespace SwarmPlanning {
                     mk.color.g = param.color[qi][1];
                     mk.color.b = param.color[qi][2];
 
-                    mk.scale.x = 40;
-                    mk.scale.y = 40;
-                    mk.scale.z = 40;
-
-                    double r = mission.quad_size[qi];
-                    double h = r * param.downwash;
+                    double box_scale = 40;
+                    mk.scale.x = box_scale;
+                    mk.scale.y = box_scale;
+                    mk.scale.z = box_scale;
 
                     octomap::point3d normal_vector;
+                    double distance;
                     int box_curr = 0;
                     if (qi < qj) { // RSFC
-                        while (box_curr < planResult.RSFC[qi][qj].size() &&
-                               planResult.RSFC[qi][qj][box_curr].end_time < current_time) {
-                            box_curr++;
-                        }
-                        if (box_curr >= planResult.RSFC[qi][qj].size()) {
-                            box_curr = planResult.RSFC[qi][qj].size() - 1;
-                        }
-
+                        box_curr = planResult.findRSFCIdx(qi, qj, current_time);
                         normal_vector = planResult.RSFC[qi][qj][box_curr].normal_vector;
+                        distance = planResult.RSFC[qi][qj][box_curr].d - box_scale / 2;
                     } else if (qi > qj) { // RSFC
-                        while (box_curr < planResult.RSFC[qj][qi].size() &&
-                               planResult.RSFC[qj][qi][box_curr].end_time < current_time) {
-                            box_curr++;
-                        }
-                        if (box_curr >= planResult.RSFC[qj][qi].size()) {
-                            box_curr = planResult.RSFC[qj][qi].size() - 1;
-                        }
-
+                        box_curr = planResult.findRSFCIdx(qj, qi, current_time);
                         normal_vector = -planResult.RSFC[qj][qi][box_curr].normal_vector;
+                        distance = planResult.RSFC[qj][qi][box_curr].d - box_scale / 2;
                     } else { // SFC
-                        while (box_curr < planResult.SFC[qi].size() &&
-                               planResult.SFC[qi][box_curr].end_time < current_time) {
-                            box_curr++;
-                        }
-                        if (box_curr >= planResult.SFC[qi].size()) {
-                            box_curr = planResult.SFC[qi].size() - 1;
-                        }
+                        box_curr = planResult.findSFCIdx(qi, current_time);
                         std::vector<double> obstacle_box = planResult.SFC[qi][box_curr].box;
-                        for (int iter = 0; iter < 6; iter++) {
-                            double margin = mission.quad_size[qi];
-                            if (iter == 2 || iter == 5)
-                                margin *= param.downwash;
-                            if (iter < 3)
-                                obstacle_box[iter] = obstacle_box[iter] - margin;
-                            else
-                                obstacle_box[iter] = obstacle_box[iter] + margin;
-                        }
-
+                        
                         mk.type = visualization_msgs::Marker::LINE_LIST;
                         mk.pose.position.x = 0;
                         mk.pose.position.y = 0;
@@ -621,10 +607,9 @@ namespace SwarmPlanning {
                         continue;
                     }
 
-                    double distance = r / normal_vector.norm() - mk.scale.z / 2;
-                    mk.pose.position.x = currentState[qi][0] + normal_vector.normalized().x() * distance;
-                    mk.pose.position.y = currentState[qi][1] + normal_vector.normalized().y() * distance;
-                    mk.pose.position.z = currentState[qi][2] + normal_vector.normalized().z() * distance;
+                    mk.pose.position.x = currentState[qi][0] + normal_vector.x() * distance;
+                    mk.pose.position.y = currentState[qi][1] + normal_vector.y() * distance;
+                    mk.pose.position.z = currentState[qi][2] + normal_vector.z() * distance;
 
                     Eigen::Vector3d V3d_normal_vector(normal_vector.x(), normal_vector.y(), normal_vector.z());
                     Eigen::Vector3d z_0 = Eigen::Vector3d::UnitZ();
@@ -643,6 +628,7 @@ namespace SwarmPlanning {
 
         void update_colBox() {
             visualization_msgs::MarkerArray mk_array;
+            double r, a, b;
             for (int qi = 0; qi < qn; qi++) {
                 visualization_msgs::Marker mk;
                 mk.header.frame_id = "world";
@@ -660,9 +646,11 @@ namespace SwarmPlanning {
                 mk.pose.position.y = currentState[qi][1];
                 mk.pose.position.z = currentState[qi][2];
 
-                mk.scale.x = 2 * mission.quad_size[qi];
-                mk.scale.y = 2 * mission.quad_size[qi];
-                mk.scale.z = 2 * mission.quad_size[qi] * param.downwash;
+                r = mission.quad_collision_model[qi][qi].r;
+                mk.scale.x = 2 * r;
+                mk.scale.y = 2 * r;
+//                mk.scale.z = 2 * r * param.downwash;
+                mk.scale.z = 2 * r;
 
                 mk.color.a = 0.7;
                 mk.color.r = param.color[qi][0];
@@ -670,6 +658,52 @@ namespace SwarmPlanning {
                 mk.color.b = param.color[qi][2];
 
                 mk_array.markers.emplace_back(mk);
+
+                //relBox
+                mk.header.frame_id = "world";
+                mk.ns = "relBox_mav" + std::to_string(qi);
+                mk.action = visualization_msgs::Marker::ADD;
+
+                mk.pose.orientation.x = 0;
+                mk.pose.orientation.y = 0;
+                mk.pose.orientation.z = 0;
+                mk.pose.orientation.w = 1.0;
+
+                for(int qj = 0; qj < qn; qj++) {
+                    mk.id = qn * qi + qj;
+
+                    if(qi == qj){
+                        mk.type = visualization_msgs::Marker::SPHERE;
+                        mk.pose.position.x = currentState[qj][0];
+                        mk.pose.position.y = currentState[qj][1];
+                        mk.pose.position.z = currentState[qj][2];
+
+                        mk.scale.x = 0.1;
+                        mk.scale.y = 0.1;
+                        mk.scale.z = 0.1;
+                    }
+                    else {
+                        mk.type = visualization_msgs::Marker::CUBE;
+                        r = mission.quad_collision_model[qi][qj].r;
+                        a = mission.quad_collision_model[qi][qj].a;
+                        b = mission.quad_collision_model[qi][qj].b;
+
+                        mk.pose.position.x = currentState[qj][0];
+                        mk.pose.position.y = currentState[qj][1];
+                        mk.pose.position.z = currentState[qj][2] + (a - b) / 2;
+
+                        mk.scale.x = 2 * r;
+                        mk.scale.y = 2 * r;
+                        mk.scale.z = a + b;
+                    }
+
+                    mk.color.a = 0.7;
+                    mk.color.r = param.color[qj][0];
+                    mk.color.g = param.color[qj][1];
+                    mk.color.b = param.color[qj][2];
+
+                    mk_array.markers.emplace_back(mk);
+                }
             }
             msgs_colBox = mk_array;
         }
@@ -677,9 +711,17 @@ namespace SwarmPlanning {
         void update_quad_state() {
             for (int qi = 0; qi < qn; qi++) {
                 for (int j = 0; j < t.size(); j++) {
-                    Eigen::MatrixXd state = planResult.currentState(param, qi, t[j]);
-                    for (int i = 0; i < outdim * param.phi; i++) {
-                        quad_state[qi][i][j] = state(i / outdim, i % outdim);
+                    if(planResult.state < OPTIMIZATION){
+                        octomap::point3d p = planResult.currentPosition(param, qi, t[j]);
+                        quad_state[qi][0][j] = p.x();
+                        quad_state[qi][1][j] = p.y();
+                        quad_state[qi][2][j] = p.z();
+                    }
+                    else {
+                        Eigen::MatrixXd state = planResult.currentState(param, qi, t[j]);
+                        for (int i = 0; i < outdim * param.phi; i++) {
+                            quad_state[qi][i][j] = state(i / outdim, i % outdim);
+                        }
                     }
                 }
             }
@@ -770,7 +812,7 @@ namespace SwarmPlanning {
         }
 
         void update_safety_margin_ratio() {
-            double max_ratio_, min_ratio_, ratio;
+            double max_ratio_, min_ratio_, ratio, r, a, b, boxDist;
             max_ratio.resize(t.size());
             min_ratio.resize(t.size());
 
@@ -780,9 +822,15 @@ namespace SwarmPlanning {
                 min_ratio_ = SP_INFINITY;
                 for (int qi = 0; qi < qn; qi++) {
                     for (int qj = qi + 1; qj < qn; qj++) {
-                        ratio = sqrt(pow(quad_state[qi][0][i] - quad_state[qj][0][i], 2) +
-                                     pow(quad_state[qi][1][i] - quad_state[qj][1][i], 2) +
-                                     pow((quad_state[qi][2][i] - quad_state[qj][2][i]) / param.downwash, 2)) / (mission.quad_size[qi] + mission.quad_size[qj]);
+                        r = mission.quad_collision_model[qi][qj].r;
+                        a = mission.quad_collision_model[qi][qj].a;
+                        b = mission.quad_collision_model[qi][qj].b;
+
+                        boxDist = std::max({std::abs(quad_state[qi][0][i] - quad_state[qj][0][i]),
+                                            std::abs(quad_state[qi][1][i] - quad_state[qj][1][i]),
+                                            std::abs(quad_state[qi][2][i] - quad_state[qj][2][i] + (b-a)/2) * 2 * r / (a + b)});
+
+                        ratio = boxDist / r;
 
                         if (ratio > max_ratio_) {
                             max_ratio_ = ratio;
@@ -804,15 +852,21 @@ namespace SwarmPlanning {
             plt::figure(1);
             plt::figure_size(480, 270);
 
+            double maximum_of_min_ratio = 0;
             std::vector<double> collision_ratio;
             collision_ratio.resize(t.size());
             for (int i = 0; i < t.size(); i++) {
+                if(min_ratio[i] > maximum_of_min_ratio){
+                    maximum_of_min_ratio = min_ratio[i];
+                }
                 collision_ratio[i] = 1;
             }
 
             plt::plot(t, collision_ratio, "r--");
 //            plt::plot(t, max_ratio);
             plt::plot(t, min_ratio);
+
+            plt::ylim<double>(0, maximum_of_min_ratio + 1);
 
             plt::title("Safety margin ratio between Quadrotors");
 

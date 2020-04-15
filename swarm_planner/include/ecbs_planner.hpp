@@ -90,6 +90,7 @@ namespace SwarmPlanning {
             }
 
             int x, y, z;
+            double grid_margin = sqrt(pow(param.grid_xy_res/2, 2) + pow(r, 2)) - r; //for random forest case
             for (double k = grid_z_min; k < grid_z_max + SP_EPSILON; k += param.grid_z_res) {
                 for (double i = grid_x_min; i < grid_x_max + SP_EPSILON; i += param.grid_xy_res) {
                     for (double j = grid_y_min; j < grid_y_max + SP_EPSILON; j += param.grid_xy_res) {
@@ -100,7 +101,7 @@ namespace SwarmPlanning {
                         }
 
                         // To prevent obstacles from putting between grid points, grid_margin is used
-                        if (dist < r + param.grid_margin) {
+                        if (dist < r + grid_margin) {
                             x = (int) round((i - grid_x_min) / param.grid_xy_res);
                             y = (int) round((j - grid_y_min) / param.grid_xy_res);
                             z = (int) round((k - grid_z_min) / param.grid_z_res);

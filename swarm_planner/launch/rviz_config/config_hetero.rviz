@@ -4,6 +4,7 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
+        - /Grid1
         - /Path1
         - /Path2
         - /Path3
@@ -21,6 +22,7 @@ Panels:
         - /MarkerArray5
         - /MarkerArray5/Namespaces1
         - /MarkerArray6
+        - /MarkerArray6/Namespaces1
       Splitter Ratio: 0.535377383
     Tree Height: 843
   - Class: rviz/Selection
@@ -74,10 +76,6 @@ Visualization Manager:
           Value: true
         mav1/base_link:
           Value: true
-        mav2/base_link:
-          Value: true
-        mav3/base_link:
-          Value: true
         world:
           Value: true
       Marker Scale: 1
@@ -90,10 +88,6 @@ Visualization Manager:
           mav0/base_link:
             {}
           mav1/base_link:
-            {}
-          mav2/base_link:
-            {}
-          mav3/base_link:
             {}
       Update Interval: 0
       Value: true
@@ -192,6 +186,52 @@ Visualization Manager:
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
+      Color: 255; 0; 0
+      Enabled: false
+      Head Diameter: 0.300000012
+      Head Length: 0.200000003
+      Length: 0.300000012
+      Line Style: Billboards
+      Line Width: 0.0299999993
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.0299999993
+      Shaft Diameter: 0.100000001
+      Shaft Length: 0.100000001
+      Topic: /initTraj/mav0
+      Unreliable: false
+      Value: false
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 128; 255; 0
+      Enabled: false
+      Head Diameter: 0.300000012
+      Head Length: 0.200000003
+      Length: 0.300000012
+      Line Style: Billboards
+      Line Width: 0.0299999993
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.0299999993
+      Shaft Diameter: 0.100000001
+      Shaft Length: 0.100000001
+      Topic: /initTraj/mav1
+      Unreliable: false
+      Value: false
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
       Color: 0; 255; 255
       Enabled: false
       Head Diameter: 0.300000012
@@ -209,30 +249,7 @@ Visualization Manager:
       Radius: 0.0299999993
       Shaft Diameter: 0.100000001
       Shaft Length: 0.100000001
-      Topic: /desired_trajectory/mav0
-      Unreliable: false
-      Value: false
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 0; 64; 255
-      Enabled: false
-      Head Diameter: 0.300000012
-      Head Length: 0.200000003
-      Length: 0.300000012
-      Line Style: Billboards
-      Line Width: 0.0299999993
-      Name: Path
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.0299999993
-      Shaft Diameter: 0.100000001
-      Shaft Length: 0.100000001
-      Topic: /desired_trajectory/mav1
+      Topic: /initTraj/mav2
       Unreliable: false
       Value: false
     - Alpha: 1
@@ -255,30 +272,7 @@ Visualization Manager:
       Radius: 0.0299999993
       Shaft Diameter: 0.100000001
       Shaft Length: 0.100000001
-      Topic: /desired_trajectory/mav2
-      Unreliable: false
-      Value: false
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz/Path
-      Color: 255; 0; 191
-      Enabled: false
-      Head Diameter: 0.300000012
-      Head Length: 0.200000003
-      Length: 0.300000012
-      Line Style: Billboards
-      Line Width: 0.0299999993
-      Name: Path
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.0299999993
-      Shaft Diameter: 0.100000001
-      Shaft Length: 0.100000001
-      Topic: /desired_trajectory/mav3
+      Topic: /initTraj/mav3
       Unreliable: false
       Value: false
     - Class: rviz/MarkerArray
@@ -318,10 +312,8 @@ Visualization Manager:
       Marker Topic: /feasible_box
       Name: MarkerArray
       Namespaces:
-        mav0: false
+        mav0: true
         mav1: false
-        mav2: false
-        mav3: true
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -329,7 +321,9 @@ Visualization Manager:
       Marker Topic: /collision_model
       Name: MarkerArray
       Namespaces:
-        colBox: true
+        colBox: false
+        relBox_mav0: false
+        relBox_mav1: false
       Queue Size: 100
       Value: true
   Enabled: true
@@ -356,8 +350,11 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 0
-      Class: rviz/TopDownOrtho
+      Centre:
+        X: -0.0997755602
+        Y: -0.608477294
+        Z: 501.447723
+      Class: rviz_ortho_view_controller/Ortho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -366,11 +363,15 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Scale: 95.0738678
-      Target Frame: world
-      Value: TopDownOrtho (rviz)
-      X: 0.157964498
-      Y: 0.12996158
+      Orientation:
+        W: 1
+        X: 1
+        Y: 0
+        Z: 0
+      Plane: none
+      Scale: 96.9497833
+      Target Frame: <Fixed Frame>
+      Value: Ortho (rviz_ortho_view_controller)
     Saved: ~
 Window Geometry:
   Displays:
@@ -378,7 +379,7 @@ Window Geometry:
   Height: 1056
   Hide Left Dock: false
   Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001aa000003dafc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000028000003da000000d700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000003dafc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730100000028000003da000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003efc0100000002fb0000000800540069006d006500000000000000073f0000030000fffffffb0000000800540069006d006501000000000000045000000000000000000000047a000003da00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd000000040000000000000195000003dafc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c0061007900730100000028000003da000000d700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000013e000003dafc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a005600690065007700730100000028000003da000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000073f0000003efc0100000002fb0000000800540069006d006500000000000000073f0000030000fffffffb0000000800540069006d0065010000000000000450000000000000000000000460000003da00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -389,4 +390,4 @@ Window Geometry:
     collapsed: false
   Width: 1855
   X: 65
-  Y: 1104
+  Y: 24
