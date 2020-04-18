@@ -10,7 +10,8 @@
 #include <ecbs.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/program_options.hpp>
-
+//#include <../../../include/sp_const.hpp>
+#include <sp_const.hpp>
 
 using namespace libMultiRobotPlanning;
 
@@ -347,23 +348,29 @@ namespace std {
 namespace libMultiRobotPlanning {
     class Environment {
     public:
-        Environment(size_t dimx, size_t dimy, size_t dimz,
-                    std::unordered_set<Location> obstacles,
+        Environment(std::vector<int> dimx, std::vector<int> dimy, std::vector<int> dimz,
+                    std::vector<double> grid_x_min, std::vector<double> grid_y_min, std::vector<double> grid_z_min,
+                    std::vector<double> grid_res,
+                    std::vector<std::unordered_set<Location>> obstacles,
+                    std::vector<std::unordered_set<EdgeConstraint>> obstacle_sections,
                     std::vector<Location> goals,
-                    std::vector<double> quad_size,
-                    double grid_size)
-                : m_dimx(dimx),
-                  m_dimy(dimy),
-                  m_dimz(dimz),
+                    std::vector<std::vector<SwarmPlanning::CollisionModel_internal>> quad_collision_model)
+                : m_dimx(std::move(dimx)),
+                  m_dimy(std::move(dimy)),
+                  m_dimz(std::move(dimz)),
+                  m_grid_x_min(std::move(grid_x_min)),
+                  m_grid_y_min(std::move(grid_y_min)),
+                  m_grid_z_min(std::move(grid_z_min)),
+                  m_grid_res(std::move(grid_res)),
                   m_obstacles(std::move(obstacles)),
+                  m_obstacle_sections(std::move(obstacle_sections)),
                   m_goals(std::move(goals)),
                   m_agentIdx(0),
                   m_constraints(nullptr),
                   m_lastGoalConstraint(-1),
                   m_highLevelExpanded(0),
                   m_lowLevelExpanded(0),
-                  m_quad_size(std::move(quad_size)),
-                  m_grid_size(grid_size) {}
+                  m_quad_collision_model(std::move(quad_collision_model)) {}
 
         Environment(const Environment &) = delete;
 
@@ -449,7 +456,6 @@ namespace libMultiRobotPlanning {
                     for (size_t j = i + 1; j < solution.size(); ++j) {
                         State state2a = getState(j, solution, t);
                         State state2b = getState(j, solution, t + 1);
-                        //TODO: fix it
                         if (isEdgeConflict(i, j, state1a, state1b, state2a, state2b)) {
                             ++numConflicts;
                         }
@@ -635,16 +641,18 @@ namespace libMultiRobotPlanning {
         bool stateValid(const State &s) {
             assert(m_constraints);
             const auto &con = m_constraints->vertexConstraints;
-            return s.x >= 0 && s.x < m_dimx && s.y >= 0 && s.y < m_dimy && s.z >= 0 && s.z < m_dimz &&
-                   m_obstacles.find(Location(s.x, s.y, s.z)) == m_obstacles.end() &&
-                   con.find(VertexConstraint(s.time, s.x, s.y, s.z)) == con.end();
+            return s.x >= 0 && s.x < m_dimx[m_agentIdx]
+                   && s.y >= 0 && s.y < m_dimy[m_agentIdx]
+                   && s.z >= 0 && s.z < m_dimz[m_agentIdx]
+                   && m_obstacles[m_agentIdx].find(Location(s.x, s.y, s.z)) == m_obstacles[m_agentIdx].end()
+                   && con.find(VertexConstraint(s.time, s.x, s.y, s.z)) == con.end();
         }
 
         bool transitionValid(const State &s1, const State &s2) {
             assert(m_constraints);
             const auto &con = m_constraints->edgeConstraints;
-            return con.find(EdgeConstraint(s1.time, s1.x, s1.y, s1.z, s2.x, s2.y, s2.z)) ==
-                   con.end();
+            return m_obstacle_sections[m_agentIdx].find(EdgeConstraint(0, s1.x, s1.y, s1.z, s2.x, s2.y, s2.z)) == m_obstacle_sections[m_agentIdx].end()
+                   && con.find(EdgeConstraint(s1.time, s1.x, s1.y, s1.z, s2.x, s2.y, s2.z)) == con.end();
         }
 
 //        bool isParallel(const State &state1a, const State &state1b, const State &state2a, const State &state2b) {
@@ -654,45 +662,115 @@ namespace libMultiRobotPlanning {
 //        }
 
         bool isVertexConflict(int i, int j, const State &state1, const State &state2) {
-            if (m_quad_size[i] + m_quad_size[j] < m_grid_size) {
-                return state1.equalExceptTime(state2);
-            }
-            else{
-                Vector v(state2 - state1);
-                return v.norm() * m_grid_size < m_quad_size[i] + m_quad_size[j];
-            }
+            double quad_r, quad_a, quad_b;
+            quad_r = m_quad_collision_model[i][j].r;
+            quad_a = m_quad_collision_model[i][j].a;
+            quad_b = m_quad_collision_model[i][j].b;
+
+            Vector a(stateTransform(j, state2) - stateTransform(i, state1));
+            a.z = (a.z + (quad_a - quad_b) / 2) * 2 * quad_r / (quad_a + quad_b);
+
+            double min_dist = minBoxDist_LineSegment(a, a);
+            return min_dist < m_quad_collision_model[i][j].r - SP_EPSILON;
         }
 
         bool isEdgeConflict(int i, int j, const State &state1a, const State &state1b,
                                           const State &state2a, const State &state2b){
-            if (m_quad_size[i] + m_quad_size[j] < m_grid_size * 0.5) {
-                return state1a.equalExceptTime(state2b) && state1b.equalExceptTime(state2a);
-            }
-//            else if(m_quad_size[i] + m_quad_size[j] < m_grid_size) {
-//                return (state1a.equalExceptTime(state2b) || state2a.equalExceptTime(state1b)) &&
-//                       !isParallel(state1a, state1b, state2a, state2b);
+            double quad_r, quad_a, quad_b;
+            quad_r = m_quad_collision_model[i][j].r;
+            quad_a = m_quad_collision_model[i][j].a;
+            quad_b = m_quad_collision_model[i][j].b;
+
+            Vector a(stateTransform(j, state2a) - stateTransform(i, state1a));
+            a.z = (a.z + (quad_b - quad_a) / 2) * 2 * quad_r / (quad_a + quad_b);
+            Vector b(stateTransform(j, state2b) - stateTransform(i, state1b));
+            b.z = (b.z + (quad_b - quad_a) / 2) * 2 * quad_r / (quad_a + quad_b);
+
+            double min_dist = minBoxDist_LineSegment(a, b);
+//            bool debug = min_dist < m_quad_collision_model[i][j].r - SP_EPSILON;
+//            if(debug){
+//                int asdf = 0;
 //            }
-            else{
-                Vector a(state2a - state1a);
-                Vector b(state2b - state1b);
-                double min_dist = a.min_dist_to_origin(b);
-                return min_dist * m_grid_size <= m_quad_size[i] + m_quad_size[j];
-            }
+            return min_dist < m_quad_collision_model[i][j].r - SP_EPSILON;
         }
 
     private:
-        int m_dimx;
-        int m_dimy;
-        int m_dimz;
-        std::unordered_set<Location> m_obstacles;
+        std::vector<int> m_dimx, m_dimy, m_dimz;
+        std::vector<double> m_grid_x_min, m_grid_y_min, m_grid_z_min, m_grid_res;
+        std::vector<std::unordered_set<Location>> m_obstacles;
+        std::vector<std::unordered_set<EdgeConstraint>> m_obstacle_sections;
         std::vector<Location> m_goals;
         size_t m_agentIdx;
         const Constraints *m_constraints;
         int m_lastGoalConstraint;
         int m_highLevelExpanded;
         int m_lowLevelExpanded;
-        std::vector<double> m_quad_size;
-        double m_grid_size;
+        std::vector<std::vector<SwarmPlanning::CollisionModel_internal>> m_quad_collision_model;
+
+        Vector stateTransform(size_t agentIdx, const Vector& a){
+            return Vector(a.x * m_grid_res[agentIdx] + m_grid_x_min[agentIdx],
+                          a.y * m_grid_res[agentIdx] + m_grid_y_min[agentIdx],
+                          a.z * m_grid_res[agentIdx] + m_grid_z_min[agentIdx]);
+        }
+
+        double boxDistance(const Vector& a){
+            return std::max({std::abs(a.x), std::abs(a.y), std::abs(a.z)});
+        }
+
+        bool isMinBoxPointInLineSegment(const Vector& C, const Vector& D){
+            double boxDist_C = boxDistance(C);
+            double boxDist_D = boxDistance(D);
+            double minBoxDist;
+            if(boxDist_C < boxDist_D) {
+                minBoxDist = boxDist_C;
+                if (std::abs(C.x) == minBoxDist) {
+                    return C.x * (D.x - C.x) < 0;
+                } else if (std::abs(C.y) == minBoxDist) {
+                    return C.y * (D.y - C.y) < 0;
+                } else {
+                    return C.z * (D.z - C.z) < 0;
+                }
+            }
+            else{
+                minBoxDist = boxDist_D;
+                if (std::abs(D.x) == minBoxDist) {
+                    return D.x * (C.x - D.x) < 0;
+                } else if (std::abs(D.y) == minBoxDist) {
+                    return D.y * (C.y - D.y) < 0;
+                } else {
+                    return D.z * (C.z - D.z) < 0;
+                }
+            }
+        }
+
+        double minBoxDist_LineSegment(const Vector& C, const Vector& D){
+            double min_dist;
+            double boxDist_C = boxDistance(C);
+            double boxDist_D = boxDistance(D);
+
+            if(boxDist_C < boxDist_D) {
+                min_dist = boxDist_C;
+            }
+            else{
+                min_dist = boxDist_D;
+            }
+
+            if(!isMinBoxPointInLineSegment(C, D)){
+                return min_dist;
+            }
+            double d_xy = 0, d_yz = 0, d_zx = 0;
+            if(D.y - C.y != 0 || D.x - C.x != 0){
+                d_xy = std::abs(C.y * (D.x - C.x) - C.x * (D.y - C.y)) / (std::abs(D.y - C.y) + std::abs(D.x - C.x));
+            }
+            if(D.z - C.z != 0 || D.y - C.y != 0){
+                d_yz = std::abs(C.z * (D.y - C.y) - C.y * (D.z - C.z)) / (std::abs(D.z - C.z) + std::abs(D.y - C.y));
+            }
+            if(D.x - C.x != 0 || D.z - C.z != 0){
+                d_zx = std::abs(C.x * (D.z - C.z) - C.z * (D.x - C.x)) / (std::abs(D.x - C.x) + std::abs(D.z - C.z));
+            }
+            min_dist = std::min(min_dist, std::max(d_xy, std::max(d_yz, d_zx)));
+            return min_dist;
+        }
     };
 }
 #endif //SWARM_PLANNER_ENVIRONMENT_H

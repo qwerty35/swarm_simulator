@@ -20,8 +20,8 @@ namespace SwarmPlanning{
         std::string initTraj_planner;
         bool initTraj_equalizeM;
         double ecbs_w;
-        double grid_xy_res;
-        double grid_z_res;
+        double grid_resolution;
+        double grid_standard_speed;
         double grid_margin;
 
         double box_xy_res;
@@ -58,8 +58,8 @@ namespace SwarmPlanning{
         nh.param<std::string>("initTraj/planner", initTraj_planner, "SIPP");
         nh.param<bool>("initTraj/equalizeM", initTraj_equalizeM, false);
         nh.param<double>("ecbs/w", ecbs_w, 1.3);
-        nh.param<double>("grid/xy_res", grid_xy_res, 0.3);
-        nh.param<double>("grid/z_res", grid_z_res, 0.6);
+        nh.param<double>("grid/resolution", grid_resolution, 0.5);
+        nh.param<double>("grid/standard_speed", grid_standard_speed, 0.5);
         nh.param<double>("grid/margin", grid_margin, 0.2);
 
         nh.param<double>("box/xy_res", box_xy_res, 0.1);

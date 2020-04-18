@@ -72,23 +72,13 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        mav0/base_link:
-          Value: true
-        mav1/base_link:
-          Value: true
-        world:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: false
       Show Axes: false
       Show Names: false
       Tree:
-        world:
-          mav0/base_link:
-            {}
-          mav1/base_link:
-            {}
+        {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -187,7 +177,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 0; 0
-      Enabled: false
+      Enabled: true
       Head Diameter: 0.300000012
       Head Length: 0.200000003
       Length: 0.300000012
@@ -205,12 +195,12 @@ Visualization Manager:
       Shaft Length: 0.100000001
       Topic: /initTraj/mav0
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
       Color: 128; 255; 0
-      Enabled: false
+      Enabled: true
       Head Diameter: 0.300000012
       Head Length: 0.200000003
       Length: 0.300000012
@@ -228,7 +218,7 @@ Visualization Manager:
       Shaft Length: 0.100000001
       Topic: /initTraj/mav1
       Unreliable: false
-      Value: false
+      Value: true
     - Alpha: 1
       Buffer Length: 1
       Class: rviz/Path
@@ -300,20 +290,22 @@ Visualization Manager:
       Queue Size: 100
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /initTraj
       Name: MarkerArray
       Namespaces:
-        {}
+        mav0: true
+        mav1: true
+        mav2: true
+        mav3: true
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /feasible_box
       Name: MarkerArray
       Namespaces:
-        mav0: true
-        mav1: false
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -321,9 +313,11 @@ Visualization Manager:
       Marker Topic: /collision_model
       Name: MarkerArray
       Namespaces:
-        colBox: false
+        colBox: true
         relBox_mav0: false
         relBox_mav1: false
+        relBox_mav2: false
+        relBox_mav3: false
       Queue Size: 100
       Value: true
   Enabled: true
@@ -350,11 +344,8 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Centre:
-        X: -0.0997755602
-        Y: -0.608477294
-        Z: 501.447723
-      Class: rviz_ortho_view_controller/Ortho
+      Angle: 0
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -363,15 +354,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Orientation:
-        W: 1
-        X: 1
-        Y: 0
-        Z: 0
-      Plane: none
-      Scale: 96.9497833
+      Scale: 112.039276
       Target Frame: <Fixed Frame>
-      Value: Ortho (rviz_ortho_view_controller)
+      Value: TopDownOrtho (rviz)
+      X: 0.145274982
+      Y: 0.0667874515
     Saved: ~
 Window Geometry:
   Displays:
@@ -390,4 +377,4 @@ Window Geometry:
     collapsed: false
   Width: 1855
   X: 65
-  Y: 24
+  Y: 1104

@@ -105,14 +105,14 @@ namespace SwarmPlanning {
             for(int qj = qi + 1; qj < qn; qj++) {
                 quad_collision_model[qi][qj].r = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
                 quad_collision_model[qj][qi].r = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
-                if(quad_priority[qi] < quad_priority[qj]){
+                if(quad_priority[qi] > quad_priority[qj]){
                     quad_collision_model[qi][qj].a = quad_collision_model[qi][qi].b + quad_collision_model[qj][qj].a;
                     quad_collision_model[qj][qi].a = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
                     quad_collision_model[qi][qj].b = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
                     quad_collision_model[qj][qi].b = quad_collision_model[qi][qi].b + quad_collision_model[qj][qj].a;
 
                 }
-                else if(quad_priority[qi] > quad_priority[qj]){
+                else if(quad_priority[qi] < quad_priority[qj]){
                     quad_collision_model[qi][qj].a = quad_collision_model[qi][qi].r + quad_collision_model[qj][qj].r;
                     quad_collision_model[qj][qi].a = quad_collision_model[qi][qi].a + quad_collision_model[qj][qj].b;
                     quad_collision_model[qi][qj].b = quad_collision_model[qi][qi].a + quad_collision_model[qj][qj].b;

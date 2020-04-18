@@ -14,6 +14,7 @@
 
 // Submodules
 #include <sipp_planner.hpp>
+#include <ecbs_planner.hpp>
 #include <rbp_corridor.hpp>
 #include <rbp_planner.hpp>
 #include <rbp_publisher.hpp>
@@ -87,10 +88,14 @@ int main(int argc, char* argv[]) {
             // Step 1: Plan Initial Trajectory
             timer_step.reset();
             {
-//                SIPPPlanner asdf(distmap_obj, mission, param);
-//                asdf.update(param.log, &planResult);
-                initTrajPlanner_obj.reset(new SIPPPlanner(distmap_obj, mission, param));
-                initTrajPlanner_obj.get()->update(param.log, &planResult);
+                if(param.initTraj_planner == "SIPP") {
+                    initTrajPlanner_obj.reset(new SIPPPlanner(distmap_obj, mission, param, octree_obj));
+                    initTrajPlanner_obj.get()->update(param.log, &planResult);
+                }
+                else if(param.initTraj_planner == "ECBS"){
+                    initTrajPlanner_obj.reset(new ECBSPlanner(distmap_obj, mission, param, octree_obj));
+                    initTrajPlanner_obj.get()->update(param.log, &planResult);
+                }
             }
             timer_step.stop();
             ROS_INFO_STREAM("Initial Trajectory Planner runtime: " << timer_step.elapsedSeconds());
@@ -104,16 +109,16 @@ int main(int argc, char* argv[]) {
             timer_step.stop();
             ROS_INFO_STREAM("BoxGenerator runtime: " << timer_step.elapsedSeconds());
 
-            // Step 3: Formulate QP problem and solving it to generate trajectory for quadrotor swarm
-            timer_step.reset();
-            {
-                RBPPlanner_obj.reset(new RBPPlanner(mission, param));
-                if (!RBPPlanner_obj.get()->update(param.log, &planResult)) {
-                    return -1;
-                }
-            }
-            timer_step.stop();
-            ROS_INFO_STREAM("SwarmPlanner runtime: " << timer_step.elapsedSeconds());
+//            // Step 3: Formulate QP problem and solving it to generate trajectory for quadrotor swarm
+//            timer_step.reset();
+//            {
+//                RBPPlanner_obj.reset(new RBPPlanner(mission, param));
+//                if (!RBPPlanner_obj.get()->update(param.log, &planResult)) {
+//                    return -1;
+//                }
+//            }
+//            timer_step.stop();
+//            ROS_INFO_STREAM("SwarmPlanner runtime: " << timer_step.elapsedSeconds());
 
             timer_total.stop();
             ROS_INFO_STREAM("Overall runtime: " << timer_total.elapsedSeconds());

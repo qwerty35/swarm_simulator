@@ -826,9 +826,9 @@ namespace SwarmPlanning {
                         a = mission.quad_collision_model[qi][qj].a;
                         b = mission.quad_collision_model[qi][qj].b;
 
-                        boxDist = std::max({std::abs(quad_state[qi][0][i] - quad_state[qj][0][i]),
-                                            std::abs(quad_state[qi][1][i] - quad_state[qj][1][i]),
-                                            std::abs(quad_state[qi][2][i] - quad_state[qj][2][i] + (b-a)/2) * 2 * r / (a + b)});
+                        boxDist = std::max({std::abs(quad_state[qj][0][i] - quad_state[qi][0][i]),
+                                            std::abs(quad_state[qj][1][i] - quad_state[qi][1][i]),
+                                            std::abs(quad_state[qj][2][i] - quad_state[qi][2][i] + (b-a)/2) * 2 * r / (a + b)});
 
                         ratio = boxDist / r;
 
