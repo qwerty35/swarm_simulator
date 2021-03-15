@@ -25,6 +25,9 @@ set(CPLEX_PREFIX_DIR /opt/ibm/ILOG/CPLEX_Studio129)
 
 (3) At terminal:
 ```
+sudo apt-get install ros-<distro>-octomap
+sudo apt-get install ros-<distro>-octomap-ros
+sudo apt-get install ros-<distro>-dynamic-edt-3d
 sudo apt-get install python-matplotlib python-numpy python2.7-dev
 cd ~/catkin_ws/src
 git clone https://github.com/qwerty35/swarm_simulator.git
@@ -32,6 +35,7 @@ cd ../
 catkin_make
 source ~/catkin_ws/devel/setup.bash
 ```
+(```<distro>``` is ```kinetic``` or ```melodic``` depending on your ROS version.)
 
 ## 2. Demo
 ```
