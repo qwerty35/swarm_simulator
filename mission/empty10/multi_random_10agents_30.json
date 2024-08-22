@@ -1,0 +1,33 @@
+{
+"quadrotors": {
+"crazyflie": {"max_vel": [1.0, 1.0, 1.0],
+"max_acc": [2.0, 2.0, 1.0],
+"radius": 0.15,
+"nominal_velocity": 1.0,
+"downwash": 2.0},
+"default": {"max_vel": [1.0, 1.0, 1.0],
+"max_acc": [2.0, 2.0, 1.0],
+"radius": 0.15,
+"nominal_velocity": 1.0,
+"downwash": 2.0}
+},
+
+"world": [
+{"dimension": [-1.5, -1.5, 0.0, 1.5, 1.5, 2.0]}
+],
+  "agents": [
+    {"type": "crazyflie", "cid": 1, "start": [1.5, 0, 1], "goal": [-1.5, -1, 1]},
+    {"type": "crazyflie", "cid": 2, "start": [-1, 1.5, 1], "goal": [-1.5, -1.5, 2]},
+    {"type": "crazyflie", "cid": 3, "start": [1, 0.5, 1], "goal": [-0.5, 1, 1]},
+    {"type": "crazyflie", "cid": 4, "start": [1.5, 1, 1], "goal": [0, -1.5, 0]},
+    {"type": "crazyflie", "cid": 5, "start": [1, 1.5, 1], "goal": [-1.5, 0.5, 0]},
+    {"type": "crazyflie", "cid": 6, "start": [-0.5, 0.5, 2], "goal": [1, 1.5, 2]},
+    {"type": "crazyflie", "cid": 7, "start": [0.5, -0.5, 2], "goal": [0, -1, 0]},
+    {"type": "crazyflie", "cid": 8, "start": [-0.5, -1.5, 0], "goal": [0, 1, 1]},
+    {"type": "crazyflie", "cid": 9, "start": [-1.5, 0, 0], "goal": [0, 0.5, 2]},
+    {"type": "crazyflie", "cid": 10, "start": [1.5, 0.5, 0], "goal": [-1, 1, 1]}
+  ],
+
+"obstacles": [
+]
+}

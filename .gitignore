@@ -1,4 +1,4 @@
-swarm_planner/cmake-build-debug/
-swarm_planner/.idea/
+cmake-build-debug/
+.idea/
 html/
 latex/
